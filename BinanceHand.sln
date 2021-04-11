@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinanceHand", "BinanceHand\BinanceHand.csproj", "{26E2CE57-26EF-4392-9C97-EBC6C6CFFA4E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26E2CE57-26EF-4392-9C97-EBC6C6CFFA4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E2CE57-26EF-4392-9C97-EBC6C6CFFA4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E2CE57-26EF-4392-9C97-EBC6C6CFFA4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E2CE57-26EF-4392-9C97-EBC6C6CFFA4E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB7D7D19-2EE8-4254-A03E-EF8CC99DE098}
+	EndGlobalSection
+EndGlobal
