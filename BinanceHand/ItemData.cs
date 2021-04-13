@@ -1,65 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
 using Binance.Net.Objects.Spot.MarketData;
+using Binance.Net.Objects.Futures.MarketData;
 using CryptoExchange.Net.Sockets;
+using BrightIdeasSoftware;
 
 namespace BinanceHand
 {
     class ItemData
     {
+        public BinanceSymbol spotSymbol;
+        public BinanceFuturesUsdtSymbol futureUsdtSymbol;
+        public BinanceFuturesCoinSymbol futureCoinSymbol;
+
+        public bool isSpot;
+        public bool isFutureUsdt;
+
         public UpdateSubscription sub;
 
         public string Name;
-        public decimal Rate = 0m;
+        public decimal RateBfor = 0m;
 
+        public string date;
+        public string newTime;
+
+        public bool hasAll = false;
         public bool buyOrder = false;
         public bool sellOrder = false;
-        public bool sellNow = false;
 
-        public bool cheFirst = true;
+        public bool aggFirst = true;
+        public bool klineFirst = true;
 
         public bool scSave = false;
         public int scSaveTimeStamp;
 
-        public bool real = false;
-        public int realTimeStamp;
-
         public Stick secStick = new Stick();
         public List<Stick> secStickList = new List<Stick>();
+        public static string secChartLabel = "HH:mm:ss";
 
         public Stick minStick = new Stick();
         public List<Stick> minStickList = new List<Stick>();
-
-        public int listViewIndex;
+        public static string minChartLabel = "dd HH:mm";
 
         public bool isChartShowing = false;
+        public bool isAggReady = false;
         public bool isAggOn = false;
         public short FlatMinRow;
+        public short AggReadyRow = 0;
+        public bool LorS = true;
+        public OLVListItem item;
 
-        public bool isSpot;
+        public short win;
+        public short lose;
+        public short winLoseTot;
+        public string WinPrecantage = "0.00(0)";
 
-        public ItemData(string n, bool s)
+        public decimal secMsList0Tot = 0;
+        public decimal secMsList0Avg = 0;
+        public decimal secMdList0Tot = 0;
+        public decimal secMdList0Avg = 0;
+
+        public decimal secMsList1Tot = 0;
+        public decimal secMsList1Avg = 0;
+        public decimal secMdList1Tot = 0;
+        public decimal secMdList1Avg = 0;
+
+        public Queue<decimal> pureSecCountQ = new Queue<decimal>();
+        public decimal pureSecCountQTot = 0;
+        public decimal pureSecCountQAvg = 0;
+
+        public static short amt0 = 5;
+        public static short amt1 = 20;
+
+        public bool chuQReady = false;
+
+        public bool tooManyAmt;
+        public string tooManyAmtTime;
+
+        public string bhtTime;
+        public decimal bhtPrc;
+
+        public decimal profitRate;
+        public decimal profitRateSum;
+        public decimal profitRateMul;
+        public string ProfitRateSumAndMul = "0.00(0.00)";
+
+
+        public ItemData(BinanceSymbol s, BinanceFuturesUsdtSymbol fu, BinanceFuturesCoinSymbol fc)
         {
-            Name = n;
-            isSpot = s;
+
+            if (s != null)
+            {
+                spotSymbol = s;
+                Name = s.Name.Trim().ToUpper();
+                isSpot = true;
+            }
+            else if (fu != null)
+            {
+                futureUsdtSymbol = fu;
+                Name = fu.Name.Trim().ToUpper();
+                isSpot = false;
+                isFutureUsdt = true;
+            }
+            else if (fc != null)
+            {
+                futureCoinSymbol = fc;
+                Name = fc.Name.Trim().ToUpper();
+                isSpot = false;
+                isFutureUsdt = false;
+            }
+
+            for (int i = 0; i < amt1; i++)
+                pureSecCountQ.Enqueue(0);
         }
     }
 
     class Stick
     {
-        public decimal[] Price = new decimal[4];
+        public decimal[] Price = new decimal[4];        // 0: High, 1: Low, 2: Open, 3: Close
 
         public decimal Ms = 0;
         public decimal Md = 0;
 
-        public DateTime Time;
-    }
+        public int TCount = 0;
 
-    public enum Price
-    {
-        High = 0,
-        Low = 1,
-        Open = 2,
-        Close = 3
+        public DateTime Time;
     }
 }
