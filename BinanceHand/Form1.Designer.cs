@@ -29,8 +29,8 @@ namespace BinanceHand
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.spotListView = new BrightIdeasSoftware.FastDataListView();
             this.futureUListView = new BrightIdeasSoftware.FastDataListView();
@@ -38,11 +38,9 @@ namespace BinanceHand
             this.logTabPage = new System.Windows.Forms.TabPage();
             this.logListBox = new System.Windows.Forms.ListBox();
             this.nameTextBox = new System.Windows.Forms.TextBox();
-            this.realTimeTextBox = new System.Windows.Forms.TextBox();
             this.timeDiffTextBox = new System.Windows.Forms.TextBox();
             this.priceTextBox = new System.Windows.Forms.TextBox();
             this.amtTextBox = new System.Windows.Forms.TextBox();
-            this.rcvTimeTextBox = new System.Windows.Forms.TextBox();
             this.marketComboBox = new System.Windows.Forms.ComboBox();
             this.futureCListView = new BrightIdeasSoftware.FastDataListView();
             this.spotKlineRcvTextBox = new System.Windows.Forms.TextBox();
@@ -75,10 +73,10 @@ namespace BinanceHand
             // 
             // chart1
             // 
-            legend3.Enabled = false;
-            legend3.Name = "Legend1";
-            this.chart1.Legends.Add(legend3);
-            this.chart1.Location = new System.Drawing.Point(6, 6);
+            legend1.Enabled = false;
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
+            this.chart1.Location = new System.Drawing.Point(131, 66);
             this.chart1.Name = "chart1";
             this.chart1.Size = new System.Drawing.Size(980, 527);
             this.chart1.TabIndex = 0;
@@ -97,6 +95,7 @@ namespace BinanceHand
             this.spotListView.UseCompatibleStateImageBehavior = false;
             this.spotListView.View = System.Windows.Forms.View.Details;
             this.spotListView.VirtualMode = true;
+            this.spotListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
             this.spotListView.SelectionChanged += new System.EventHandler(this.ListView_SelectionChanged);
             // 
             // futureUListView
@@ -112,6 +111,7 @@ namespace BinanceHand
             this.futureUListView.UseCompatibleStateImageBehavior = false;
             this.futureUListView.View = System.Windows.Forms.View.Details;
             this.futureUListView.VirtualMode = true;
+            this.futureUListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
             this.futureUListView.SelectionChanged += new System.EventHandler(this.ListView_SelectionChanged);
             // 
             // logTabControl
@@ -145,27 +145,17 @@ namespace BinanceHand
             // 
             // nameTextBox
             // 
-            this.nameTextBox.Location = new System.Drawing.Point(1305, 814);
+            this.nameTextBox.Location = new System.Drawing.Point(86, 12);
             this.nameTextBox.Name = "nameTextBox";
             this.nameTextBox.Size = new System.Drawing.Size(90, 21);
             this.nameTextBox.TabIndex = 6;
             this.nameTextBox.Text = "ABCDEF";
             this.nameTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.nameTextBox_KeyPress);
             // 
-            // realTimeTextBox
-            // 
-            this.realTimeTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.realTimeTextBox.Location = new System.Drawing.Point(1474, 821);
-            this.realTimeTextBox.Name = "realTimeTextBox";
-            this.realTimeTextBox.ReadOnly = true;
-            this.realTimeTextBox.Size = new System.Drawing.Size(51, 14);
-            this.realTimeTextBox.TabIndex = 6;
-            this.realTimeTextBox.Text = "00:00:00";
-            // 
             // timeDiffTextBox
             // 
             this.timeDiffTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.timeDiffTextBox.Location = new System.Drawing.Point(1531, 817);
+            this.timeDiffTextBox.Location = new System.Drawing.Point(1488, 809);
             this.timeDiffTextBox.Name = "timeDiffTextBox";
             this.timeDiffTextBox.ReadOnly = true;
             this.timeDiffTextBox.Size = new System.Drawing.Size(38, 14);
@@ -175,7 +165,8 @@ namespace BinanceHand
             // priceTextBox
             // 
             this.priceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.priceTextBox.Location = new System.Drawing.Point(1405, 808);
+            this.priceTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.priceTextBox.Location = new System.Drawing.Point(1419, 793);
             this.priceTextBox.Name = "priceTextBox";
             this.priceTextBox.ReadOnly = true;
             this.priceTextBox.Size = new System.Drawing.Size(63, 14);
@@ -185,22 +176,13 @@ namespace BinanceHand
             // amtTextBox
             // 
             this.amtTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.amtTextBox.Location = new System.Drawing.Point(1405, 824);
+            this.amtTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.amtTextBox.Location = new System.Drawing.Point(1419, 809);
             this.amtTextBox.Name = "amtTextBox";
             this.amtTextBox.ReadOnly = true;
             this.amtTextBox.Size = new System.Drawing.Size(63, 14);
             this.amtTextBox.TabIndex = 6;
             this.amtTextBox.Text = "0.0000000";
-            // 
-            // rcvTimeTextBox
-            // 
-            this.rcvTimeTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rcvTimeTextBox.Location = new System.Drawing.Point(1474, 808);
-            this.rcvTimeTextBox.Name = "rcvTimeTextBox";
-            this.rcvTimeTextBox.ReadOnly = true;
-            this.rcvTimeTextBox.Size = new System.Drawing.Size(51, 14);
-            this.rcvTimeTextBox.TabIndex = 6;
-            this.rcvTimeTextBox.Text = "00:00:00";
             // 
             // marketComboBox
             // 
@@ -209,7 +191,7 @@ namespace BinanceHand
             "S",
             "F_U",
             "F_C"});
-            this.marketComboBox.Location = new System.Drawing.Point(1254, 814);
+            this.marketComboBox.Location = new System.Drawing.Point(35, 12);
             this.marketComboBox.Name = "marketComboBox";
             this.marketComboBox.Size = new System.Drawing.Size(50, 20);
             this.marketComboBox.TabIndex = 7;
@@ -227,6 +209,7 @@ namespace BinanceHand
             this.futureCListView.UseCompatibleStateImageBehavior = false;
             this.futureCListView.View = System.Windows.Forms.View.Details;
             this.futureCListView.VirtualMode = true;
+            this.futureCListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
             this.futureCListView.SelectionChanged += new System.EventHandler(this.ListView_SelectionChanged);
             // 
             // spotKlineRcvTextBox
@@ -237,7 +220,7 @@ namespace BinanceHand
             this.spotKlineRcvTextBox.ReadOnly = true;
             this.spotKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
             this.spotKlineRcvTextBox.TabIndex = 6;
-            this.spotKlineRcvTextBox.Text = "1000";
+            this.spotKlineRcvTextBox.Text = "0000";
             // 
             // spotKlineReqTextBox
             // 
@@ -247,7 +230,7 @@ namespace BinanceHand
             this.spotKlineReqTextBox.ReadOnly = true;
             this.spotKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
             this.spotKlineReqTextBox.TabIndex = 6;
-            this.spotKlineReqTextBox.Text = "/ 1000 K";
+            this.spotKlineReqTextBox.Text = "/0000(K)";
             // 
             // spotAggRcvTextBox
             // 
@@ -257,7 +240,7 @@ namespace BinanceHand
             this.spotAggRcvTextBox.ReadOnly = true;
             this.spotAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
             this.spotAggRcvTextBox.TabIndex = 6;
-            this.spotAggRcvTextBox.Text = "5";
+            this.spotAggRcvTextBox.Text = "0";
             // 
             // spotAggReqTextBox
             // 
@@ -267,7 +250,7 @@ namespace BinanceHand
             this.spotAggReqTextBox.ReadOnly = true;
             this.spotAggReqTextBox.Size = new System.Drawing.Size(47, 14);
             this.spotAggReqTextBox.TabIndex = 6;
-            this.spotAggReqTextBox.Text = "/ 5 A";
+            this.spotAggReqTextBox.Text = "/0(A)";
             // 
             // futureUKlineRcvTextBox
             // 
@@ -277,7 +260,7 @@ namespace BinanceHand
             this.futureUKlineRcvTextBox.ReadOnly = true;
             this.futureUKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
             this.futureUKlineRcvTextBox.TabIndex = 6;
-            this.futureUKlineRcvTextBox.Text = "1000";
+            this.futureUKlineRcvTextBox.Text = "000";
             // 
             // futureUKlineReqTextBox
             // 
@@ -287,7 +270,7 @@ namespace BinanceHand
             this.futureUKlineReqTextBox.ReadOnly = true;
             this.futureUKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
             this.futureUKlineReqTextBox.TabIndex = 6;
-            this.futureUKlineReqTextBox.Text = "/ 1000 K";
+            this.futureUKlineReqTextBox.Text = "/000(K)";
             // 
             // futureUAggRcvTextBox
             // 
@@ -297,7 +280,7 @@ namespace BinanceHand
             this.futureUAggRcvTextBox.ReadOnly = true;
             this.futureUAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
             this.futureUAggRcvTextBox.TabIndex = 6;
-            this.futureUAggRcvTextBox.Text = "5";
+            this.futureUAggRcvTextBox.Text = "0";
             // 
             // futureUAggReqTextBox
             // 
@@ -307,7 +290,7 @@ namespace BinanceHand
             this.futureUAggReqTextBox.ReadOnly = true;
             this.futureUAggReqTextBox.Size = new System.Drawing.Size(47, 14);
             this.futureUAggReqTextBox.TabIndex = 6;
-            this.futureUAggReqTextBox.Text = "/ 5 A";
+            this.futureUAggReqTextBox.Text = "/0(A)";
             // 
             // futureCKlineRcvTextBox
             // 
@@ -317,7 +300,7 @@ namespace BinanceHand
             this.futureCKlineRcvTextBox.ReadOnly = true;
             this.futureCKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
             this.futureCKlineRcvTextBox.TabIndex = 6;
-            this.futureCKlineRcvTextBox.Text = "1000";
+            this.futureCKlineRcvTextBox.Text = "000";
             // 
             // futureCKlineReqTextBox
             // 
@@ -327,7 +310,7 @@ namespace BinanceHand
             this.futureCKlineReqTextBox.ReadOnly = true;
             this.futureCKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
             this.futureCKlineReqTextBox.TabIndex = 6;
-            this.futureCKlineReqTextBox.Text = "/ 1000 K";
+            this.futureCKlineReqTextBox.Text = "/000(K)";
             // 
             // futureCAggRcvTextBox
             // 
@@ -337,7 +320,7 @@ namespace BinanceHand
             this.futureCAggRcvTextBox.ReadOnly = true;
             this.futureCAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
             this.futureCAggRcvTextBox.TabIndex = 6;
-            this.futureCAggRcvTextBox.Text = "5";
+            this.futureCAggRcvTextBox.Text = "0";
             // 
             // futureCAggReqTextBox
             // 
@@ -347,11 +330,10 @@ namespace BinanceHand
             this.futureCAggReqTextBox.ReadOnly = true;
             this.futureCAggReqTextBox.Size = new System.Drawing.Size(47, 14);
             this.futureCAggReqTextBox.TabIndex = 6;
-            this.futureCAggReqTextBox.Text = "/ 5 A";
+            this.futureCAggReqTextBox.Text = "/0(A)";
             // 
             // chartTabControl
             // 
-            this.chartTabControl.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
             this.chartTabControl.Controls.Add(this.chartTabPageSec);
             this.chartTabControl.Controls.Add(this.chartTabPageMin);
             this.chartTabControl.Location = new System.Drawing.Point(30, 22);
@@ -366,10 +348,10 @@ namespace BinanceHand
             // chartTabPageSec
             // 
             this.chartTabPageSec.Controls.Add(this.chart1);
-            this.chartTabPageSec.Location = new System.Drawing.Point(4, 25);
+            this.chartTabPageSec.Location = new System.Drawing.Point(4, 22);
             this.chartTabPageSec.Name = "chartTabPageSec";
-            this.chartTabPageSec.Padding = new System.Windows.Forms.Padding(3);
-            this.chartTabPageSec.Size = new System.Drawing.Size(1511, 736);
+            this.chartTabPageSec.Padding = new System.Windows.Forms.Padding(30);
+            this.chartTabPageSec.Size = new System.Drawing.Size(1511, 739);
             this.chartTabPageSec.TabIndex = 0;
             this.chartTabPageSec.Text = "Seconds";
             this.chartTabPageSec.UseVisualStyleBackColor = true;
@@ -377,19 +359,19 @@ namespace BinanceHand
             // chartTabPageMin
             // 
             this.chartTabPageMin.Controls.Add(this.chart2);
-            this.chartTabPageMin.Location = new System.Drawing.Point(4, 25);
+            this.chartTabPageMin.Location = new System.Drawing.Point(4, 22);
             this.chartTabPageMin.Name = "chartTabPageMin";
             this.chartTabPageMin.Padding = new System.Windows.Forms.Padding(3);
-            this.chartTabPageMin.Size = new System.Drawing.Size(1511, 736);
+            this.chartTabPageMin.Size = new System.Drawing.Size(1511, 739);
             this.chartTabPageMin.TabIndex = 1;
             this.chartTabPageMin.Text = "Minutes";
             this.chartTabPageMin.UseVisualStyleBackColor = true;
             // 
             // chart2
             // 
-            legend4.Enabled = false;
-            legend4.Name = "Legend1";
-            this.chart2.Legends.Add(legend4);
+            legend2.Enabled = false;
+            legend2.Name = "Legend1";
+            this.chart2.Legends.Add(legend2);
             this.chart2.Location = new System.Drawing.Point(0, 0);
             this.chart2.Name = "chart2";
             this.chart2.Size = new System.Drawing.Size(980, 527);
@@ -401,12 +383,12 @@ namespace BinanceHand
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1904, 1011);
-            this.Controls.Add(this.chartTabControl);
             this.Controls.Add(this.marketComboBox);
-            this.Controls.Add(this.realTimeTextBox);
             this.Controls.Add(this.amtTextBox);
-            this.Controls.Add(this.priceTextBox);
+            this.Controls.Add(this.nameTextBox);
             this.Controls.Add(this.timeDiffTextBox);
+            this.Controls.Add(this.chartTabControl);
+            this.Controls.Add(this.priceTextBox);
             this.Controls.Add(this.futureCAggReqTextBox);
             this.Controls.Add(this.futureUAggReqTextBox);
             this.Controls.Add(this.spotAggReqTextBox);
@@ -419,8 +401,6 @@ namespace BinanceHand
             this.Controls.Add(this.futureUKlineRcvTextBox);
             this.Controls.Add(this.spotKlineReqTextBox);
             this.Controls.Add(this.spotKlineRcvTextBox);
-            this.Controls.Add(this.rcvTimeTextBox);
-            this.Controls.Add(this.nameTextBox);
             this.Controls.Add(this.logTabControl);
             this.Controls.Add(this.futureCListView);
             this.Controls.Add(this.futureUListView);
@@ -452,11 +432,9 @@ namespace BinanceHand
         private System.Windows.Forms.TabPage logTabPage;
         private System.Windows.Forms.ListBox logListBox;
         private System.Windows.Forms.TextBox nameTextBox;
-        private System.Windows.Forms.TextBox realTimeTextBox;
         private System.Windows.Forms.TextBox timeDiffTextBox;
         private System.Windows.Forms.TextBox priceTextBox;
         private System.Windows.Forms.TextBox amtTextBox;
-        private System.Windows.Forms.TextBox rcvTimeTextBox;
         private System.Windows.Forms.ComboBox marketComboBox;
         private BrightIdeasSoftware.FastDataListView futureCListView;
         private System.Windows.Forms.TextBox spotKlineRcvTextBox;
