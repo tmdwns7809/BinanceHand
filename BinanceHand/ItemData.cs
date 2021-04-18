@@ -4,6 +4,7 @@ using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Futures.MarketData;
 using CryptoExchange.Net.Sockets;
 using BrightIdeasSoftware;
+using Binance.Net.Objects.Futures.MarketData;
 
 namespace BinanceHand
 {
@@ -84,6 +85,22 @@ namespace BinanceHand
         public decimal profitRateSum;
         public decimal profitRateMul;
         public string ProfitRateSumAndMul = "0.00(0.00)";
+
+        public UpdateSubscription markSub;
+        public bool Position = false;
+        public bool PositionLong;
+        public int Leverage;
+        public decimal Size;
+        public decimal EntryPrice;
+        public decimal MarkPrice;
+        public decimal maintMargin;
+        public decimal InitialMargin;
+        public decimal notianalValue;
+        public decimal PNL;
+        public decimal ROE;
+
+        public List<BinanceFuturesBracket> brackets;
+        public int nowBracketIndex;
 
 
         public ItemData(BinanceSymbol s, BinanceFuturesUsdtSymbol fu, BinanceFuturesCoinSymbol fc)

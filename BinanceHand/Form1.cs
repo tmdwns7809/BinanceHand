@@ -20,16 +20,21 @@ using Binance.Net.Objects.Spot.MarketStream;
 using Binance.Net.Interfaces;
 using System.Windows.Forms.DataVisualization.Charting;
 using BrightIdeasSoftware;
+using Binance.Net.Objects.Futures.MarketStream;
 
 namespace BinanceHand
 {
     public partial class Form1 : Form
     {
+        #region Global vars
+        string startTime;
+
         //DBHelper dbHelper = DBHelper.GetInstance();
 
-        Dictionary<string, ItemData> spotItemDataList = new Dictionary<string, ItemData>();
-        Dictionary<string, ItemData> futureUItemDataList = new Dictionary<string, ItemData>();
-        Dictionary<string, ItemData> futureCItemDataList = new Dictionary<string, ItemData>();
+        Dictionary<string, ItemData> SPOTItemDataList = new Dictionary<string, ItemData>();
+        Dictionary<string, ItemData> FUItemDataList = new Dictionary<string, ItemData>();
+        Dictionary<string, ItemData> FCItemDataList = new Dictionary<string, ItemData>();
+        List<ItemData> FUPositionItemData = new List<ItemData>();
 
         ItemData itemDataShowing;
 
@@ -40,8 +45,17 @@ namespace BinanceHand
         Color plsPrcColor = Color.FromArgb(amtAnPrcAlpha, Color.Red);
         Color mnsPrcColor = Color.FromArgb(amtAnPrcAlpha, Color.Blue);
 
+        int baseChartViewSticksSize = 120;
+
         static int gridAlpha = 90;
         Color gridColor = Color.FromArgb(gridAlpha, Color.Gray);
+
+        decimal FUMarginBalance;
+        decimal FUMaintMargin;
+        decimal FUAvailableBalance;
+        decimal FUBalance;
+        string ForDecimalString = "0.#############################";
+        #endregion
 
         public Form1()
         {
@@ -50,21 +64,21 @@ namespace BinanceHand
             SetClientAndKey();
 
             SetComponents();
-
-            SetItemDataList();
         }
 
+        #region SetClientAndKey vars
         BinanceClient client;
         BinanceSocketClient socketClient;
-        Thread listenThread;
+        CancellationTokenSource tokenSource = new CancellationTokenSource();
+        #endregion
         void SetClientAndKey()
         {
-            var testNet = true;
-
             var clientOption = new BinanceClientOptions();
             var socketOption = new BinanceSocketClientOptions();
-            if (testNet)
+
+            if (true)       //testnet
             {
+                if (true)
                 {   /*future*/
                     clientOption.BaseAddressUsdtFutures = "https://testnet.binancefuture.com";
                     clientOption.BaseAddressCoinFutures = "https://testnet.binancefuture.com";
@@ -74,6 +88,7 @@ namespace BinanceHand
                     socketOption.BaseAddress = "wss://stream.binancefuture.com";
                     socketOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
                 }
+                else
                 {   /*spot 안됌
                     clientOption.BaseAddress = "https://testnet.binance.vision/api";
                     clientOption.ApiCredentials = new ApiCredentials("KMx8rvC0pd8yuR7yYKQYZSqteiuSQsfcID4WQ24bpv4Qm6M3OL66kntmLWDPmnIf", "64hzy1tONvRvlXBLmIkb609rTW2QbCEbAcACkqlJDTP7Ljk28QNpuBMi6sWE5ylj");
@@ -95,30 +110,156 @@ namespace BinanceHand
 
             client = new BinanceClient(clientOption);
             socketClient = new BinanceSocketClient(socketOption);
+
+            SubscribeToUserStream(true, true);
         }
-        void SubscribeToUserStream()
+        void SubscribeToUserStream(bool testnet, bool testnetFutures)
         {
-            var listenKey = client.FuturesUsdt.UserStream.StartUserStream().Data;
-            listenThread = new Thread(delegate ()
+            string listenKey;
+
+            if (testnet)
+            {
+                if (testnetFutures)
+                    listenKey = client.FuturesUsdt.UserStream.StartUserStream().Data;
+                else
+                    listenKey = client.Spot.UserStream.StartUserStream().Data;
+            }
+            else
+                listenKey = client.Spot.UserStream.StartUserStream().Data;
+
+            var _keepAliveTask = Task.Run(async () =>
             {
                 while (true)
                 {
-                    Thread.Sleep(55 * 60 * 1000);
-                    client.Spot.UserStream.KeepAliveUserStream(listenKey);
+                    if (testnet)
+                    {
+                        if (testnetFutures)
+                            await client.FuturesUsdt.UserStream.KeepAliveUserStreamAsync(listenKey);
+                        else
+                            await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
+                    }
+                    else
+                        await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
+
+                    await Task.Delay(TimeSpan.FromMinutes(30));
                 }
-            });
-            listenThread.Start();
-            socketClient.Spot.SubscribeToUserDataUpdates(listenKey,
-                data =>
+            }, tokenSource.Token);
+
+            if (testnet)
+            {
+                if (testnetFutures)
+                    socketClient.FuturesUsdt.SubscribeToUserDataUpdates(listenKey, 
+                        data => {
+                            var a = data;
+                        },
+                        data => {
+                            var a = data;
+                        },
+                        data => {
+                            var a = data;
+                        },
+                        data => {
+                            var a = data;
+                        },
+                        data => {
+                            var a = data;
+                        });
+                else
+                    socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
+            }
+            else
+                socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
+
+
+            mainTabControl.SelectedTab = futuresUTab;
+            futuresUTabControl.SelectedTab = FUPositionTab;
+
+
+            var exchangeInfo2 = client.FuturesUsdt.System.GetExchangeInfo();
+            var n = 0;
+            foreach (var s in exchangeInfo2.Data.Symbols)
+            {
+                var itemData = new ItemData(null, s, null);
+                FUItemDataList.Add(itemData.Name, itemData);
+                FUSymbolList.Add(itemData.Name);
+
+                n++;
+            }
+
+            var ga = client.FuturesUsdt.Account.GetAccountInfo();
+            foreach (var s in ga.Data.Assets)
+            {
+                if (s.Asset == "USDT")
                 {
-                        // Handle order update info data
-                    },
-                null, // Handler for OCO updates
-                null, // Handler for position updates
-                null); // Handler for account balance updates (withdrawals/deposits)
+                    FUMarginBalance = s.MarginBalance;
+                    FUMarginBalanceTextBox1.Text = Math.Round(FUMarginBalance, 2).ToString();
+                    FUAvailableBalance = s.AvailableBalance;
+                    FUAvailBalanceTextBox1.Text = Math.Round(FUAvailableBalance, 2).ToString();
+                    FUBalance = s.WalletBalance;
+                    FUBalanceTextBox1.Text = Math.Round(FUBalance, 2).ToString();
+                }
+            }
+            foreach (var s in ga.Data.Positions)
+            {
+                if (s.EntryPrice != 0m)
+                {
+                    var itemData = FUItemDataList[s.Symbol];
+
+                    itemData.InitialMargin = Math.Round(s.InitialMargin, 2); 
+                    itemData.maintMargin = s.MaintMargin;
+
+                    FUPositionListView.AddObject(itemData);
+                }
+            }
+
+            FUMaintMargin = 0;
+            foreach (ItemData itemData in FUPositionListView.Objects)
+                FUMaintMargin += itemData.maintMargin;
+            FUMaintMarginTextBox1.Text = Math.Round(FUMaintMargin, 2).ToString();
+
+            var gp = client.FuturesUsdt.GetPositionInformation();
+            foreach (var s in gp.Data)
+            {
+                if (s.MarginType == FuturesMarginType.Isolated)
+                {
+                    var cm = client.FuturesUsdt.ChangeMarginType(s.Symbol, FuturesMarginType.Cross);
+                    if (!cm.Success)
+                        MessageBox.Show("마진 타입 변경 실패");
+                }
+
+                if (s.EntryPrice != 0m)
+                {
+                    var itemData = FUItemDataList[s.Symbol];
+
+                    itemData.Position = true;
+                    itemData.Leverage = s.Leverage;
+                    itemData.MarkPrice = Math.Round(s.MarkPrice, 2);
+                    itemData.Size = s.PositionAmount;
+                    itemData.notianalValue = s.MarkPrice * Math.Abs(itemData.Size);
+                    itemData.EntryPrice = Math.Round(s.EntryPrice, 2);
+                    itemData.PNL = Math.Round(s.UnrealizedProfit, 2);
+                    itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
+
+                    if (itemData.Size > 0)
+                        itemData.PositionLong = true;
+                    else
+                        itemData.PositionLong = false;
+
+                    foreach (var brackets in client.FuturesUsdt.GetBrackets(s.Symbol).Data)
+                        itemData.brackets = brackets.Brackets.ToList();
+                    for (int i = 0; i < itemData.brackets.Count; i++)
+                        if (itemData.notianalValue > itemData.brackets[i].Floor && itemData.notianalValue <= itemData.brackets[i].Cap)
+                            itemData.nowBracketIndex = i;
+
+                    FUPositionListView.UncheckObject(itemData);
+                }
+            }
+
+            var gbr = client.FuturesUsdt.GetBrackets("BTCUSDT");
+            var gI = client.FuturesUsdt.GetIncomeHistory();
+            var gpm = client.FuturesUsdt.GetPositionMode();
         }
 
-        string startTime;
         void SetComponents()
         {
             startTime = DateTime.UtcNow.ToString();
@@ -126,75 +267,30 @@ namespace BinanceHand
 
             SetComponentsLocationAndSize();
 
-            ChartSetting();
+            SetChart();
 
-            var nameColumnSize = 7;
-            var flucColumnSize = 3;
-            var durColumnSize = 3;
-            var winColumnSize = 6;
-            var proColumnSize = 6;
+            SetSymbolsListView();
 
-            var nameColumn = new OLVColumn("이름(현물)", "Name");
-            var flucColumn = new OLVColumn("분봉", "RateBfor");
-            var durColumn = new OLVColumn("지속", "AggReadyRow");
-            var winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
-            var proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
-            nameColumn.FreeSpaceProportion = nameColumnSize;
-            flucColumn.FreeSpaceProportion = flucColumnSize;
-            durColumn.FreeSpaceProportion = durColumnSize;
-            winColumn.FreeSpaceProportion = winColumnSize;
-            proColumn.FreeSpaceProportion = proColumnSize;
-            spotListView.AllColumns.Add(nameColumn);
-            spotListView.AllColumns.Add(flucColumn);
-            spotListView.AllColumns.Add(durColumn);
-            spotListView.AllColumns.Add(winColumn);
-            spotListView.AllColumns.Add(proColumn);
-            spotListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
-
-            nameColumn = new OLVColumn("이름(선물U)", "Name");
-            flucColumn = new OLVColumn("분봉", "RateBfor");
-            durColumn = new OLVColumn("지속", "AggReadyRow");
-            winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
-            proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
-            nameColumn.FreeSpaceProportion = nameColumnSize;
-            flucColumn.FreeSpaceProportion = flucColumnSize;
-            durColumn.FreeSpaceProportion = durColumnSize;
-            winColumn.FreeSpaceProportion = winColumnSize;
-            proColumn.FreeSpaceProportion = proColumnSize;
-            futureUListView.AllColumns.Add(nameColumn);
-            futureUListView.AllColumns.Add(flucColumn);
-            futureUListView.AllColumns.Add(durColumn);
-            futureUListView.AllColumns.Add(winColumn);
-            futureUListView.AllColumns.Add(proColumn);
-            futureUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
-
-            nameColumn = new OLVColumn("이름(선물C)", "Name");
-            flucColumn = new OLVColumn("분봉", "RateBfor");
-            durColumn = new OLVColumn("지속", "AggReadyRow");
-            winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
-            proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
-            nameColumn.FreeSpaceProportion = nameColumnSize;
-            flucColumn.FreeSpaceProportion = flucColumnSize;
-            durColumn.FreeSpaceProportion = durColumnSize;
-            winColumn.FreeSpaceProportion = winColumnSize;
-            proColumn.FreeSpaceProportion = proColumnSize;
-            futureCListView.AllColumns.Add(nameColumn);
-            futureCListView.AllColumns.Add(flucColumn);
-            futureCListView.AllColumns.Add(durColumn);
-            futureCListView.AllColumns.Add(winColumn);
-            futureCListView.AllColumns.Add(proColumn);
-            futureCListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+            SetMainListView();
         }
         void SetComponentsLocationAndSize()
         {
             WindowState = FormWindowState.Maximized;
 
+            SetChartLocationAndSize();
+
+            SetMainTabControlLocationAndSize();
+
+            SetSymbolsListViewLocationAndSize();
+        }
+        void SetChartLocationAndSize()
+        {
             chartTabControl.Location = new Point(0, 0);
             chartTabControl.Size = new Size((int)(Screen.GetWorkingArea(this).Size.Width * 0.8), (int)(Screen.GetWorkingArea(this).Size.Height * 0.8));
-            chartTabPageSec.Location = new Point(0, 0);
-            chartTabPageSec.Size = new Size(chartTabControl.Size.Width, chartTabControl.Size.Height - chartTabControl.ItemSize.Height);
-            chartTabPageMin.Location = chartTabPageSec.Location;
-            chartTabPageMin.Size = chartTabPageSec.Size;
+
+            secChartTab.Size = new Size(chartTabControl.Size.Width - 8, chartTabControl.Size.Height - 26);
+            minChartTab.Size = secChartTab.Size;
+
             marketComboBox.Size = new Size(60, nameTextBox.Size.Height);
             marketComboBox.Location = chartTabControl.Location;
             marketComboBox.SelectedItem = marketComboBox.Items[0];
@@ -202,8 +298,8 @@ namespace BinanceHand
             nameTextBox.Location = new Point(marketComboBox.Location.X + marketComboBox.Size.Width, marketComboBox.Location.Y);
             nameTextBox.BringToFront();
 
-            chart1.Location = new Point(0, 0);
-            chart1.Size = new Size(chartTabPageSec.Size.Width - 5, chartTabPageSec.Size.Height - 15);
+            chart1.Location = new Point(3, 3);
+            chart1.Size = new Size(secChartTab.Size.Width - 8, secChartTab.Size.Height - 8);
             chart2.Location = chart1.Location;
             chart2.Size = chart1.Size;
 
@@ -217,17 +313,89 @@ namespace BinanceHand
             timeDiffTextBox.Size = new Size(30, amtTextBox.Size.Height);
             timeDiffTextBox.BackColor = chart1.BackColor;
             timeDiffTextBox.BringToFront();
+        }
+        void SetMainTabControlLocationAndSize()
+        {
+            mainTabControl.Location = new Point(chartTabControl.Location.X, chartTabControl.Location.Y + chartTabControl.Size.Height);
+            mainTabControl.Size = new Size((int)(Screen.GetWorkingArea(this).Size.Width * 0.5), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 30);
 
-            logTabControl.Location = new Point(chartTabControl.Location.X, chartTabControl.Location.Y + chartTabControl.Size.Height);
-            logTabControl.Size = new Size((int)(Screen.GetWorkingArea(this).Size.Width * 0.5), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 30);
-            logTabPage.Location = new Point(0, 0);
-            logTabPage.Size = new Size(logTabControl.Size.Width, logTabControl.Size.Height - logTabControl.ItemSize.Height);
-            logListBox.Location = new Point(0, 0);
-            logListBox.Size = new Size(logTabPage.Size.Width, logTabPage.Size.Height);
+            futuresUTab.Size = new Size(mainTabControl.Size.Width - 8, mainTabControl.Size.Height - 26);
+            logTab.Size = futuresUTab.Size;
 
+            futuresUTabControl.Location = chart1.Location;
+            futuresUTabControl.Size = new Size(futuresUTab.Size.Width - 8, futuresUTab.Size.Height - 8);
+
+            FUMarginRatioTextBox0.Location =
+                new Point(futuresUTabControl.Location.X + futuresUTabControl.Size.Width - FUMarginRatioTextBox0.Size.Width - FUMarginRatioTextBox1.Size.Width
+                    - FUMaintMarginTextBox0.Size.Width - FUMaintMarginTextBox1.Size.Width - FUMarginBalanceTextBox0.Size.Width - FUMarginBalanceTextBox1.Size.Width
+                    - FUAvailBalanceTextBox0.Size.Width - FUAvailBalanceTextBox1.Size.Width - FUBalanceTextBox0.Size.Width - FUBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+            FUMarginRatioTextBox1.Location =
+                new Point(FUMarginRatioTextBox0.Location.X + FUMarginRatioTextBox0.Size.Width, futuresUTabControl.Location.Y);
+            FUMaintMarginTextBox0.Location =
+                new Point(FUMarginRatioTextBox1.Location.X + FUMarginRatioTextBox1.Size.Width, futuresUTabControl.Location.Y);
+            FUMaintMarginTextBox1.Location =
+                new Point(FUMaintMarginTextBox0.Location.X + FUMaintMarginTextBox0.Size.Width, futuresUTabControl.Location.Y);
+            FUMarginBalanceTextBox0.Location = 
+                new Point(FUMaintMarginTextBox1.Location.X + FUMaintMarginTextBox1.Size.Width, futuresUTabControl.Location.Y);
+            FUMarginBalanceTextBox1.Location =
+                new Point(FUMarginBalanceTextBox0.Location.X + FUMarginBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+            FUAvailBalanceTextBox0.Location =
+                new Point(FUMarginBalanceTextBox1.Location.X + FUMarginBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+            FUAvailBalanceTextBox1.Location =
+                new Point(FUAvailBalanceTextBox0.Location.X + FUAvailBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+            FUBalanceTextBox0.Location =
+                new Point(FUAvailBalanceTextBox1.Location.X + FUAvailBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+            FUBalanceTextBox1.Location =
+                new Point(FUBalanceTextBox0.Location.X + FUBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+            FUMarginRatioTextBox0.BringToFront();
+            FUMarginRatioTextBox1.BringToFront();
+            FUMaintMarginTextBox0.BringToFront();
+            FUMaintMarginTextBox1.BringToFront();
+            FUMarginBalanceTextBox0.BringToFront();
+            FUMarginBalanceTextBox1.BringToFront();
+            FUAvailBalanceTextBox0.BringToFront();
+            FUAvailBalanceTextBox1.BringToFront();
+            FUBalanceTextBox0.BringToFront();
+            FUBalanceTextBox1.BringToFront();
+            FUMarginRatioTextBox0.BackColor = Color.FromArgb(futuresUTab.BackColor.R, futuresUTab.BackColor.G, futuresUTab.BackColor.B);
+            FUMarginRatioTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUMaintMarginTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUMaintMarginTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUMarginBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUMarginBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUAvailBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUAvailBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
+
+            FUPositionTab.Size = new Size(futuresUTabControl.Size.Width - 8, futuresUTabControl.Size.Height - 26);
+            FUOpenOrdersTab.Size = FUPositionTab.Size;
+            FUOrderHistoryTab.Size = FUPositionTab.Size;
+            FUTradeHistoryTab.Size = FUPositionTab.Size;
+            FUTransactionHistoryTab.Size = FUPositionTab.Size;
+            FUAssetsTab.Size = FUPositionTab.Size;
+
+            FUPositionListView.Location = chart1.Location;
+            FUPositionListView.Size = new Size(FUPositionTab.Size.Width - 8, FUPositionTab.Size.Height - 8);
+            FUOpenOrdersListView.Location = chart1.Location;
+            FUOpenOrdersListView.Size = FUPositionListView.Size;
+            FUOrderHistoryListView.Location = chart1.Location;
+            FUOrderHistoryListView.Size = FUPositionListView.Size;
+            FUTradeHistoryListView.Location = chart1.Location;
+            FUTradeHistoryListView.Size = FUPositionListView.Size;
+            FUTransHistoryListView.Location = chart1.Location;
+            FUTransHistoryListView.Size = FUPositionListView.Size;
+            FUAssetsListView.Location = chart1.Location;
+            FUAssetsListView.Size = FUPositionListView.Size;
+
+            logListBox.Location = chart1.Location;
+            logListBox.Size = futuresUTabControl.Size;
+        }
+        void SetSymbolsListViewLocationAndSize()
+        {
             spotKlineRcvTextBox.Size = new Size(25, 14);
-            spotListView.Location = new Point(logTabControl.Location.X + logTabControl.Size.Width, logTabControl.Location.Y);
-            spotListView.Size = new Size((Screen.GetWorkingArea(this).Size.Width - logTabControl.Size.Width) / 3, logTabControl.Size.Height - spotKlineRcvTextBox.Size.Height);
+            spotListView.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width, mainTabControl.Location.Y);
+            spotListView.Size = new Size((Screen.GetWorkingArea(this).Size.Width - mainTabControl.Size.Width) / 3, mainTabControl.Size.Height - spotKlineRcvTextBox.Size.Height);
             spotKlineRcvTextBox.Location = new Point(spotListView.Location.X, spotListView.Location.Y + spotListView.Size.Height + 3);
             spotKlineReqTextBox.Size = new Size(47, spotKlineRcvTextBox.Height);
             spotKlineReqTextBox.Location = new Point(spotKlineRcvTextBox.Location.X + spotKlineRcvTextBox.Size.Width, spotKlineRcvTextBox.Location.Y);
@@ -258,7 +426,8 @@ namespace BinanceHand
             futureCAggReqTextBox.Size = new Size(futureUAggReqTextBox.Width, spotKlineRcvTextBox.Height);
             futureCAggReqTextBox.Location = new Point(futureCAggRcvTextBox.Location.X + futureCAggRcvTextBox.Size.Width, futureCAggRcvTextBox.Location.Y);
         }
-        void ChartSetting()
+
+        void SetChart()
         {
             chart1.AxisViewChanged += (sender, e) => { AdjustChart(chart1); };
 
@@ -404,7 +573,96 @@ namespace BinanceHand
             seriesMsOrMdAmt.YAxisType = AxisType.Primary;
             seriesMsOrMdAmt.ChartArea = chartAreaMsMd.Name;
         }
-        int baseChartViewSticksSize = 120;
+        void SetSymbolsListView()
+        {
+            var nameColumnSize = 7;
+            var flucColumnSize = 3;
+            var durColumnSize = 3;
+            var winColumnSize = 6;
+            var proColumnSize = 6;
+
+            var nameColumn = new OLVColumn("이름(현물)", "Name");
+            var flucColumn = new OLVColumn("분봉", "RateBfor");
+            var durColumn = new OLVColumn("지속", "AggReadyRow");
+            var winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
+            var proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
+            nameColumn.FreeSpaceProportion = nameColumnSize;
+            flucColumn.FreeSpaceProportion = flucColumnSize;
+            durColumn.FreeSpaceProportion = durColumnSize;
+            winColumn.FreeSpaceProportion = winColumnSize;
+            proColumn.FreeSpaceProportion = proColumnSize;
+            spotListView.AllColumns.Add(nameColumn);
+            spotListView.AllColumns.Add(flucColumn);
+            spotListView.AllColumns.Add(durColumn);
+            spotListView.AllColumns.Add(winColumn);
+            spotListView.AllColumns.Add(proColumn);
+            spotListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+
+            nameColumn = new OLVColumn("이름(선물U)", "Name");
+            flucColumn = new OLVColumn("분봉", "RateBfor");
+            durColumn = new OLVColumn("지속", "AggReadyRow");
+            winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
+            proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
+            nameColumn.FreeSpaceProportion = nameColumnSize;
+            flucColumn.FreeSpaceProportion = flucColumnSize;
+            durColumn.FreeSpaceProportion = durColumnSize;
+            winColumn.FreeSpaceProportion = winColumnSize;
+            proColumn.FreeSpaceProportion = proColumnSize;
+            futureUListView.AllColumns.Add(nameColumn);
+            futureUListView.AllColumns.Add(flucColumn);
+            futureUListView.AllColumns.Add(durColumn);
+            futureUListView.AllColumns.Add(winColumn);
+            futureUListView.AllColumns.Add(proColumn);
+            futureUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+
+            nameColumn = new OLVColumn("이름(선물C)", "Name");
+            flucColumn = new OLVColumn("분봉", "RateBfor");
+            durColumn = new OLVColumn("지속", "AggReadyRow");
+            winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
+            proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
+            nameColumn.FreeSpaceProportion = nameColumnSize;
+            flucColumn.FreeSpaceProportion = flucColumnSize;
+            durColumn.FreeSpaceProportion = durColumnSize;
+            winColumn.FreeSpaceProportion = winColumnSize;
+            proColumn.FreeSpaceProportion = proColumnSize;
+            futureCListView.AllColumns.Add(nameColumn);
+            futureCListView.AllColumns.Add(flucColumn);
+            futureCListView.AllColumns.Add(durColumn);
+            futureCListView.AllColumns.Add(winColumn);
+            futureCListView.AllColumns.Add(proColumn);
+            futureCListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+        }
+        void SetMainListView()
+        {
+            var nameColumn = new OLVColumn("Symbol", "Name");
+            var leverageColumn = new OLVColumn("Leverage", "Leverage");
+            var sizeColumn = new OLVColumn("Size", "Size");
+            var entryPriceColumn = new OLVColumn("Entry Price", "EntryPrice");
+            var markPriceColumn = new OLVColumn("Mark Price", "MarkPrice");
+            var initialmarginColumn = new OLVColumn("Initial Margin", "InitialMargin");
+            var PNLColumn = new OLVColumn("PNL", "PNL");
+            var ROEColumn = new OLVColumn("ROE(%)", "ROE");
+            nameColumn.FreeSpaceProportion = 3; 
+            leverageColumn.FreeSpaceProportion = 2;
+            sizeColumn.FreeSpaceProportion = 2;
+            entryPriceColumn.FreeSpaceProportion = 2;
+            markPriceColumn.FreeSpaceProportion = 2;
+            initialmarginColumn.FreeSpaceProportion = 2;
+            PNLColumn.FreeSpaceProportion = 2;
+            ROEColumn.FreeSpaceProportion = 2;
+            FUPositionListView.AllColumns.Add(nameColumn);
+            FUPositionListView.AllColumns.Add(leverageColumn);
+            FUPositionListView.AllColumns.Add(sizeColumn);
+            FUPositionListView.AllColumns.Add(entryPriceColumn);
+            FUPositionListView.AllColumns.Add(markPriceColumn);
+            FUPositionListView.AllColumns.Add(initialmarginColumn);
+            FUPositionListView.AllColumns.Add(PNLColumn);
+            FUPositionListView.AllColumns.Add(ROEColumn);
+            FUPositionListView.Columns.AddRange(new ColumnHeader[] 
+                { nameColumn, leverageColumn, sizeColumn, entryPriceColumn, markPriceColumn, 
+                    initialmarginColumn, PNLColumn, ROEColumn });
+        }
+
         void ShowChart(ItemData itemData)
         {
             if (itemData.isChartShowing)
@@ -677,9 +935,11 @@ namespace BinanceHand
             chart.ChartAreas[0].AxisY.MajorGrid.Interval = (double)priceHigh * 0.005;
         }
 
+        #region SetItemDataList vars
         List<string>[] spotSymbolList = Enumerable.Range(0, 5).Select(i => new List<string>()).ToArray();
-        List<string> futureUSymbolList = new List<string>();
-        List<string> futureCSymbolList = new List<string>();
+        List<string> FUSymbolList = new List<string>();
+        List<string> futuresCSymbolList = new List<string>();
+        #endregion
         void SetItemDataList()
         {
             var exchangeInfo = client.Spot.System.GetExchangeInfo();
@@ -687,7 +947,7 @@ namespace BinanceHand
             foreach (var s in exchangeInfo.Data.Symbols)
             {
                 var itemData = new ItemData(s, null, null);
-                spotItemDataList.Add(itemData.Name, itemData);
+                SPOTItemDataList.Add(itemData.Name, itemData);
                 spotSymbolList[n / 300].Add(itemData.Name);
 
                 n++;
@@ -698,8 +958,8 @@ namespace BinanceHand
             foreach (var s in exchangeInfo2.Data.Symbols)
             {
                 var itemData = new ItemData(null, s, null);
-                futureUItemDataList.Add(itemData.Name, itemData);
-                futureUSymbolList.Add(itemData.Name);
+                FUItemDataList.Add(itemData.Name, itemData);
+                FUSymbolList.Add(itemData.Name);
 
                 n++;
             }
@@ -709,19 +969,25 @@ namespace BinanceHand
             foreach (var s in exchangeInfo3.Data.Symbols)
             {
                 var itemData = new ItemData(null, null, s);
-                futureCItemDataList.Add(itemData.Name, itemData);
-                futureCSymbolList.Add(itemData.Name);
+                FCItemDataList.Add(itemData.Name, itemData);
+                futuresCSymbolList.Add(itemData.Name);
 
                 n++;
             }
         }
-
+        #region Form1_Load vars
+        delegate void MarkUpdates(BinanceFuturesUsdtStreamMarkPrice data, ItemData itemData);
+        MarkUpdates markUpdates;
         delegate void AggUpdates(BinanceStreamAggregatedTrade data, ItemData itemData);
         AggUpdates aggUpdates;
         delegate void KlineUpdates(IBinanceStreamKlineData data, ItemData itemData);
         KlineUpdates klineUpdates;
+        #endregion
         void Form1_Load(object sender, EventArgs e)
         {
+            /*
+            SetItemDataList();
+
             aggUpdates += new AggUpdates(OnAggregatedTradeUpdates);
             klineUpdates += new KlineUpdates(OnKlineUpdates);
 
@@ -737,15 +1003,25 @@ namespace BinanceHand
             futureUKlineReqTextBox.Text = "/" + futureUSymbolList.Count + "(K)";
 
             socketClient.FuturesCoin.SubscribeToKlineUpdates(futureCSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, futureCItemDataList[data.Symbol]); });
-            futureCKlineReqTextBox.Text = "/" + futureCSymbolList.Count + "(K)";
+            futureCKlineReqTextBox.Text = "/" + futureCSymbolList.Count + "(K)";*/
+
+            markUpdates += new MarkUpdates(OnMarkPriceUpdates);
+
+            foreach (var itemData in FUItemDataList)
+                if (itemData.Value.Position)
+                    itemData.Value.markSub = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdates(itemData.Value.Name, 3000,
+                        data => { BeginInvoke(markUpdates, data, itemData.Value); }).Data;
         }
 
+
+        #region OnKlineUpdates vars
         short spotAggOnNow = 0;
         short futureUAggOnNow = 0;
         short futureCAggOnNow = 0;
         short spotKlineRcv = 0;
         short futureUKlineRcv = 0;
         short futureCKlineRcv = 0;
+        #endregion
         void OnKlineUpdates(IBinanceStreamKlineData data, ItemData itemData)
         {
             if (itemData.klineFirst)
@@ -896,9 +1172,11 @@ namespace BinanceHand
                 UpdateChartPoint(chart2, itemData.minStick);
             }
         }
+        #region OnAggregatedTradeUpdates vars
         short spotAggRcv = 0;
         short futureUAggRcv = 0;
         short futureCAggRcv = 0;
+        #endregion
         void OnAggregatedTradeUpdates(BinanceStreamAggregatedTrade data, ItemData itemData)
         {
             if (!itemData.isAggReady || !itemData.isAggOn)
@@ -1107,8 +1385,8 @@ namespace BinanceHand
             if (itemData.isChartShowing)
             {
                 timeDiffTextBox.Text = Math.Round((DateTime.UtcNow - data.TradeTime).TotalSeconds, 1).ToString();
-                amtTextBox.Text = data.Quantity.ToString("0.#############################");
-                priceTextBox.Text = data.Price.ToString("0.#############################");
+                amtTextBox.Text = data.Quantity.ToString(ForDecimalString);
+                priceTextBox.Text = data.Price.ToString(ForDecimalString);
                 if (data.BuyerIsMaker)
                 {
                     amtTextBox.ForeColor = mdAmtColor;
@@ -1125,9 +1403,46 @@ namespace BinanceHand
                 UpdateChartPoint(chart1, itemData.secStick);
             }
         }
+        void OnMarkPriceUpdates(BinanceFuturesUsdtStreamMarkPrice data, ItemData itemData)
+        {
+            if (itemData.Position)
+            {
+                itemData.MarkPrice = Math.Round(data.MarkPrice, 2);
+                itemData.notianalValue = data.MarkPrice * Math.Abs(itemData.Size);
+                itemData.InitialMargin = Math.Round(itemData.notianalValue / itemData.Leverage, 2);
+                itemData.PNL = Math.Round((itemData.MarkPrice - itemData.EntryPrice) * itemData.Size, 2);
+                itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
+
+                if (itemData.notianalValue <= itemData.brackets[itemData.nowBracketIndex].Floor)
+                    itemData.nowBracketIndex--;
+                else if (itemData.notianalValue > itemData.brackets[itemData.nowBracketIndex].Cap)
+                    itemData.nowBracketIndex++;
+
+                itemData.maintMargin = itemData.notianalValue * itemData.brackets[itemData.nowBracketIndex].MaintenanceMarginRatio;
+
+                FUMaintMargin = 0;
+                FUMarginBalance = FUBalance;
+                FUAvailableBalance = FUBalance;
+                foreach (ItemData i in FUPositionListView.Objects)
+                {
+                    FUMaintMargin += i.maintMargin;
+                    FUMarginBalance += i.PNL;
+                    FUAvailableBalance = FUAvailableBalance + i.PNL - i.InitialMargin;
+                }
+                FUMaintMarginTextBox1.Text = Math.Round(FUMaintMargin, 2).ToString();
+                FUMarginBalanceTextBox1.Text = Math.Round(FUMarginBalance, 2).ToString();
+                FUAvailBalanceTextBox1.Text = Math.Round(FUAvailableBalance, 2).ToString();
+                FUMarginRatioTextBox1.Text = Math.Round(FUMaintMargin / FUMarginBalance * 100, 2).ToString();
+
+                FUPositionListView.UpdateObject(itemData);
+            }
+        }
+
+        #region SetAggOn vars
         short spotAggReq = 0;
         short futureUAggReq = 0;
         short futureCAggReq = 0;
+        #endregion
         void SetAggOn(ItemData itemData, bool addObject)
         {
             itemData.isAggReady = true;
@@ -1150,7 +1465,7 @@ namespace BinanceHand
             itemData.secStick = new Stick();
             if (itemData.isSpot)
             {
-                itemData.sub = socketClient.Spot.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, spotItemDataList[data2.Symbol]); }).Data;
+                itemData.sub = socketClient.Spot.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, SPOTItemDataList[data2.Symbol]); }).Data;
                 if (addObject)
                     spotListView.AddObject(itemData);
                 spotListView.RemoveObject(itemData);
@@ -1162,7 +1477,7 @@ namespace BinanceHand
             }
             else if (itemData.isFutureUsdt)
             {
-                itemData.sub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, futureUItemDataList[data2.Symbol]); }).Data;
+                itemData.sub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
                 if (addObject)
                     futureUListView.AddObject(itemData);
                 futureUListView.RemoveObject(itemData);
@@ -1174,7 +1489,7 @@ namespace BinanceHand
             }
             else
             {
-                itemData.sub = socketClient.FuturesCoin.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, futureCItemDataList[data2.Symbol]); }).Data;
+                itemData.sub = socketClient.FuturesCoin.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FCItemDataList[data2.Symbol]); }).Data;
                 if (addObject)
                     futureCListView.AddObject(itemData);
                 futureCListView.RemoveObject(itemData);
@@ -1311,8 +1626,10 @@ namespace BinanceHand
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            if (listenThread != null)
-                listenThread.Abort();
+
+            if (tokenSource != null)
+                tokenSource.Cancel();
+
             socketClient.UnsubscribeAll();
             //dbHelper.Close();
         }
@@ -1342,30 +1659,30 @@ namespace BinanceHand
             switch (marketComboBox.SelectedItem.ToString())
             {
                 case "S":
-                    if (!spotItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                    if (!SPOTItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
                     {
                         MessageBox.Show("No symbol");
                         return;
                     }
-                    ShowChart(spotItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                    ShowChart(SPOTItemDataList[nameTextBox.Text.Trim().ToUpper()]);
                     break;
 
                 case "F_U":
-                    if (!futureUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                    if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
                     {
                         MessageBox.Show("No symbol");
                         return;
                     }
-                    ShowChart(futureUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                    ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
                     break;
 
                 case "F_C":
-                    if (!futureCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                    if (!FCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
                     {
                         MessageBox.Show("No symbol");
                         return;
                     }
-                    ShowChart(futureCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                    ShowChart(FCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
                     break;
 
                 default:
