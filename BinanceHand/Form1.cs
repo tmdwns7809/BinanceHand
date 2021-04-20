@@ -21,6 +21,7 @@ using Binance.Net.Interfaces;
 using System.Windows.Forms.DataVisualization.Charting;
 using BrightIdeasSoftware;
 using Binance.Net.Objects.Futures.MarketStream;
+using Binance.Net.Objects.Futures.UserStream;
 
 namespace BinanceHand
 {
@@ -53,7 +54,7 @@ namespace BinanceHand
         decimal FUMarginBalance;
         decimal FUMaintMargin;
         decimal FUAvailableBalance;
-        decimal FUBalance;
+        decimal FUWalletBalance;
         string ForDecimalString = "0.#############################";
         #endregion
 
@@ -70,13 +71,14 @@ namespace BinanceHand
         BinanceClient client;
         BinanceSocketClient socketClient;
         CancellationTokenSource tokenSource = new CancellationTokenSource();
+        bool testnet = true;
         #endregion
         void SetClientAndKey()
         {
             var clientOption = new BinanceClientOptions();
             var socketOption = new BinanceSocketClientOptions();
 
-            if (true)       //testnet
+            if (testnet)       //testnet
             {
                 if (true)
                 {   /*future*/
@@ -111,153 +113,6 @@ namespace BinanceHand
             client = new BinanceClient(clientOption);
             socketClient = new BinanceSocketClient(socketOption);
 
-            SubscribeToUserStream(true, true);
-        }
-        void SubscribeToUserStream(bool testnet, bool testnetFutures)
-        {
-            string listenKey;
-
-            if (testnet)
-            {
-                if (testnetFutures)
-                    listenKey = client.FuturesUsdt.UserStream.StartUserStream().Data;
-                else
-                    listenKey = client.Spot.UserStream.StartUserStream().Data;
-            }
-            else
-                listenKey = client.Spot.UserStream.StartUserStream().Data;
-
-            var _keepAliveTask = Task.Run(async () =>
-            {
-                while (true)
-                {
-                    if (testnet)
-                    {
-                        if (testnetFutures)
-                            await client.FuturesUsdt.UserStream.KeepAliveUserStreamAsync(listenKey);
-                        else
-                            await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
-                    }
-                    else
-                        await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
-
-                    await Task.Delay(TimeSpan.FromMinutes(30));
-                }
-            }, tokenSource.Token);
-
-            if (testnet)
-            {
-                if (testnetFutures)
-                    socketClient.FuturesUsdt.SubscribeToUserDataUpdates(listenKey, 
-                        data => {
-                            var a = data;
-                        },
-                        data => {
-                            var a = data;
-                        },
-                        data => {
-                            var a = data;
-                        },
-                        data => {
-                            var a = data;
-                        },
-                        data => {
-                            var a = data;
-                        });
-                else
-                    socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
-            }
-            else
-                socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
-
-
-            mainTabControl.SelectedTab = futuresUTab;
-            futuresUTabControl.SelectedTab = FUPositionTab;
-
-
-            var exchangeInfo2 = client.FuturesUsdt.System.GetExchangeInfo();
-            var n = 0;
-            foreach (var s in exchangeInfo2.Data.Symbols)
-            {
-                var itemData = new ItemData(null, s, null);
-                FUItemDataList.Add(itemData.Name, itemData);
-                FUSymbolList.Add(itemData.Name);
-
-                n++;
-            }
-
-            var ga = client.FuturesUsdt.Account.GetAccountInfo();
-            foreach (var s in ga.Data.Assets)
-            {
-                if (s.Asset == "USDT")
-                {
-                    FUMarginBalance = s.MarginBalance;
-                    FUMarginBalanceTextBox1.Text = Math.Round(FUMarginBalance, 2).ToString();
-                    FUAvailableBalance = s.AvailableBalance;
-                    FUAvailBalanceTextBox1.Text = Math.Round(FUAvailableBalance, 2).ToString();
-                    FUBalance = s.WalletBalance;
-                    FUBalanceTextBox1.Text = Math.Round(FUBalance, 2).ToString();
-                }
-            }
-            foreach (var s in ga.Data.Positions)
-            {
-                if (s.EntryPrice != 0m)
-                {
-                    var itemData = FUItemDataList[s.Symbol];
-
-                    itemData.InitialMargin = Math.Round(s.InitialMargin, 2); 
-                    itemData.maintMargin = s.MaintMargin;
-
-                    FUPositionListView.AddObject(itemData);
-                }
-            }
-
-            FUMaintMargin = 0;
-            foreach (ItemData itemData in FUPositionListView.Objects)
-                FUMaintMargin += itemData.maintMargin;
-            FUMaintMarginTextBox1.Text = Math.Round(FUMaintMargin, 2).ToString();
-
-            var gp = client.FuturesUsdt.GetPositionInformation();
-            foreach (var s in gp.Data)
-            {
-                if (s.MarginType == FuturesMarginType.Isolated)
-                {
-                    var cm = client.FuturesUsdt.ChangeMarginType(s.Symbol, FuturesMarginType.Cross);
-                    if (!cm.Success)
-                        MessageBox.Show("마진 타입 변경 실패");
-                }
-
-                if (s.EntryPrice != 0m)
-                {
-                    var itemData = FUItemDataList[s.Symbol];
-
-                    itemData.Position = true;
-                    itemData.Leverage = s.Leverage;
-                    itemData.MarkPrice = Math.Round(s.MarkPrice, 2);
-                    itemData.Size = s.PositionAmount;
-                    itemData.notianalValue = s.MarkPrice * Math.Abs(itemData.Size);
-                    itemData.EntryPrice = Math.Round(s.EntryPrice, 2);
-                    itemData.PNL = Math.Round(s.UnrealizedProfit, 2);
-                    itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
-
-                    if (itemData.Size > 0)
-                        itemData.PositionLong = true;
-                    else
-                        itemData.PositionLong = false;
-
-                    foreach (var brackets in client.FuturesUsdt.GetBrackets(s.Symbol).Data)
-                        itemData.brackets = brackets.Brackets.ToList();
-                    for (int i = 0; i < itemData.brackets.Count; i++)
-                        if (itemData.notianalValue > itemData.brackets[i].Floor && itemData.notianalValue <= itemData.brackets[i].Cap)
-                            itemData.nowBracketIndex = i;
-
-                    FUPositionListView.UncheckObject(itemData);
-                }
-            }
-
-            var gbr = client.FuturesUsdt.GetBrackets("BTCUSDT");
-            var gI = client.FuturesUsdt.GetIncomeHistory();
-            var gpm = client.FuturesUsdt.GetPositionMode();
         }
 
         void SetComponents()
@@ -272,6 +127,8 @@ namespace BinanceHand
             SetSymbolsListView();
 
             SetMainListView();
+
+            SetOrderView();
         }
         void SetComponentsLocationAndSize()
         {
@@ -282,6 +139,8 @@ namespace BinanceHand
             SetMainTabControlLocationAndSize();
 
             SetSymbolsListViewLocationAndSize();
+
+            SetOrderViewLocationAndSize();
         }
         void SetChartLocationAndSize()
         {
@@ -293,7 +152,6 @@ namespace BinanceHand
 
             marketComboBox.Size = new Size(60, nameTextBox.Size.Height);
             marketComboBox.Location = chartTabControl.Location;
-            marketComboBox.SelectedItem = marketComboBox.Items[0];
             marketComboBox.BringToFront();
             nameTextBox.Location = new Point(marketComboBox.Location.X + marketComboBox.Size.Width, marketComboBox.Location.Y);
             nameTextBox.BringToFront();
@@ -317,7 +175,7 @@ namespace BinanceHand
         void SetMainTabControlLocationAndSize()
         {
             mainTabControl.Location = new Point(chartTabControl.Location.X, chartTabControl.Location.Y + chartTabControl.Size.Height);
-            mainTabControl.Size = new Size((int)(Screen.GetWorkingArea(this).Size.Width * 0.5), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 30);
+            mainTabControl.Size = new Size((int)(chartTabControl.Size.Width * 0.7), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 30);
 
             futuresUTab.Size = new Size(mainTabControl.Size.Width - 8, mainTabControl.Size.Height - 26);
             logTab.Size = futuresUTab.Size;
@@ -328,7 +186,7 @@ namespace BinanceHand
             FUMarginRatioTextBox0.Location =
                 new Point(futuresUTabControl.Location.X + futuresUTabControl.Size.Width - FUMarginRatioTextBox0.Size.Width - FUMarginRatioTextBox1.Size.Width
                     - FUMaintMarginTextBox0.Size.Width - FUMaintMarginTextBox1.Size.Width - FUMarginBalanceTextBox0.Size.Width - FUMarginBalanceTextBox1.Size.Width
-                    - FUAvailBalanceTextBox0.Size.Width - FUAvailBalanceTextBox1.Size.Width - FUBalanceTextBox0.Size.Width - FUBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+                    - FUAvailBalanceTextBox0.Size.Width - FUAvailBalanceTextBox1.Size.Width - FUWalletBalanceTextBox0.Size.Width - FUWalletBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
             FUMarginRatioTextBox1.Location =
                 new Point(FUMarginRatioTextBox0.Location.X + FUMarginRatioTextBox0.Size.Width, futuresUTabControl.Location.Y);
             FUMaintMarginTextBox0.Location =
@@ -343,10 +201,10 @@ namespace BinanceHand
                 new Point(FUMarginBalanceTextBox1.Location.X + FUMarginBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
             FUAvailBalanceTextBox1.Location =
                 new Point(FUAvailBalanceTextBox0.Location.X + FUAvailBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
-            FUBalanceTextBox0.Location =
+            FUWalletBalanceTextBox0.Location =
                 new Point(FUAvailBalanceTextBox1.Location.X + FUAvailBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
-            FUBalanceTextBox1.Location =
-                new Point(FUBalanceTextBox0.Location.X + FUBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+            FUWalletBalanceTextBox1.Location =
+                new Point(FUWalletBalanceTextBox0.Location.X + FUWalletBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
             FUMarginRatioTextBox0.BringToFront();
             FUMarginRatioTextBox1.BringToFront();
             FUMaintMarginTextBox0.BringToFront();
@@ -355,8 +213,8 @@ namespace BinanceHand
             FUMarginBalanceTextBox1.BringToFront();
             FUAvailBalanceTextBox0.BringToFront();
             FUAvailBalanceTextBox1.BringToFront();
-            FUBalanceTextBox0.BringToFront();
-            FUBalanceTextBox1.BringToFront();
+            FUWalletBalanceTextBox0.BringToFront();
+            FUWalletBalanceTextBox1.BringToFront();
             FUMarginRatioTextBox0.BackColor = Color.FromArgb(futuresUTab.BackColor.R, futuresUTab.BackColor.G, futuresUTab.BackColor.B);
             FUMarginRatioTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
             FUMaintMarginTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
@@ -365,8 +223,8 @@ namespace BinanceHand
             FUMarginBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
             FUAvailBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
             FUAvailBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
-            FUBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
-            FUBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUWalletBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
+            FUWalletBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
 
             FUPositionTab.Size = new Size(futuresUTabControl.Size.Width - 8, futuresUTabControl.Size.Height - 26);
             FUOpenOrdersTab.Size = FUPositionTab.Size;
@@ -394,8 +252,10 @@ namespace BinanceHand
         void SetSymbolsListViewLocationAndSize()
         {
             spotKlineRcvTextBox.Size = new Size(25, 14);
-            spotListView.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width, mainTabControl.Location.Y);
-            spotListView.Size = new Size((Screen.GetWorkingArea(this).Size.Width - mainTabControl.Size.Width) / 3, mainTabControl.Size.Height - spotKlineRcvTextBox.Size.Height);
+            spotGroupBox.Location = new Point(chartTabControl.Location.X + chartTabControl.Size.Width, chartTabControl.Location.Y);
+            spotGroupBox.Size = new Size(Screen.GetWorkingArea(this).Size.Width - chartTabControl.Size.Width, chartTabControl.Size.Height / 3);
+            spotListView.Location = new Point(3, 15);
+            spotListView.Size = new Size(spotGroupBox.Size.Width - 6, spotGroupBox.Size.Height - spotListView.Location.Y - spotKlineRcvTextBox.Size.Height - 6);
             spotKlineRcvTextBox.Location = new Point(spotListView.Location.X, spotListView.Location.Y + spotListView.Size.Height + 3);
             spotKlineReqTextBox.Size = new Size(47, spotKlineRcvTextBox.Height);
             spotKlineReqTextBox.Location = new Point(spotKlineRcvTextBox.Location.X + spotKlineRcvTextBox.Size.Width, spotKlineRcvTextBox.Location.Y);
@@ -404,31 +264,107 @@ namespace BinanceHand
             spotAggReqTextBox.Size = new Size(30, spotKlineRcvTextBox.Height);
             spotAggReqTextBox.Location = new Point(spotAggRcvTextBox.Location.X + spotAggRcvTextBox.Size.Width, spotAggRcvTextBox.Location.Y);
 
-            futureUListView.Location = new Point(spotListView.Location.X + spotListView.Size.Width, spotListView.Location.Y);
-            futureUListView.Size = new Size(spotListView.Size.Width, spotListView.Size.Height);
-            futureUKlineRcvTextBox.Size = new Size(spotKlineRcvTextBox.Width, spotKlineRcvTextBox.Height);
-            futureUKlineRcvTextBox.Location = new Point(futureUListView.Location.X, spotKlineRcvTextBox.Location.Y);
-            futureUKlineReqTextBox.Size = new Size(spotKlineReqTextBox.Width, spotKlineRcvTextBox.Height);
-            futureUKlineReqTextBox.Location = new Point(futureUKlineRcvTextBox.Location.X + futureUKlineRcvTextBox.Size.Width, futureUKlineRcvTextBox.Location.Y);
-            futureUAggRcvTextBox.Size = new Size(spotAggRcvTextBox.Width, spotKlineRcvTextBox.Height);
-            futureUAggRcvTextBox.Location = new Point(futureUKlineReqTextBox.Location.X + futureUKlineReqTextBox.Size.Width + futureUKlineRcvTextBox.Size.Width, futureUKlineReqTextBox.Location.Y);
-            futureUAggReqTextBox.Size = new Size(spotAggReqTextBox.Width, spotKlineRcvTextBox.Height);
-            futureUAggReqTextBox.Location = new Point(futureUAggRcvTextBox.Location.X + futureUAggRcvTextBox.Size.Width, futureUAggRcvTextBox.Location.Y);
+            FUGroupBox.Location = new Point(spotGroupBox.Location.X, spotGroupBox.Location.Y + spotGroupBox.Size.Height);
+            FUGroupBox.Size = spotGroupBox.Size;
+            futureUListView.Location = spotListView.Location;
+            futureUListView.Size = spotListView.Size;
+            futureUKlineRcvTextBox.Size = spotKlineRcvTextBox.Size;
+            futureUKlineRcvTextBox.Location = spotKlineRcvTextBox.Location;
+            futureUKlineReqTextBox.Size = spotKlineReqTextBox.Size;
+            futureUKlineReqTextBox.Location = spotKlineReqTextBox.Location;
+            futureUAggRcvTextBox.Size = spotAggRcvTextBox.Size;
+            futureUAggRcvTextBox.Location = spotAggRcvTextBox.Location;
+            futureUAggReqTextBox.Size = spotAggReqTextBox.Size;
+            futureUAggReqTextBox.Location = spotAggReqTextBox.Location;
 
-            futureCListView.Location = new Point(futureUListView.Location.X + futureUListView.Size.Width, futureUListView.Location.Y);
-            futureCListView.Size = new Size(spotListView.Size.Width, spotListView.Size.Height);
-            futureCKlineRcvTextBox.Size = new Size(futureUKlineRcvTextBox.Width, spotKlineRcvTextBox.Height);
-            futureCKlineRcvTextBox.Location = new Point(futureCListView.Location.X, spotKlineRcvTextBox.Location.Y);
-            futureUKlineReqTextBox.Size = new Size(futureUKlineReqTextBox.Width, spotKlineRcvTextBox.Height);
-            futureCKlineReqTextBox.Location = new Point(futureCKlineRcvTextBox.Location.X + futureCKlineRcvTextBox.Size.Width, futureCKlineRcvTextBox.Location.Y);
-            futureCAggRcvTextBox.Size = new Size(futureUAggRcvTextBox.Width, spotKlineRcvTextBox.Height);
-            futureCAggRcvTextBox.Location = new Point(futureCKlineReqTextBox.Location.X + futureCKlineReqTextBox.Size.Width + futureCKlineRcvTextBox.Size.Width, futureCKlineReqTextBox.Location.Y);
-            futureCAggReqTextBox.Size = new Size(futureUAggReqTextBox.Width, spotKlineRcvTextBox.Height);
-            futureCAggReqTextBox.Location = new Point(futureCAggRcvTextBox.Location.X + futureCAggRcvTextBox.Size.Width, futureCAggRcvTextBox.Location.Y);
+            FCGroupBox.Location = new Point(FUGroupBox.Location.X, FUGroupBox.Location.Y + FUGroupBox.Size.Height);
+            FCGroupBox.Size = spotGroupBox.Size;
+            futureCListView.Location = spotListView.Location;
+            futureCListView.Size = spotListView.Size;
+            futureCKlineRcvTextBox.Size = spotKlineRcvTextBox.Size;
+            futureCKlineRcvTextBox.Location = spotKlineRcvTextBox.Location;
+            futureCKlineReqTextBox.Size = spotKlineReqTextBox.Size;
+            futureCKlineReqTextBox.Location = spotKlineReqTextBox.Location;
+            futureCAggRcvTextBox.Size = spotAggRcvTextBox.Size;
+            futureCAggRcvTextBox.Location = spotAggRcvTextBox.Location;
+            futureCAggReqTextBox.Size = spotAggReqTextBox.Size;
+            futureCAggReqTextBox.Location = spotAggReqTextBox.Location;
+        }
+        void SetOrderViewLocationAndSize()
+        {
+            orderGroupBox.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width, mainTabControl.Location.Y);
+            orderGroupBox.Size = new Size(chartTabControl.Size.Width - mainTabControl.Size.Width, mainTabControl.Size.Height);
+
+            buyButton.Size = new Size((orderGroupBox.Size.Width - 3 * 3) / 2, orderGroupBox.Size.Height / 5 - 3);
+            buyButton.Location = new Point(3, orderGroupBox.Size.Height - 3 - buyButton.Size.Height);
+            sellButton.Size = buyButton.Size;
+            sellButton.Location = new Point(buyButton.Location.X + buyButton.Size.Width + 3, buyButton.Location.Y);
+
+            ROCheckBox.Location = new Point(buyButton.Location.X + 3, buyButton.Location.Y - ROCheckBox.Size.Height - 3);
+
+            GTCRadioButton.Location = new Point(5, 15);
+            IOCRadioButton.Location = new Point(GTCRadioButton.Location.X + GTCRadioButton.Size.Width + 3, GTCRadioButton.Location.Y);
+            PORadioButton.Location = new Point(IOCRadioButton.Location.X + IOCRadioButton.Size.Width + 3, GTCRadioButton.Location.Y);
+            leverageTextBox0.Location = new Point(PORadioButton.Location.X + PORadioButton.Size.Width + 20, GTCRadioButton.Location.Y);
+            leverageTextBox1.Location = new Point(leverageTextBox0.Location.X + leverageTextBox0.Size.Width + 3, leverageTextBox0.Location.Y - leverageTextBox0.Size.Height + leverageTextBox1.Size.Height);
+
+            orderPriceTextBox0.Location = new Point(GTCRadioButton.Location.X, GTCRadioButton.Location.Y + GTCRadioButton.Size.Height + 10 - orderPriceTextBox1.Size.Height + orderPriceTextBox0.Size.Height);
+            orderPriceTextBox1.Location = new Point(orderPriceTextBox0.Location.X + orderPriceTextBox0.Size.Width + 3, orderPriceTextBox0.Location.Y - orderPriceTextBox0.Size.Height + orderPriceTextBox1.Size.Height);
+            orderPriceTextBox2.Location = new Point(orderPriceTextBox1.Location.X + orderPriceTextBox1.Size.Width + 3, orderPriceTextBox0.Location.Y);
+            marketRadioButton.Location = new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 10, orderPriceTextBox1.Location.Y);
+
+            orderSizeTextBox0.Location = new Point(orderPriceTextBox0.Location.X, orderPriceTextBox0.Location.Y + orderPriceTextBox0.Size.Height + 10 - orderSizeTextBox1.Size.Height + orderSizeTextBox0.Size.Height);
+            orderSizeTextBox1.Location = new Point(orderSizeTextBox0.Location.X + orderSizeTextBox0.Size.Width + 3, orderSizeTextBox0.Location.Y - orderSizeTextBox0.Size.Height + orderSizeTextBox1.Size.Height);
+            miniSizeCheckBox.Location = new Point(marketRadioButton.Location.X, orderSizeTextBox1.Location.Y);
+
+            autoSizeCheckBox.Location = new Point(orderSizeTextBox0.Location.X + 20, orderSizeTextBox0.Location.Y + orderSizeTextBox0.Size.Height + 10);
+            autoSizeTextBox0.Location = new Point(autoSizeCheckBox.Location.X + autoSizeCheckBox.Size.Width + 3, autoSizeCheckBox.Location.Y);
+            autoSizeTextBox1.Location = new Point(autoSizeTextBox0.Location.X + autoSizeTextBox0.Size.Width + 3, autoSizeTextBox0.Location.Y - autoSizeTextBox0.Size.Height + autoSizeTextBox1.Size.Height);
         }
 
         void SetChart()
         {
+            marketComboBox.SelectedItem = marketComboBox.Items[1];
+
+            nameTextBox.KeyDown += (sender, e) =>
+            {
+                if (e.KeyCode != Keys.Enter)
+                    return;
+
+                switch (marketComboBox.SelectedItem.ToString())
+                {
+                    case "S":
+                        if (!SPOTItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                        {
+                            MessageBox.Show("No symbol");
+                            return;
+                        }
+                        ShowChart(SPOTItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                        break;
+
+                    case "F_U":
+                        if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                        {
+                            MessageBox.Show("No symbol");
+                            return;
+                        }
+                        ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                        break;
+
+                    case "F_C":
+                        if (!FCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                        {
+                            MessageBox.Show("No symbol");
+                            return;
+                        }
+                        ShowChart(FCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                        break;
+
+                    default:
+                        break;
+                }
+            };
+
             chart1.AxisViewChanged += (sender, e) => { AdjustChart(chart1); };
 
             var chartAreaMain = chart1.ChartAreas.Add("ChartAreaMain");
@@ -597,6 +533,7 @@ namespace BinanceHand
             spotListView.AllColumns.Add(winColumn);
             spotListView.AllColumns.Add(proColumn);
             spotListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+            spotListView.SelectionChanged += (sender, e) => { if (spotListView.SelectedIndices.Count == 1) ShowChart(spotListView.SelectedObject as ItemData); };
 
             nameColumn = new OLVColumn("이름(선물U)", "Name");
             flucColumn = new OLVColumn("분봉", "RateBfor");
@@ -614,6 +551,7 @@ namespace BinanceHand
             futureUListView.AllColumns.Add(winColumn);
             futureUListView.AllColumns.Add(proColumn);
             futureUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+            futureUListView.SelectionChanged += (sender, e) => { if (futureUListView.SelectedIndices.Count == 1) ShowChart(futureUListView.SelectedObject as ItemData); };
 
             nameColumn = new OLVColumn("이름(선물C)", "Name");
             flucColumn = new OLVColumn("분봉", "RateBfor");
@@ -631,6 +569,7 @@ namespace BinanceHand
             futureCListView.AllColumns.Add(winColumn);
             futureCListView.AllColumns.Add(proColumn);
             futureCListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+            futureCListView.SelectionChanged += (sender, e) => { if (futureCListView.SelectedIndices.Count == 1) ShowChart(futureCListView.SelectedObject as ItemData); };
         }
         void SetMainListView()
         {
@@ -661,8 +600,229 @@ namespace BinanceHand
             FUPositionListView.Columns.AddRange(new ColumnHeader[] 
                 { nameColumn, leverageColumn, sizeColumn, entryPriceColumn, markPriceColumn, 
                     initialmarginColumn, PNLColumn, ROEColumn });
+            FUPositionListView.SelectionChanged += (sender, e) => { if (FUPositionListView.SelectedIndices.Count == 1) ShowChart(FUPositionListView.SelectedObject as ItemData); };
+
+            var timeColumn = new OLVColumn("Time", "OrderTime");
+            nameColumn = new OLVColumn("Symbol", "Name");
+            var typeColumn = new OLVColumn("Type", "OrderType");
+            var sideColumn = new OLVColumn("Side", "OrderSide");
+            var priceColumn = new OLVColumn("Price", "OrderPrice");
+            var amountColumn = new OLVColumn("Amount", "OrderAmount");
+            var filledColumn = new OLVColumn("Filled", "OrderFilled");
+            var ROColumn = new OLVColumn("Reduce Only", "ReduceOnly");
+            var conditionColumn = new OLVColumn("Condition", "Condition");
+            timeColumn.FreeSpaceProportion = 6;
+            nameColumn.FreeSpaceProportion = 3;
+            typeColumn.FreeSpaceProportion = 3;
+            sideColumn.FreeSpaceProportion = 3;
+            priceColumn.FreeSpaceProportion = 3;
+            amountColumn.FreeSpaceProportion = 3;
+            filledColumn.FreeSpaceProportion = 3;
+            ROColumn.FreeSpaceProportion = 3;
+            conditionColumn.FreeSpaceProportion = 3;
+            FUOpenOrdersListView.AllColumns.Add(timeColumn);
+            FUOpenOrdersListView.AllColumns.Add(nameColumn);
+            FUOpenOrdersListView.AllColumns.Add(typeColumn);
+            FUOpenOrdersListView.AllColumns.Add(sideColumn);
+            FUOpenOrdersListView.AllColumns.Add(priceColumn);
+            FUOpenOrdersListView.AllColumns.Add(amountColumn);
+            FUOpenOrdersListView.AllColumns.Add(filledColumn);
+            FUOpenOrdersListView.AllColumns.Add(ROColumn);
+            FUOpenOrdersListView.AllColumns.Add(conditionColumn);
+            FUOpenOrdersListView.Columns.AddRange(new ColumnHeader[]
+                { timeColumn, nameColumn, typeColumn, sideColumn, priceColumn, amountColumn,
+                    filledColumn, ROColumn, conditionColumn });
+            FUOpenOrdersListView.SelectionChanged += (sender, e) => { if (FUOpenOrdersListView.SelectedIndices.Count == 1) ShowChart(FUOpenOrdersListView.SelectedObject as ItemData); };
+            FUOpenOrdersListView.ButtonClick += (sender, e) => { CancelOrder(e.Model as ItemData); };
+
+            mainTabControl.SelectedTab = futuresUTab;
+            futuresUTabControl.SelectedTab = FUPositionTab;
+        }
+        void SetOrderView()
+        {
+            leverageTextBox0.KeyDown += (sender, e) =>
+            {
+                if (e.KeyCode != Keys.Enter)
+                    return;
+
+                if (!int.TryParse(leverageTextBox0.Text, out int leverage) || leverage < 1 || leverage > itemDataShowing.maxLeverage || itemDataShowing == null)
+                {
+                    leverageTextBox0.Clear();
+                    return;
+                }
+
+                var data = client.FuturesUsdt.ChangeInitialLeverage(itemDataShowing.Name, leverage);
+                
+                if (!data.Success)
+                {
+                    MessageBox.Show("change fail");
+                    return;
+                }
+
+                itemDataShowing.Leverage = data.Data.Leverage;
+                if (data.Data.MaxNotionalValue == "inf")
+                    itemDataShowing.maxNotionalValue = decimal.MaxValue;
+                else
+                    itemDataShowing.maxNotionalValue = decimal.Parse(data.Data.MaxNotionalValue);
+            };
+
+            marketRadioButton.CheckedChanged += (sender, e) => { if (marketRadioButton.Checked) orderPriceTextBox1.Enabled = false; else orderPriceTextBox1.Enabled = true; };
+
+            miniSizeCheckBox.CheckedChanged += (sender, e) => { if (itemDataShowing != null) TickMinSizeButton(miniSizeCheckBox.Checked); };
+
+            autoSizeCheckBox.CheckedChanged += (sender, e) => { if (itemDataShowing != null) TickAutoSizeButton(autoSizeCheckBox.Checked); };
+
+            buyButton.Click += (sender, e) => { PlaceOrder(OrderSide.Buy); };
+            sellButton.Click += (sender, e) => { PlaceOrder(OrderSide.Sell); };
         }
 
+        void PlaceOrder(OrderSide orderSide)
+        {
+            if (!CheckAndSetOrderView())
+            {
+                MessageBox.Show("Input error");
+                return;
+            }
+
+            var orderType = OrderType.Limit;
+            TimeInForce? timeInForce = null;
+            decimal? price = null;
+            decimal quantity = decimal.Parse(orderSizeTextBox1.Text);
+            var reduceOnly = ROCheckBox.Checked;
+
+            if (testnet)
+                reduceOnly = false;
+
+            if (orderSide == OrderSide.Buy)
+                price = (int)(itemDataShowing.secStick.Price[3] * (1 + decimal.Parse(orderPriceTextBox1.Text) / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
+            else
+                price = (int)(itemDataShowing.secStick.Price[3] * (1 - decimal.Parse(orderPriceTextBox1.Text) / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
+
+            if (price * quantity > itemDataShowing.maxNotionalValue)
+            {
+                MessageBox.Show("lower leverage");
+                return;
+            }
+
+            if (PORadioButton.Checked)
+                timeInForce = TimeInForce.GoodTillCrossing;
+            else if (marketRadioButton.Checked)
+            {
+                orderType = OrderType.Market;
+                price = null;
+            }
+            else if (IOCRadioButton.Checked)
+                timeInForce = TimeInForce.ImmediateOrCancel;
+            else
+                timeInForce = TimeInForce.GoodTillCancel;
+
+            var a = client.FuturesUsdt.Order.PlaceOrder(
+                itemDataShowing.Name
+                , orderSide
+                , orderType
+                , quantity
+                , PositionSide.Both
+                , timeInForce
+                , reduceOnly
+                , price);
+        }
+        void CancelOrder(ItemData itemData)
+        {
+            client.FuturesUsdt.Order.CancelOrder(itemData.Name, itemData.orderID, itemData.clientOrderID);
+        }
+
+        bool CheckAndSetOrderView()
+        {
+            if (!decimal.TryParse(orderPriceTextBox1.Text, out decimal price))
+            {
+                orderPriceTextBox1.Clear();
+                return false;
+            }
+
+            if (miniSizeCheckBox.Checked && !itemDataShowing.position)
+                orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
+            else if (autoSizeCheckBox.Checked)
+            {
+                if (!int.TryParse(autoSizeTextBox0.Text, out int limitPercent) || limitPercent <= 0)
+                    return false;
+
+                UpdateAutoSize(limitPercent);
+            }
+            else if (!decimal.TryParse(orderSizeTextBox1.Text, out decimal result) || result <= 0)
+            {
+                orderSizeTextBox1.Clear();
+                return false;
+            }
+
+            return true;
+        }
+        void TickMinSizeButton(bool on)
+        {
+            miniSizeCheckBox.Checked = on;
+            if (itemDataShowing.position)
+                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
+            else
+                orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
+
+            autoSizeCheckBox.Enabled = !on;
+            autoSizeTextBox0.Enabled = !on;
+
+            if (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked)
+                orderSizeTextBox1.Enabled = false;
+            else
+                orderSizeTextBox1.Enabled = true;
+        }
+        void TickAutoSizeButton(bool on)
+        {
+            autoSizeCheckBox.Checked = on;
+            if (itemDataShowing.position)
+                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
+            else
+                orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
+
+            if (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked)
+                orderSizeTextBox1.Enabled = false;
+            else
+                orderSizeTextBox1.Enabled = true;
+        }
+        void UpdateAutoSize(int limitPercent)
+        {
+            if (itemDataShowing.position)
+                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
+            else
+            {
+                var stick = itemDataShowing.secStickList[itemDataShowing.secStickList.Count - 1];
+
+                var autoSize = (stick.Ms + stick.Md) / 2 / ((stick.Price[0] / stick.Price[1] - 1) * 1000) / 10;
+
+                var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / ((stick.Price[0] + stick.Price[1]) / 2) / itemDataShowing.minSize) * itemDataShowing.minSize;
+
+                if (limitAmount < autoSize)
+                    autoSize = limitAmount;
+
+                orderSizeTextBox1.Text = autoSize.ToString();
+            }
+        }
+        void FirstSetOrderView()
+        {
+            leverageTextBox0.Text = itemDataShowing.Leverage.ToString();
+
+            TickAutoSizeButton(true);
+
+            if (itemDataShowing.position)
+            {
+                TickMinSizeButton(false);
+                marketRadioButton.Checked = true;
+            }
+            else
+            {
+                TickMinSizeButton(true);
+                GTCRadioButton.Checked = true;
+            }
+
+            orderPriceTextBox1.Text = "0.1";
+        }
+        
         void ShowChart(ItemData itemData)
         {
             if (itemData.isChartShowing)
@@ -738,6 +898,26 @@ namespace BinanceHand
             }
             else
                 SetAggOn(itemData, true);
+
+            if (itemData.Leverage == 0)
+            {
+                foreach (var data in client.FuturesUsdt.GetPositionInformation(itemData.Name).Data)
+                {
+                    if (data.Symbol != itemData.Name)
+                        break;
+
+                    itemData.Leverage = data.Leverage;
+                    itemData.maxNotionalValue = data.MaxNotionalValue;
+
+                    foreach (var brackets in client.FuturesUsdt.GetBrackets(itemData.Name).Data)
+                        itemData.brackets = brackets.Brackets.ToList();
+
+                    itemData.maxLeverage = itemData.brackets[0].InitialLeverage;
+                    leverageTextBox1.Text = "/ " + itemData.maxLeverage.ToString();
+                }
+            }
+
+            FirstSetOrderView();
         }
         void LoadMinutesMore(ItemData itemData)
         {
@@ -935,47 +1115,11 @@ namespace BinanceHand
             chart.ChartAreas[0].AxisY.MajorGrid.Interval = (double)priceHigh * 0.005;
         }
 
-        #region SetItemDataList vars
-        List<string>[] spotSymbolList = Enumerable.Range(0, 5).Select(i => new List<string>()).ToArray();
-        List<string> FUSymbolList = new List<string>();
-        List<string> futuresCSymbolList = new List<string>();
-        #endregion
-        void SetItemDataList()
-        {
-            var exchangeInfo = client.Spot.System.GetExchangeInfo();
-            short n = 0;
-            foreach (var s in exchangeInfo.Data.Symbols)
-            {
-                var itemData = new ItemData(s, null, null);
-                SPOTItemDataList.Add(itemData.Name, itemData);
-                spotSymbolList[n / 300].Add(itemData.Name);
-
-                n++;
-            }
-
-            var exchangeInfo2 = client.FuturesUsdt.System.GetExchangeInfo();
-            n = 0;
-            foreach (var s in exchangeInfo2.Data.Symbols)
-            {
-                var itemData = new ItemData(null, s, null);
-                FUItemDataList.Add(itemData.Name, itemData);
-                FUSymbolList.Add(itemData.Name);
-
-                n++;
-            }
-
-            var exchangeInfo3 = client.FuturesCoin.System.GetExchangeInfo();
-            n = 0;
-            foreach (var s in exchangeInfo3.Data.Symbols)
-            {
-                var itemData = new ItemData(null, null, s);
-                FCItemDataList.Add(itemData.Name, itemData);
-                futuresCSymbolList.Add(itemData.Name);
-
-                n++;
-            }
-        }
         #region Form1_Load vars
+        delegate void OrderUpdates(BinanceFuturesStreamOrderUpdate data, ItemData itemData);
+        OrderUpdates orderUpdates;
+        delegate void AccountUpdates(BinanceFuturesStreamAccountUpdate data);
+        AccountUpdates accountUpdates;
         delegate void MarkUpdates(BinanceFuturesUsdtStreamMarkPrice data, ItemData itemData);
         MarkUpdates markUpdates;
         delegate void AggUpdates(BinanceStreamAggregatedTrade data, ItemData itemData);
@@ -985,12 +1129,19 @@ namespace BinanceHand
         #endregion
         void Form1_Load(object sender, EventArgs e)
         {
-            /*
             SetItemDataList();
+
+            SubscribeToUserStream(testnet, true);
+
+            GetAccountInfo();
 
             aggUpdates += new AggUpdates(OnAggregatedTradeUpdates);
             klineUpdates += new KlineUpdates(OnKlineUpdates);
+            markUpdates += new MarkUpdates(OnMarkPriceUpdates);
+            accountUpdates = new AccountUpdates(OnAccountUpdates);
+            orderUpdates = new OrderUpdates(OnOrderUpdates);
 
+            /*
             var symbols = 0;
             for (int i = 0; i < 5; i++)
             {
@@ -998,21 +1149,198 @@ namespace BinanceHand
                 symbols += spotSymbolList[i].Count;
             }
             spotKlineReqTextBox.Text = "/" + symbols + "(K)";
-            
-            socketClient.FuturesUsdt.SubscribeToKlineUpdates(futureUSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, futureUItemDataList[data.Symbol]); });
-            futureUKlineReqTextBox.Text = "/" + futureUSymbolList.Count + "(K)";
+            */
 
-            socketClient.FuturesCoin.SubscribeToKlineUpdates(futureCSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, futureCItemDataList[data.Symbol]); });
-            futureCKlineReqTextBox.Text = "/" + futureCSymbolList.Count + "(K)";*/
+            socketClient.FuturesUsdt.SubscribeToKlineUpdates(FUSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, FUItemDataList[data.Symbol]); });
+            futureUKlineReqTextBox.Text = "/" + FUSymbolList.Count + "(K)";
 
-            markUpdates += new MarkUpdates(OnMarkPriceUpdates);
-
-            foreach (var itemData in FUItemDataList)
-                if (itemData.Value.Position)
-                    itemData.Value.markSub = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdates(itemData.Value.Name, 3000,
-                        data => { BeginInvoke(markUpdates, data, itemData.Value); }).Data;
+            //socketClient.FuturesCoin.SubscribeToKlineUpdates(futureCSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, futureCItemDataList[data.Symbol]); });
+            //futureCKlineReqTextBox.Text = "/" + futureCSymbolList.Count + "(K)";
         }
+        #region SetItemDataList vars
+        List<string>[] spotSymbolList = Enumerable.Range(0, 5).Select(i => new List<string>()).ToArray();
+        List<string> FUSymbolList = new List<string>();
+        List<string> futuresCSymbolList = new List<string>();
+        #endregion
+        void SetItemDataList()
+        {
+            /*
+            var exchangeInfo = client.Spot.System.GetExchangeInfo();
+            short n = 0;
+            foreach (var s in exchangeInfo.Data.Symbols)
+            {
+                var itemData = new ItemData(s, null, null);
+                SPOTItemDataList.Add(itemData.Name, itemData);
+                spotSymbolList[n / 300].Add(itemData.Name);
 
+                n++;
+            }*/
+
+            var exchangeInfo2 = client.FuturesUsdt.System.GetExchangeInfo();
+            foreach (var s in exchangeInfo2.Data.Symbols)
+            {
+                var itemData = new ItemData(null, s, null);
+                FUItemDataList.Add(itemData.Name, itemData);
+                FUSymbolList.Add(itemData.Name);
+            }
+
+            /*
+            var exchangeInfo3 = client.FuturesCoin.System.GetExchangeInfo();
+            foreach (var s in exchangeInfo3.Data.Symbols)
+            {
+                var itemData = new ItemData(null, null, s);
+                FCItemDataList.Add(itemData.Name, itemData);
+                futuresCSymbolList.Add(itemData.Name);
+            }*/
+        }
+        void SubscribeToUserStream(bool testnet, bool testnetFutures)
+        {
+            string listenKey;
+
+            if (testnet)
+            {
+                if (testnetFutures)
+                    listenKey = client.FuturesUsdt.UserStream.StartUserStream().Data;
+                else
+                    listenKey = client.Spot.UserStream.StartUserStream().Data;
+            }
+            else
+                listenKey = client.Spot.UserStream.StartUserStream().Data;
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    if (testnet)
+                    {
+                        if (testnetFutures)
+                            await client.FuturesUsdt.UserStream.KeepAliveUserStreamAsync(listenKey);
+                        else
+                            await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
+                    }
+                    else
+                        await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
+
+                    await Task.Delay(TimeSpan.FromMinutes(30));
+                }
+            }, tokenSource.Token);
+
+            if (testnet)
+            {
+                if (testnetFutures)
+                    socketClient.FuturesUsdt.SubscribeToUserDataUpdates(listenKey,
+                        data => {
+                            var a = data;
+                        },
+                        data => {
+                            var a = data;
+                        },
+                        data => { BeginInvoke(accountUpdates, data);},
+                        data => { BeginInvoke(orderUpdates, data, FUItemDataList[data.UpdateData.Symbol]); },
+                        data => {
+                            var a = data;
+                        });
+                else
+                    socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
+            }
+            else
+                socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
+        }
+        void GetAccountInfo()
+        {
+            var go = client.FuturesUsdt.Order.GetOpenOrders().Data;
+            foreach (var order in go)
+            {
+                var itemData = FUItemDataList[order.Symbol];
+
+                itemData.order = true;
+                itemData.OrderTime = order.CreatedTime;
+                itemData.OrderType = order.OriginalType;
+                itemData.OrderSide = order.Side;
+                itemData.OrderPrice = order.Price;
+                itemData.OrderAmount = order.OriginalQuantity;
+                itemData.OrderFilled = order.ExecutedQuantity;
+                itemData.ReduceOnly = order.ReduceOnly;
+                itemData.Condition = order.TimeInForce;
+                itemData.clientOrderID = order.ClientOrderId;
+                itemData.orderID = order.OrderId;
+
+                FUOpenOrdersListView.AddObject(itemData);
+                FUOpenOrdersListView.RefreshObject(itemData);
+                FUOpenOrdersTab.Text = "Open Orders(" + FUOpenOrdersListView.Items.Count + ")";
+            }
+
+            var ga = client.FuturesUsdt.Account.GetAccountInfo();
+            foreach (var s in ga.Data.Assets)
+            {
+                if (s.Asset == "USDT")
+                {
+                    FUMarginBalance = s.MarginBalance;
+                    FUMarginBalanceTextBox1.Text = Math.Round(FUMarginBalance, 2).ToString();
+                    FUAvailableBalance = s.AvailableBalance;
+                    FUAvailBalanceTextBox1.Text = Math.Round(FUAvailableBalance, 2).ToString();
+                    FUWalletBalance = s.WalletBalance;
+                    FUWalletBalanceTextBox1.Text = Math.Round(FUWalletBalance, 2).ToString();
+                }
+            }
+            foreach (var s in ga.Data.Positions)
+            {
+                if (s.EntryPrice != 0m)
+                {
+                    var itemData = FUItemDataList[s.Symbol];
+
+                    itemData.position = true;
+
+                    itemData.markSub = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdates(itemData.Name, 3000,
+                        data => { BeginInvoke(markUpdates, data, itemData); }).Data;
+
+                    itemData.InitialMargin = Math.Round(s.InitialMargin, 2);
+                    itemData.maintMargin = s.MaintMargin;
+
+                    FUPositionListView.AddObject(itemData);
+                    FUPositionListView.RefreshObject(itemData);
+                    FUPositionTab.Text = "Position(" + FUPositionListView.Items.Count + ")";
+                }
+            }
+
+            FUMaintMargin = 0;
+            foreach (ItemData itemData in FUPositionListView.Objects)
+                FUMaintMargin += itemData.maintMargin;
+            FUMaintMarginTextBox1.Text = Math.Round(FUMaintMargin, 2).ToString();
+
+            var gp = client.FuturesUsdt.GetPositionInformation();
+            foreach (var s in gp.Data)
+            {
+                if (s.MarginType == FuturesMarginType.Isolated)
+                {
+                    var cm = client.FuturesUsdt.ChangeMarginType(s.Symbol, FuturesMarginType.Cross);
+                    if (!cm.Success)
+                        MessageBox.Show("마진 타입 변경 실패");
+                }
+
+                if (s.EntryPrice != 0m)
+                {
+                    var itemData = FUItemDataList[s.Symbol];
+
+                    itemData.Leverage = s.Leverage;
+                    itemData.MarkPrice = Math.Round(s.MarkPrice, 2);
+                    itemData.Size = s.PositionAmount;
+                    itemData.notianalValue = s.MarkPrice * Math.Abs(itemData.Size);
+                    itemData.EntryPrice = Math.Round(s.EntryPrice, 2);
+                    itemData.PNL = Math.Round(s.UnrealizedProfit, 2);
+                    itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
+
+                    foreach (var brackets in client.FuturesUsdt.GetBrackets(s.Symbol).Data)
+                        itemData.brackets = brackets.Brackets.ToList();
+
+                    itemData.maxNotionalValue = s.MaxNotionalValue;
+                    itemData.maxLeverage = itemData.brackets[0].InitialLeverage;
+
+                    FUPositionListView.UpdateObject(itemData);
+                    FUPositionListView.RefreshObject(itemData);
+                }
+            }
+        }
 
         #region OnKlineUpdates vars
         short spotAggOnNow = 0;
@@ -1273,8 +1601,8 @@ namespace BinanceHand
                         chart1.ChartAreas[0].AxisX.ScaleView.Zoom(chart1.Series[0].Points.Count - baseChartViewSticksSize + 1, chart1.Series[0].Points.Count);
                         chart1.ChartAreas[0].RecalculateAxesScale();
                     }
-
-                    AdjustChart(chart1);
+                    if (chart1.Series[0].Points.Count != 1)
+                        AdjustChart(chart1);
                 }
 
                 if (itemData.secStickList.Count > 900)
@@ -1405,7 +1733,7 @@ namespace BinanceHand
         }
         void OnMarkPriceUpdates(BinanceFuturesUsdtStreamMarkPrice data, ItemData itemData)
         {
-            if (itemData.Position)
+            if (itemData.position)
             {
                 itemData.MarkPrice = Math.Round(data.MarkPrice, 2);
                 itemData.notianalValue = data.MarkPrice * Math.Abs(itemData.Size);
@@ -1413,16 +1741,25 @@ namespace BinanceHand
                 itemData.PNL = Math.Round((itemData.MarkPrice - itemData.EntryPrice) * itemData.Size, 2);
                 itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
 
-                if (itemData.notianalValue <= itemData.brackets[itemData.nowBracketIndex].Floor)
-                    itemData.nowBracketIndex--;
-                else if (itemData.notianalValue > itemData.brackets[itemData.nowBracketIndex].Cap)
-                    itemData.nowBracketIndex++;
 
-                itemData.maintMargin = itemData.notianalValue * itemData.brackets[itemData.nowBracketIndex].MaintenanceMarginRatio;
+                for (int i = 0; i < itemData.brackets.Count; i++)
+                {
+                    if (itemData.notianalValue > itemData.brackets[i].Floor && itemData.notianalValue <= itemData.brackets[i].Cap)
+                    {
+                        itemData.maintMargin = 0;
+
+                        for (int j = 0; j < i; j++)
+                            itemData.maintMargin += (itemData.brackets[j].Cap - itemData.brackets[j].Floor) * itemData.brackets[j].MaintenanceMarginRatio;
+
+                        itemData.maintMargin += (itemData.notianalValue - itemData.brackets[i].Floor) * itemData.brackets[i].MaintenanceMarginRatio;
+
+                        break;
+                    }
+                }
 
                 FUMaintMargin = 0;
-                FUMarginBalance = FUBalance;
-                FUAvailableBalance = FUBalance;
+                FUMarginBalance = FUWalletBalance;
+                FUAvailableBalance = FUWalletBalance;
                 foreach (ItemData i in FUPositionListView.Objects)
                 {
                     FUMaintMargin += i.maintMargin;
@@ -1435,6 +1772,106 @@ namespace BinanceHand
                 FUMarginRatioTextBox1.Text = Math.Round(FUMaintMargin / FUMarginBalance * 100, 2).ToString();
 
                 FUPositionListView.UpdateObject(itemData);
+                FUPositionListView.RefreshObject(itemData);
+            }
+        }
+        void OnAccountUpdates(BinanceFuturesStreamAccountUpdate data)
+        {
+            foreach (var balance in data.UpdateData.Balances)
+                if (balance.Asset == "USDT")
+                {
+                    FUWalletBalance = balance.WalletBalance;
+                    FUWalletBalanceTextBox1.Text = Math.Round(FUWalletBalance, 2).ToString();
+                }
+
+            if (data.UpdateData.Reason == AccountUpdateReason.Order)
+                foreach (var position in data.UpdateData.Positions)
+                {
+                    var itemData = FUItemDataList[position.Symbol];
+
+                    if (position.PositionAmount == 0)
+                    {
+                        socketClient.Unsubscribe(itemData.markSub);
+
+                        itemData.position = false;
+
+                        FirstSetOrderView();
+
+                        FUPositionListView.RemoveObject(itemData);
+                        FUPositionListView.RefreshObject(itemData);
+                        FUPositionTab.Text = "Position(" + FUPositionListView.Items.Count + ")";
+
+                        if (FUPositionListView.Items.Count == 0)
+                        {
+                            FUMaintMargin = 0;
+                            FUMaintMarginTextBox1.Text = "0";
+                            FUMarginBalance = 0;
+                            FUMarginBalanceTextBox1.Text = "0";
+                            FUAvailableBalance = FUWalletBalance;
+                            FUAvailBalanceTextBox1.Text = FUWalletBalanceTextBox1.Text;
+                        }
+                    }
+                    else if (itemData.position)
+                    {
+                        itemData.Size = position.PositionAmount;
+
+                        FUPositionListView.UpdateObject(itemData);
+                        FUPositionListView.RefreshObject(itemData);
+                    }
+                    else
+                    {
+                        itemData.position = true;
+                        itemData.EntryPrice = Math.Round(position.EntryPrice, 2);
+                        itemData.Size = position.PositionAmount;
+                        itemData.PNL = position.UnrealizedPnl;
+
+                        FirstSetOrderView();
+
+                        itemData.markSub = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdates(itemData.Name, 3000,
+                            data2 => { BeginInvoke(markUpdates, data2, itemData); }).Data;
+
+                        FUPositionListView.AddObject(itemData);
+                        FUPositionListView.RefreshObject(itemData);
+                        FUPositionTab.Text = "Position(" + FUPositionListView.Items.Count + ")";
+                    }
+                }
+        }
+        void OnOrderUpdates(BinanceFuturesStreamOrderUpdate data, ItemData itemData)
+        {
+            if (data.UpdateData.Status == OrderStatus.New)
+            {
+                itemData.order = true;
+
+                itemData.OrderTime = data.UpdateData.CreateTime;
+                itemData.OrderType = data.UpdateData.OriginalType;
+                itemData.OrderSide = data.UpdateData.Side;
+                itemData.OrderPrice = data.UpdateData.Price;
+                itemData.OrderAmount = data.UpdateData.Quantity;
+                itemData.OrderFilled = data.UpdateData.AccumulatedQuantityOfFilledTrades;
+                itemData.ReduceOnly = data.UpdateData.IsReduce;
+                itemData.Condition = data.UpdateData.TimeInForce;
+                itemData.clientOrderID = data.UpdateData.ClientOrderId;
+                itemData.orderID = data.UpdateData.OrderId;
+
+                FUOpenOrdersListView.AddObject(itemData);
+                FUOpenOrdersListView.RefreshObject(itemData);
+                FUOpenOrdersTab.Text = "Open Orders(" + FUOpenOrdersListView.Items.Count + ")";
+            }
+            else if (data.UpdateData.Status == OrderStatus.PartiallyFilled)
+            {
+                itemData.OrderFilled = data.UpdateData.AccumulatedQuantityOfFilledTrades;
+
+                FUOpenOrdersListView.UpdateObject(itemData);
+                FUOpenOrdersListView.RefreshObject(itemData);
+            }
+            else if (data.UpdateData.Status == OrderStatus.Filled || data.UpdateData.Status == OrderStatus.Canceled 
+                || data.UpdateData.Status == OrderStatus.Rejected || data.UpdateData.Status == OrderStatus.Expired)
+            {
+                itemData.order = false;
+
+                FUOpenOrdersListView.RemoveObject(itemData);
+                FUOpenOrdersListView.RefreshObject(itemData);
+                FUOpenOrdersTab.Text = "Open Orders(" + FUOpenOrdersListView.Items.Count + ")";
             }
         }
 
@@ -1646,47 +2083,15 @@ namespace BinanceHand
                     e.Item.ForeColor = mnsPrcColor;
             }
         }
-        void ListView_SelectionChanged(object sender, EventArgs e)
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (((FastDataListView)sender).SelectedIndices.Count != 1)
+            if (nameTextBox.Focused)
                 return;
 
-            ShowChart(((FastDataListView)sender).SelectedObject as ItemData);
-        }
-
-        void nameTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            switch (marketComboBox.SelectedItem.ToString())
+            if (itemDataShowing != null && itemDataShowing.order && e.KeyCode == Keys.Delete)
             {
-                case "S":
-                    if (!SPOTItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                    {
-                        MessageBox.Show("No symbol");
-                        return;
-                    }
-                    ShowChart(SPOTItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                    break;
-
-                case "F_U":
-                    if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                    {
-                        MessageBox.Show("No symbol");
-                        return;
-                    }
-                    ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                    break;
-
-                case "F_C":
-                    if (!FCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                    {
-                        MessageBox.Show("No symbol");
-                        return;
-                    }
-                    ShowChart(FCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                    break;
-
-                default:
-                    break;
+                CancelOrder(itemDataShowing);
             }
         }
     }

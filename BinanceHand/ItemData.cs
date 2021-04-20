@@ -4,16 +4,12 @@ using Binance.Net.Objects.Spot.MarketData;
 using Binance.Net.Objects.Futures.MarketData;
 using CryptoExchange.Net.Sockets;
 using BrightIdeasSoftware;
-using Binance.Net.Objects.Futures.MarketData;
+using Binance.Net.Enums;
 
 namespace BinanceHand
 {
     class ItemData
     {
-        public BinanceSymbol spotSymbol;
-        public BinanceFuturesUsdtSymbol futureUsdtSymbol;
-        public BinanceFuturesCoinSymbol futureCoinSymbol;
-
         public bool isSpot;
         public bool isFutureUsdt;
 
@@ -86,21 +82,36 @@ namespace BinanceHand
         public decimal profitRateMul;
         public string ProfitRateSumAndMul = "0.00(0.00)";
 
+        public bool order = false;
+        public DateTime OrderTime;
+        public OrderType OrderType;
+        public OrderSide OrderSide;
+        public decimal OrderPrice;
+        public decimal OrderAmount;
+        public decimal OrderFilled;
+        public bool ReduceOnly;
+        public TimeInForce Condition;
+        public string clientOrderID;
+        public long orderID;
+
+        public bool position = false;
         public UpdateSubscription markSub;
-        public bool Position = false;
-        public bool PositionLong;
         public int Leverage;
+        public int maxLeverage;
         public decimal Size;
         public decimal EntryPrice;
         public decimal MarkPrice;
         public decimal maintMargin;
         public decimal InitialMargin;
         public decimal notianalValue;
+        public decimal maxNotionalValue;
         public decimal PNL;
         public decimal ROE;
 
         public List<BinanceFuturesBracket> brackets;
-        public int nowBracketIndex;
+
+        public decimal minSize;
+        public decimal priceTickSize;
 
 
         public ItemData(BinanceSymbol s, BinanceFuturesUsdtSymbol fu, BinanceFuturesCoinSymbol fc)
@@ -108,23 +119,26 @@ namespace BinanceHand
 
             if (s != null)
             {
-                spotSymbol = s;
                 Name = s.Name.Trim().ToUpper();
                 isSpot = true;
+                minSize = s.LotSizeFilter.MinQuantity;
+                priceTickSize = s.PriceFilter.TickSize;
             }
             else if (fu != null)
             {
-                futureUsdtSymbol = fu;
                 Name = fu.Name.Trim().ToUpper();
                 isSpot = false;
                 isFutureUsdt = true;
+                minSize = fu.LotSizeFilter.MinQuantity;
+                priceTickSize = fu.PriceFilter.TickSize;
             }
             else if (fc != null)
             {
-                futureCoinSymbol = fc;
                 Name = fc.Name.Trim().ToUpper();
                 isSpot = false;
                 isFutureUsdt = false;
+                minSize = fc.LotSizeFilter.MinQuantity;
+                priceTickSize = fc.PriceFilter.TickSize;
             }
 
             for (int i = 0; i < amt1; i++)

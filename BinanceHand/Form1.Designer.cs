@@ -37,12 +37,14 @@ namespace BinanceHand
             this.mainTabControl = new System.Windows.Forms.TabControl();
             this.spotTab = new System.Windows.Forms.TabPage();
             this.futuresUTab = new System.Windows.Forms.TabPage();
-            this.FUBalanceTextBox1 = new System.Windows.Forms.TextBox();
+            this.FUWalletBalanceTextBox1 = new System.Windows.Forms.TextBox();
             this.FUAvailBalanceTextBox1 = new System.Windows.Forms.TextBox();
-            this.FUBalanceTextBox0 = new System.Windows.Forms.TextBox();
+            this.FUWalletBalanceTextBox0 = new System.Windows.Forms.TextBox();
             this.FUAvailBalanceTextBox0 = new System.Windows.Forms.TextBox();
+            this.FUMarginRatioTextBox1 = new System.Windows.Forms.TextBox();
             this.FUMaintMarginTextBox1 = new System.Windows.Forms.TextBox();
             this.FUMarginBalanceTextBox1 = new System.Windows.Forms.TextBox();
+            this.FUMarginRatioTextBox0 = new System.Windows.Forms.TextBox();
             this.FUMaintMarginTextBox0 = new System.Windows.Forms.TextBox();
             this.FUMarginBalanceTextBox0 = new System.Windows.Forms.TextBox();
             this.futuresUTabControl = new System.Windows.Forms.TabControl();
@@ -83,8 +85,28 @@ namespace BinanceHand
             this.secChartTab = new System.Windows.Forms.TabPage();
             this.minChartTab = new System.Windows.Forms.TabPage();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.FUMarginRatioTextBox0 = new System.Windows.Forms.TextBox();
-            this.FUMarginRatioTextBox1 = new System.Windows.Forms.TextBox();
+            this.spotGroupBox = new System.Windows.Forms.GroupBox();
+            this.FUGroupBox = new System.Windows.Forms.GroupBox();
+            this.FCGroupBox = new System.Windows.Forms.GroupBox();
+            this.orderGroupBox = new System.Windows.Forms.GroupBox();
+            this.leverageTextBox0 = new System.Windows.Forms.TextBox();
+            this.orderPriceTextBox1 = new System.Windows.Forms.TextBox();
+            this.autoSizeTextBox1 = new System.Windows.Forms.TextBox();
+            this.autoSizeTextBox0 = new System.Windows.Forms.TextBox();
+            this.orderSizeTextBox1 = new System.Windows.Forms.TextBox();
+            this.orderPriceTextBox2 = new System.Windows.Forms.TextBox();
+            this.orderSizeTextBox0 = new System.Windows.Forms.TextBox();
+            this.leverageTextBox1 = new System.Windows.Forms.TextBox();
+            this.orderPriceTextBox0 = new System.Windows.Forms.TextBox();
+            this.autoSizeCheckBox = new System.Windows.Forms.CheckBox();
+            this.miniSizeCheckBox = new System.Windows.Forms.CheckBox();
+            this.ROCheckBox = new System.Windows.Forms.CheckBox();
+            this.PORadioButton = new System.Windows.Forms.RadioButton();
+            this.marketRadioButton = new System.Windows.Forms.RadioButton();
+            this.IOCRadioButton = new System.Windows.Forms.RadioButton();
+            this.GTCRadioButton = new System.Windows.Forms.RadioButton();
+            this.sellButton = new System.Windows.Forms.Button();
+            this.buyButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.spotListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.futureUListView)).BeginInit();
@@ -109,6 +131,10 @@ namespace BinanceHand
             this.secChartTab.SuspendLayout();
             this.minChartTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
+            this.spotGroupBox.SuspendLayout();
+            this.FUGroupBox.SuspendLayout();
+            this.FCGroupBox.SuspendLayout();
+            this.orderGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // chart1
@@ -116,7 +142,7 @@ namespace BinanceHand
             legend1.Enabled = false;
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(44, 23);
+            this.chart1.Location = new System.Drawing.Point(19, 24);
             this.chart1.Name = "chart1";
             this.chart1.Size = new System.Drawing.Size(718, 310);
             this.chart1.TabIndex = 0;
@@ -127,32 +153,30 @@ namespace BinanceHand
             this.spotListView.CellEditUseWholeCell = false;
             this.spotListView.DataSource = null;
             this.spotListView.HideSelection = false;
-            this.spotListView.Location = new System.Drawing.Point(822, 484);
+            this.spotListView.Location = new System.Drawing.Point(6, 20);
             this.spotListView.Name = "spotListView";
             this.spotListView.ShowGroups = false;
-            this.spotListView.Size = new System.Drawing.Size(189, 146);
+            this.spotListView.Size = new System.Drawing.Size(189, 79);
             this.spotListView.TabIndex = 4;
             this.spotListView.UseCompatibleStateImageBehavior = false;
             this.spotListView.View = System.Windows.Forms.View.Details;
             this.spotListView.VirtualMode = true;
             this.spotListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
-            this.spotListView.SelectionChanged += new System.EventHandler(this.ListView_SelectionChanged);
             // 
             // futureUListView
             // 
             this.futureUListView.CellEditUseWholeCell = false;
             this.futureUListView.DataSource = null;
             this.futureUListView.HideSelection = false;
-            this.futureUListView.Location = new System.Drawing.Point(1017, 484);
+            this.futureUListView.Location = new System.Drawing.Point(9, 20);
             this.futureUListView.Name = "futureUListView";
             this.futureUListView.ShowGroups = false;
-            this.futureUListView.Size = new System.Drawing.Size(189, 146);
+            this.futureUListView.Size = new System.Drawing.Size(121, 49);
             this.futureUListView.TabIndex = 4;
             this.futureUListView.UseCompatibleStateImageBehavior = false;
             this.futureUListView.View = System.Windows.Forms.View.Details;
             this.futureUListView.VirtualMode = true;
             this.futureUListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
-            this.futureUListView.SelectionChanged += new System.EventHandler(this.ListView_SelectionChanged);
             // 
             // mainTabControl
             // 
@@ -178,9 +202,9 @@ namespace BinanceHand
             // 
             // futuresUTab
             // 
-            this.futuresUTab.Controls.Add(this.FUBalanceTextBox1);
+            this.futuresUTab.Controls.Add(this.FUWalletBalanceTextBox1);
             this.futuresUTab.Controls.Add(this.FUAvailBalanceTextBox1);
-            this.futuresUTab.Controls.Add(this.FUBalanceTextBox0);
+            this.futuresUTab.Controls.Add(this.FUWalletBalanceTextBox0);
             this.futuresUTab.Controls.Add(this.FUAvailBalanceTextBox0);
             this.futuresUTab.Controls.Add(this.FUMarginRatioTextBox1);
             this.futuresUTab.Controls.Add(this.FUMaintMarginTextBox1);
@@ -197,15 +221,15 @@ namespace BinanceHand
             this.futuresUTab.Text = "Futures-U";
             this.futuresUTab.UseVisualStyleBackColor = true;
             // 
-            // FUBalanceTextBox1
+            // FUWalletBalanceTextBox1
             // 
-            this.FUBalanceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUBalanceTextBox1.Location = new System.Drawing.Point(654, 138);
-            this.FUBalanceTextBox1.Name = "FUBalanceTextBox1";
-            this.FUBalanceTextBox1.ReadOnly = true;
-            this.FUBalanceTextBox1.Size = new System.Drawing.Size(70, 14);
-            this.FUBalanceTextBox1.TabIndex = 1;
-            this.FUBalanceTextBox1.Text = "0000.00000";
+            this.FUWalletBalanceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUWalletBalanceTextBox1.Location = new System.Drawing.Point(654, 138);
+            this.FUWalletBalanceTextBox1.Name = "FUWalletBalanceTextBox1";
+            this.FUWalletBalanceTextBox1.ReadOnly = true;
+            this.FUWalletBalanceTextBox1.Size = new System.Drawing.Size(70, 14);
+            this.FUWalletBalanceTextBox1.TabIndex = 1;
+            this.FUWalletBalanceTextBox1.Text = "0000.00000";
             // 
             // FUAvailBalanceTextBox1
             // 
@@ -217,15 +241,15 @@ namespace BinanceHand
             this.FUAvailBalanceTextBox1.TabIndex = 1;
             this.FUAvailBalanceTextBox1.Text = "0000.00000";
             // 
-            // FUBalanceTextBox0
+            // FUWalletBalanceTextBox0
             // 
-            this.FUBalanceTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUBalanceTextBox0.Location = new System.Drawing.Point(629, 139);
-            this.FUBalanceTextBox0.Name = "FUBalanceTextBox0";
-            this.FUBalanceTextBox0.ReadOnly = true;
-            this.FUBalanceTextBox0.Size = new System.Drawing.Size(19, 14);
-            this.FUBalanceTextBox0.TabIndex = 1;
-            this.FUBalanceTextBox0.Text = "B :";
+            this.FUWalletBalanceTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUWalletBalanceTextBox0.Location = new System.Drawing.Point(620, 133);
+            this.FUWalletBalanceTextBox0.Name = "FUWalletBalanceTextBox0";
+            this.FUWalletBalanceTextBox0.ReadOnly = true;
+            this.FUWalletBalanceTextBox0.Size = new System.Drawing.Size(30, 14);
+            this.FUWalletBalanceTextBox0.TabIndex = 1;
+            this.FUWalletBalanceTextBox0.Text = "WB :";
             // 
             // FUAvailBalanceTextBox0
             // 
@@ -233,9 +257,19 @@ namespace BinanceHand
             this.FUAvailBalanceTextBox0.Location = new System.Drawing.Point(620, 118);
             this.FUAvailBalanceTextBox0.Name = "FUAvailBalanceTextBox0";
             this.FUAvailBalanceTextBox0.ReadOnly = true;
-            this.FUAvailBalanceTextBox0.Size = new System.Drawing.Size(28, 14);
+            this.FUAvailBalanceTextBox0.Size = new System.Drawing.Size(30, 14);
             this.FUAvailBalanceTextBox0.TabIndex = 1;
-            this.FUAvailBalanceTextBox0.Text = "AV :";
+            this.FUAvailBalanceTextBox0.Text = "AB :";
+            // 
+            // FUMarginRatioTextBox1
+            // 
+            this.FUMarginRatioTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUMarginRatioTextBox1.Location = new System.Drawing.Point(654, 58);
+            this.FUMarginRatioTextBox1.Name = "FUMarginRatioTextBox1";
+            this.FUMarginRatioTextBox1.ReadOnly = true;
+            this.FUMarginRatioTextBox1.Size = new System.Drawing.Size(50, 14);
+            this.FUMarginRatioTextBox1.TabIndex = 1;
+            this.FUMarginRatioTextBox1.Text = "00.00";
             // 
             // FUMaintMarginTextBox1
             // 
@@ -256,6 +290,16 @@ namespace BinanceHand
             this.FUMarginBalanceTextBox1.Size = new System.Drawing.Size(70, 14);
             this.FUMarginBalanceTextBox1.TabIndex = 1;
             this.FUMarginBalanceTextBox1.Text = "0000.00000";
+            // 
+            // FUMarginRatioTextBox0
+            // 
+            this.FUMarginRatioTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUMarginRatioTextBox0.Location = new System.Drawing.Point(618, 58);
+            this.FUMarginRatioTextBox0.Name = "FUMarginRatioTextBox0";
+            this.FUMarginRatioTextBox0.ReadOnly = true;
+            this.FUMarginRatioTextBox0.Size = new System.Drawing.Size(30, 14);
+            this.FUMarginRatioTextBox0.TabIndex = 1;
+            this.FUMarginRatioTextBox0.Text = "MR :";
             // 
             // FUMaintMarginTextBox0
             // 
@@ -299,7 +343,7 @@ namespace BinanceHand
             this.FUPositionTab.Padding = new System.Windows.Forms.Padding(3);
             this.FUPositionTab.Size = new System.Drawing.Size(596, 128);
             this.FUPositionTab.TabIndex = 0;
-            this.FUPositionTab.Text = "Position";
+            this.FUPositionTab.Text = "Position(0)";
             this.FUPositionTab.UseVisualStyleBackColor = true;
             // 
             // FUPositionListView
@@ -325,7 +369,7 @@ namespace BinanceHand
             this.FUOpenOrdersTab.Padding = new System.Windows.Forms.Padding(3);
             this.FUOpenOrdersTab.Size = new System.Drawing.Size(596, 128);
             this.FUOpenOrdersTab.TabIndex = 1;
-            this.FUOpenOrdersTab.Text = "Open Orders";
+            this.FUOpenOrdersTab.Text = "Open Orders(0)";
             this.FUOpenOrdersTab.UseVisualStyleBackColor = true;
             // 
             // FUOpenOrdersListView
@@ -479,12 +523,11 @@ namespace BinanceHand
             this.nameTextBox.Size = new System.Drawing.Size(90, 21);
             this.nameTextBox.TabIndex = 6;
             this.nameTextBox.Text = "ABCDEF";
-            this.nameTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.nameTextBox_KeyPress);
             // 
             // timeDiffTextBox
             // 
             this.timeDiffTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.timeDiffTextBox.Location = new System.Drawing.Point(1175, 450);
+            this.timeDiffTextBox.Location = new System.Drawing.Point(814, 440);
             this.timeDiffTextBox.Name = "timeDiffTextBox";
             this.timeDiffTextBox.ReadOnly = true;
             this.timeDiffTextBox.Size = new System.Drawing.Size(38, 14);
@@ -495,7 +538,7 @@ namespace BinanceHand
             // 
             this.priceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.priceTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.priceTextBox.Location = new System.Drawing.Point(1038, 450);
+            this.priceTextBox.Location = new System.Drawing.Point(677, 440);
             this.priceTextBox.Name = "priceTextBox";
             this.priceTextBox.ReadOnly = true;
             this.priceTextBox.Size = new System.Drawing.Size(63, 14);
@@ -506,7 +549,7 @@ namespace BinanceHand
             // 
             this.amtTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.amtTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.amtTextBox.Location = new System.Drawing.Point(1106, 450);
+            this.amtTextBox.Location = new System.Drawing.Point(745, 440);
             this.amtTextBox.Name = "amtTextBox";
             this.amtTextBox.ReadOnly = true;
             this.amtTextBox.Size = new System.Drawing.Size(63, 14);
@@ -530,21 +573,20 @@ namespace BinanceHand
             this.futureCListView.CellEditUseWholeCell = false;
             this.futureCListView.DataSource = null;
             this.futureCListView.HideSelection = false;
-            this.futureCListView.Location = new System.Drawing.Point(1211, 484);
+            this.futureCListView.Location = new System.Drawing.Point(6, 20);
             this.futureCListView.Name = "futureCListView";
             this.futureCListView.ShowGroups = false;
-            this.futureCListView.Size = new System.Drawing.Size(189, 146);
+            this.futureCListView.Size = new System.Drawing.Size(133, 71);
             this.futureCListView.TabIndex = 4;
             this.futureCListView.UseCompatibleStateImageBehavior = false;
             this.futureCListView.View = System.Windows.Forms.View.Details;
             this.futureCListView.VirtualMode = true;
             this.futureCListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
-            this.futureCListView.SelectionChanged += new System.EventHandler(this.ListView_SelectionChanged);
             // 
             // spotKlineRcvTextBox
             // 
             this.spotKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotKlineRcvTextBox.Location = new System.Drawing.Point(822, 634);
+            this.spotKlineRcvTextBox.Location = new System.Drawing.Point(15, 105);
             this.spotKlineRcvTextBox.Name = "spotKlineRcvTextBox";
             this.spotKlineRcvTextBox.ReadOnly = true;
             this.spotKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
@@ -554,7 +596,7 @@ namespace BinanceHand
             // spotKlineReqTextBox
             // 
             this.spotKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotKlineReqTextBox.Location = new System.Drawing.Point(851, 634);
+            this.spotKlineReqTextBox.Location = new System.Drawing.Point(44, 105);
             this.spotKlineReqTextBox.Name = "spotKlineReqTextBox";
             this.spotKlineReqTextBox.ReadOnly = true;
             this.spotKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
@@ -564,7 +606,7 @@ namespace BinanceHand
             // spotAggRcvTextBox
             // 
             this.spotAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotAggRcvTextBox.Location = new System.Drawing.Point(927, 634);
+            this.spotAggRcvTextBox.Location = new System.Drawing.Point(120, 105);
             this.spotAggRcvTextBox.Name = "spotAggRcvTextBox";
             this.spotAggRcvTextBox.ReadOnly = true;
             this.spotAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
@@ -574,7 +616,7 @@ namespace BinanceHand
             // spotAggReqTextBox
             // 
             this.spotAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotAggReqTextBox.Location = new System.Drawing.Point(939, 634);
+            this.spotAggReqTextBox.Location = new System.Drawing.Point(132, 105);
             this.spotAggReqTextBox.Name = "spotAggReqTextBox";
             this.spotAggReqTextBox.ReadOnly = true;
             this.spotAggReqTextBox.Size = new System.Drawing.Size(47, 14);
@@ -584,7 +626,7 @@ namespace BinanceHand
             // futureUKlineRcvTextBox
             // 
             this.futureUKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUKlineRcvTextBox.Location = new System.Drawing.Point(1017, 634);
+            this.futureUKlineRcvTextBox.Location = new System.Drawing.Point(9, 75);
             this.futureUKlineRcvTextBox.Name = "futureUKlineRcvTextBox";
             this.futureUKlineRcvTextBox.ReadOnly = true;
             this.futureUKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
@@ -594,7 +636,7 @@ namespace BinanceHand
             // futureUKlineReqTextBox
             // 
             this.futureUKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUKlineReqTextBox.Location = new System.Drawing.Point(1046, 634);
+            this.futureUKlineReqTextBox.Location = new System.Drawing.Point(38, 75);
             this.futureUKlineReqTextBox.Name = "futureUKlineReqTextBox";
             this.futureUKlineReqTextBox.ReadOnly = true;
             this.futureUKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
@@ -604,7 +646,7 @@ namespace BinanceHand
             // futureUAggRcvTextBox
             // 
             this.futureUAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUAggRcvTextBox.Location = new System.Drawing.Point(1122, 634);
+            this.futureUAggRcvTextBox.Location = new System.Drawing.Point(114, 75);
             this.futureUAggRcvTextBox.Name = "futureUAggRcvTextBox";
             this.futureUAggRcvTextBox.ReadOnly = true;
             this.futureUAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
@@ -614,7 +656,7 @@ namespace BinanceHand
             // futureUAggReqTextBox
             // 
             this.futureUAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUAggReqTextBox.Location = new System.Drawing.Point(1134, 634);
+            this.futureUAggReqTextBox.Location = new System.Drawing.Point(126, 75);
             this.futureUAggReqTextBox.Name = "futureUAggReqTextBox";
             this.futureUAggReqTextBox.ReadOnly = true;
             this.futureUAggReqTextBox.Size = new System.Drawing.Size(47, 14);
@@ -624,7 +666,7 @@ namespace BinanceHand
             // futureCKlineRcvTextBox
             // 
             this.futureCKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCKlineRcvTextBox.Location = new System.Drawing.Point(1211, 634);
+            this.futureCKlineRcvTextBox.Location = new System.Drawing.Point(12, 98);
             this.futureCKlineRcvTextBox.Name = "futureCKlineRcvTextBox";
             this.futureCKlineRcvTextBox.ReadOnly = true;
             this.futureCKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
@@ -634,7 +676,7 @@ namespace BinanceHand
             // futureCKlineReqTextBox
             // 
             this.futureCKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCKlineReqTextBox.Location = new System.Drawing.Point(1240, 634);
+            this.futureCKlineReqTextBox.Location = new System.Drawing.Point(41, 98);
             this.futureCKlineReqTextBox.Name = "futureCKlineReqTextBox";
             this.futureCKlineReqTextBox.ReadOnly = true;
             this.futureCKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
@@ -644,7 +686,7 @@ namespace BinanceHand
             // futureCAggRcvTextBox
             // 
             this.futureCAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCAggRcvTextBox.Location = new System.Drawing.Point(1316, 634);
+            this.futureCAggRcvTextBox.Location = new System.Drawing.Point(117, 98);
             this.futureCAggRcvTextBox.Name = "futureCAggRcvTextBox";
             this.futureCAggRcvTextBox.ReadOnly = true;
             this.futureCAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
@@ -654,7 +696,7 @@ namespace BinanceHand
             // futureCAggReqTextBox
             // 
             this.futureCAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCAggReqTextBox.Location = new System.Drawing.Point(1328, 634);
+            this.futureCAggReqTextBox.Location = new System.Drawing.Point(129, 98);
             this.futureCAggReqTextBox.Name = "futureCAggReqTextBox";
             this.futureCAggReqTextBox.ReadOnly = true;
             this.futureCAggReqTextBox.Size = new System.Drawing.Size(47, 14);
@@ -665,7 +707,7 @@ namespace BinanceHand
             // 
             this.chartTabControl.Controls.Add(this.secChartTab);
             this.chartTabControl.Controls.Add(this.minChartTab);
-            this.chartTabControl.Location = new System.Drawing.Point(132, 28);
+            this.chartTabControl.Location = new System.Drawing.Point(29, 41);
             this.chartTabControl.Multiline = true;
             this.chartTabControl.Name = "chartTabControl";
             this.chartTabControl.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -707,56 +749,273 @@ namespace BinanceHand
             this.chart2.TabIndex = 1;
             this.chart2.Text = "chart2";
             // 
-            // FUMarginRatioTextBox0
+            // spotGroupBox
             // 
-            this.FUMarginRatioTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMarginRatioTextBox0.Location = new System.Drawing.Point(618, 58);
-            this.FUMarginRatioTextBox0.Name = "FUMarginRatioTextBox0";
-            this.FUMarginRatioTextBox0.ReadOnly = true;
-            this.FUMarginRatioTextBox0.Size = new System.Drawing.Size(30, 14);
-            this.FUMarginRatioTextBox0.TabIndex = 1;
-            this.FUMarginRatioTextBox0.Text = "MR :";
+            this.spotGroupBox.Controls.Add(this.spotListView);
+            this.spotGroupBox.Controls.Add(this.spotKlineRcvTextBox);
+            this.spotGroupBox.Controls.Add(this.spotKlineReqTextBox);
+            this.spotGroupBox.Controls.Add(this.spotAggRcvTextBox);
+            this.spotGroupBox.Controls.Add(this.spotAggReqTextBox);
+            this.spotGroupBox.Location = new System.Drawing.Point(1027, 33);
+            this.spotGroupBox.Name = "spotGroupBox";
+            this.spotGroupBox.Size = new System.Drawing.Size(210, 126);
+            this.spotGroupBox.TabIndex = 2;
+            this.spotGroupBox.TabStop = false;
+            this.spotGroupBox.Text = "Spot";
             // 
-            // FUMarginRatioTextBox1
+            // FUGroupBox
             // 
-            this.FUMarginRatioTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMarginRatioTextBox1.Location = new System.Drawing.Point(654, 58);
-            this.FUMarginRatioTextBox1.Name = "FUMarginRatioTextBox1";
-            this.FUMarginRatioTextBox1.ReadOnly = true;
-            this.FUMarginRatioTextBox1.Size = new System.Drawing.Size(50, 14);
-            this.FUMarginRatioTextBox1.TabIndex = 1;
-            this.FUMarginRatioTextBox1.Text = "00.00";
+            this.FUGroupBox.Controls.Add(this.futureUListView);
+            this.FUGroupBox.Controls.Add(this.futureUKlineRcvTextBox);
+            this.FUGroupBox.Controls.Add(this.futureUKlineReqTextBox);
+            this.FUGroupBox.Controls.Add(this.futureUAggRcvTextBox);
+            this.FUGroupBox.Controls.Add(this.futureUAggReqTextBox);
+            this.FUGroupBox.Location = new System.Drawing.Point(1027, 165);
+            this.FUGroupBox.Name = "FUGroupBox";
+            this.FUGroupBox.Size = new System.Drawing.Size(209, 98);
+            this.FUGroupBox.TabIndex = 9;
+            this.FUGroupBox.TabStop = false;
+            this.FUGroupBox.Text = "Futures-U";
+            // 
+            // FCGroupBox
+            // 
+            this.FCGroupBox.Controls.Add(this.futureCListView);
+            this.FCGroupBox.Controls.Add(this.futureCKlineRcvTextBox);
+            this.FCGroupBox.Controls.Add(this.futureCKlineReqTextBox);
+            this.FCGroupBox.Controls.Add(this.futureCAggRcvTextBox);
+            this.FCGroupBox.Controls.Add(this.futureCAggReqTextBox);
+            this.FCGroupBox.Location = new System.Drawing.Point(1022, 278);
+            this.FCGroupBox.Name = "FCGroupBox";
+            this.FCGroupBox.Size = new System.Drawing.Size(200, 141);
+            this.FCGroupBox.TabIndex = 9;
+            this.FCGroupBox.TabStop = false;
+            this.FCGroupBox.Text = "Futures-C";
+            // 
+            // orderGroupBox
+            // 
+            this.orderGroupBox.Controls.Add(this.leverageTextBox0);
+            this.orderGroupBox.Controls.Add(this.orderPriceTextBox1);
+            this.orderGroupBox.Controls.Add(this.autoSizeTextBox1);
+            this.orderGroupBox.Controls.Add(this.autoSizeTextBox0);
+            this.orderGroupBox.Controls.Add(this.orderSizeTextBox1);
+            this.orderGroupBox.Controls.Add(this.orderPriceTextBox2);
+            this.orderGroupBox.Controls.Add(this.orderSizeTextBox0);
+            this.orderGroupBox.Controls.Add(this.leverageTextBox1);
+            this.orderGroupBox.Controls.Add(this.orderPriceTextBox0);
+            this.orderGroupBox.Controls.Add(this.autoSizeCheckBox);
+            this.orderGroupBox.Controls.Add(this.miniSizeCheckBox);
+            this.orderGroupBox.Controls.Add(this.ROCheckBox);
+            this.orderGroupBox.Controls.Add(this.PORadioButton);
+            this.orderGroupBox.Controls.Add(this.marketRadioButton);
+            this.orderGroupBox.Controls.Add(this.IOCRadioButton);
+            this.orderGroupBox.Controls.Add(this.GTCRadioButton);
+            this.orderGroupBox.Controls.Add(this.sellButton);
+            this.orderGroupBox.Controls.Add(this.buyButton);
+            this.orderGroupBox.Location = new System.Drawing.Point(814, 460);
+            this.orderGroupBox.Name = "orderGroupBox";
+            this.orderGroupBox.Size = new System.Drawing.Size(372, 189);
+            this.orderGroupBox.TabIndex = 9;
+            this.orderGroupBox.TabStop = false;
+            this.orderGroupBox.Text = "Order";
+            // 
+            // leverageTextBox0
+            // 
+            this.leverageTextBox0.Location = new System.Drawing.Point(263, 41);
+            this.leverageTextBox0.Name = "leverageTextBox0";
+            this.leverageTextBox0.Size = new System.Drawing.Size(41, 21);
+            this.leverageTextBox0.TabIndex = 9;
+            // 
+            // orderPriceTextBox1
+            // 
+            this.orderPriceTextBox1.Location = new System.Drawing.Point(65, 39);
+            this.orderPriceTextBox1.Name = "orderPriceTextBox1";
+            this.orderPriceTextBox1.Size = new System.Drawing.Size(41, 21);
+            this.orderPriceTextBox1.TabIndex = 9;
+            // 
+            // autoSizeTextBox1
+            // 
+            this.autoSizeTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.autoSizeTextBox1.Location = new System.Drawing.Point(148, 97);
+            this.autoSizeTextBox1.Name = "autoSizeTextBox1";
+            this.autoSizeTextBox1.ReadOnly = true;
+            this.autoSizeTextBox1.Size = new System.Drawing.Size(82, 14);
+            this.autoSizeTextBox1.TabIndex = 8;
+            this.autoSizeTextBox1.Text = "% of Balance";
+            // 
+            // autoSizeTextBox0
+            // 
+            this.autoSizeTextBox0.Location = new System.Drawing.Point(102, 97);
+            this.autoSizeTextBox0.Name = "autoSizeTextBox0";
+            this.autoSizeTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.autoSizeTextBox0.Size = new System.Drawing.Size(30, 21);
+            this.autoSizeTextBox0.TabIndex = 8;
+            this.autoSizeTextBox0.Text = "1";
+            // 
+            // orderSizeTextBox1
+            // 
+            this.orderSizeTextBox1.Location = new System.Drawing.Point(65, 70);
+            this.orderSizeTextBox1.Name = "orderSizeTextBox1";
+            this.orderSizeTextBox1.Size = new System.Drawing.Size(62, 21);
+            this.orderSizeTextBox1.TabIndex = 7;
+            // 
+            // orderPriceTextBox2
+            // 
+            this.orderPriceTextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.orderPriceTextBox2.Location = new System.Drawing.Point(112, 42);
+            this.orderPriceTextBox2.Name = "orderPriceTextBox2";
+            this.orderPriceTextBox2.ReadOnly = true;
+            this.orderPriceTextBox2.Size = new System.Drawing.Size(15, 14);
+            this.orderPriceTextBox2.TabIndex = 6;
+            this.orderPriceTextBox2.Text = "%";
+            // 
+            // orderSizeTextBox0
+            // 
+            this.orderSizeTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.orderSizeTextBox0.Location = new System.Drawing.Point(21, 78);
+            this.orderSizeTextBox0.Name = "orderSizeTextBox0";
+            this.orderSizeTextBox0.ReadOnly = true;
+            this.orderSizeTextBox0.Size = new System.Drawing.Size(38, 14);
+            this.orderSizeTextBox0.TabIndex = 6;
+            this.orderSizeTextBox0.Text = "Size";
+            // 
+            // leverageTextBox1
+            // 
+            this.leverageTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.leverageTextBox1.Location = new System.Drawing.Point(310, 46);
+            this.leverageTextBox1.Name = "leverageTextBox1";
+            this.leverageTextBox1.ReadOnly = true;
+            this.leverageTextBox1.Size = new System.Drawing.Size(33, 14);
+            this.leverageTextBox1.TabIndex = 6;
+            this.leverageTextBox1.Text = "/ 125";
+            // 
+            // orderPriceTextBox0
+            // 
+            this.orderPriceTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.orderPriceTextBox0.Location = new System.Drawing.Point(21, 42);
+            this.orderPriceTextBox0.Name = "orderPriceTextBox0";
+            this.orderPriceTextBox0.ReadOnly = true;
+            this.orderPriceTextBox0.Size = new System.Drawing.Size(38, 14);
+            this.orderPriceTextBox0.TabIndex = 6;
+            this.orderPriceTextBox0.Text = "Price";
+            // 
+            // autoSizeCheckBox
+            // 
+            this.autoSizeCheckBox.AutoSize = true;
+            this.autoSizeCheckBox.Location = new System.Drawing.Point(47, 97);
+            this.autoSizeCheckBox.Name = "autoSizeCheckBox";
+            this.autoSizeCheckBox.Size = new System.Drawing.Size(49, 16);
+            this.autoSizeCheckBox.TabIndex = 4;
+            this.autoSizeCheckBox.Text = "Auto";
+            this.autoSizeCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // miniSizeCheckBox
+            // 
+            this.miniSizeCheckBox.AutoSize = true;
+            this.miniSizeCheckBox.Location = new System.Drawing.Point(133, 72);
+            this.miniSizeCheckBox.Name = "miniSizeCheckBox";
+            this.miniSizeCheckBox.Size = new System.Drawing.Size(106, 16);
+            this.miniSizeCheckBox.TabIndex = 4;
+            this.miniSizeCheckBox.Text = "Minimum Size";
+            this.miniSizeCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // ROCheckBox
+            // 
+            this.ROCheckBox.AutoSize = true;
+            this.ROCheckBox.Checked = true;
+            this.ROCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ROCheckBox.Location = new System.Drawing.Point(21, 132);
+            this.ROCheckBox.Name = "ROCheckBox";
+            this.ROCheckBox.Size = new System.Drawing.Size(97, 16);
+            this.ROCheckBox.TabIndex = 4;
+            this.ROCheckBox.Text = "Reduce Only";
+            this.ROCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // PORadioButton
+            // 
+            this.PORadioButton.AutoSize = true;
+            this.PORadioButton.Location = new System.Drawing.Point(140, 20);
+            this.PORadioButton.Name = "PORadioButton";
+            this.PORadioButton.Size = new System.Drawing.Size(78, 16);
+            this.PORadioButton.TabIndex = 3;
+            this.PORadioButton.TabStop = true;
+            this.PORadioButton.Text = "Post Only";
+            this.PORadioButton.UseVisualStyleBackColor = true;
+            // 
+            // marketRadioButton
+            // 
+            this.marketRadioButton.AutoSize = true;
+            this.marketRadioButton.Location = new System.Drawing.Point(133, 42);
+            this.marketRadioButton.Name = "marketRadioButton";
+            this.marketRadioButton.Size = new System.Drawing.Size(61, 16);
+            this.marketRadioButton.TabIndex = 3;
+            this.marketRadioButton.TabStop = true;
+            this.marketRadioButton.Text = "Market";
+            this.marketRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // IOCRadioButton
+            // 
+            this.IOCRadioButton.AutoSize = true;
+            this.IOCRadioButton.Location = new System.Drawing.Point(76, 20);
+            this.IOCRadioButton.Name = "IOCRadioButton";
+            this.IOCRadioButton.Size = new System.Drawing.Size(44, 16);
+            this.IOCRadioButton.TabIndex = 3;
+            this.IOCRadioButton.TabStop = true;
+            this.IOCRadioButton.Text = "IOC";
+            this.IOCRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // GTCRadioButton
+            // 
+            this.GTCRadioButton.AutoSize = true;
+            this.GTCRadioButton.Checked = true;
+            this.GTCRadioButton.Location = new System.Drawing.Point(21, 20);
+            this.GTCRadioButton.Name = "GTCRadioButton";
+            this.GTCRadioButton.Size = new System.Drawing.Size(49, 16);
+            this.GTCRadioButton.TabIndex = 3;
+            this.GTCRadioButton.TabStop = true;
+            this.GTCRadioButton.Text = "GTC";
+            this.GTCRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // sellButton
+            // 
+            this.sellButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.sellButton.Location = new System.Drawing.Point(133, 154);
+            this.sellButton.Name = "sellButton";
+            this.sellButton.Size = new System.Drawing.Size(117, 29);
+            this.sellButton.TabIndex = 2;
+            this.sellButton.Text = "Sell/Short";
+            this.sellButton.UseVisualStyleBackColor = false;
+            // 
+            // buyButton
+            // 
+            this.buyButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.buyButton.Location = new System.Drawing.Point(10, 154);
+            this.buyButton.Name = "buyButton";
+            this.buyButton.Size = new System.Drawing.Size(117, 29);
+            this.buyButton.TabIndex = 2;
+            this.buyButton.Text = "Buy/Long";
+            this.buyButton.UseVisualStyleBackColor = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1417, 682);
+            this.Controls.Add(this.orderGroupBox);
+            this.Controls.Add(this.FCGroupBox);
+            this.Controls.Add(this.FUGroupBox);
+            this.Controls.Add(this.spotGroupBox);
             this.Controls.Add(this.marketComboBox);
             this.Controls.Add(this.amtTextBox);
             this.Controls.Add(this.nameTextBox);
             this.Controls.Add(this.timeDiffTextBox);
             this.Controls.Add(this.chartTabControl);
             this.Controls.Add(this.priceTextBox);
-            this.Controls.Add(this.futureCAggReqTextBox);
-            this.Controls.Add(this.futureUAggReqTextBox);
-            this.Controls.Add(this.spotAggReqTextBox);
-            this.Controls.Add(this.futureCAggRcvTextBox);
-            this.Controls.Add(this.futureUAggRcvTextBox);
-            this.Controls.Add(this.spotAggRcvTextBox);
-            this.Controls.Add(this.futureCKlineReqTextBox);
-            this.Controls.Add(this.futureCKlineRcvTextBox);
-            this.Controls.Add(this.futureUKlineReqTextBox);
-            this.Controls.Add(this.futureUKlineRcvTextBox);
-            this.Controls.Add(this.spotKlineReqTextBox);
-            this.Controls.Add(this.spotKlineRcvTextBox);
             this.Controls.Add(this.mainTabControl);
-            this.Controls.Add(this.futureCListView);
-            this.Controls.Add(this.futureUListView);
-            this.Controls.Add(this.spotListView);
+            this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.spotListView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.futureUListView)).EndInit();
@@ -782,6 +1041,14 @@ namespace BinanceHand
             this.secChartTab.ResumeLayout(false);
             this.minChartTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
+            this.spotGroupBox.ResumeLayout(false);
+            this.spotGroupBox.PerformLayout();
+            this.FUGroupBox.ResumeLayout(false);
+            this.FUGroupBox.PerformLayout();
+            this.FCGroupBox.ResumeLayout(false);
+            this.FCGroupBox.PerformLayout();
+            this.orderGroupBox.ResumeLayout(false);
+            this.orderGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -837,12 +1104,34 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox FUAvailBalanceTextBox0;
         private System.Windows.Forms.TextBox FUMarginBalanceTextBox1;
         private System.Windows.Forms.TextBox FUMarginBalanceTextBox0;
-        private System.Windows.Forms.TextBox FUBalanceTextBox1;
-        private System.Windows.Forms.TextBox FUBalanceTextBox0;
+        private System.Windows.Forms.TextBox FUWalletBalanceTextBox1;
+        private System.Windows.Forms.TextBox FUWalletBalanceTextBox0;
         private System.Windows.Forms.TextBox FUMaintMarginTextBox1;
         private System.Windows.Forms.TextBox FUMaintMarginTextBox0;
         private System.Windows.Forms.TextBox FUMarginRatioTextBox1;
         private System.Windows.Forms.TextBox FUMarginRatioTextBox0;
+        private System.Windows.Forms.GroupBox spotGroupBox;
+        private System.Windows.Forms.GroupBox FUGroupBox;
+        private System.Windows.Forms.GroupBox FCGroupBox;
+        private System.Windows.Forms.GroupBox orderGroupBox;
+        private System.Windows.Forms.Button sellButton;
+        private System.Windows.Forms.Button buyButton;
+        private System.Windows.Forms.CheckBox ROCheckBox;
+        private System.Windows.Forms.RadioButton PORadioButton;
+        private System.Windows.Forms.RadioButton marketRadioButton;
+        private System.Windows.Forms.RadioButton IOCRadioButton;
+        private System.Windows.Forms.RadioButton GTCRadioButton;
+        private System.Windows.Forms.TextBox orderPriceTextBox2;
+        private System.Windows.Forms.TextBox orderPriceTextBox0;
+        private System.Windows.Forms.TextBox orderSizeTextBox0;
+        private System.Windows.Forms.CheckBox miniSizeCheckBox;
+        private System.Windows.Forms.CheckBox autoSizeCheckBox;
+        private System.Windows.Forms.TextBox orderSizeTextBox1;
+        private System.Windows.Forms.TextBox autoSizeTextBox1;
+        private System.Windows.Forms.TextBox autoSizeTextBox0;
+        private System.Windows.Forms.TextBox orderPriceTextBox1;
+        private System.Windows.Forms.TextBox leverageTextBox0;
+        private System.Windows.Forms.TextBox leverageTextBox1;
     }
 }
 
