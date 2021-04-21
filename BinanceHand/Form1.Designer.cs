@@ -29,8 +29,8 @@ namespace BinanceHand
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.spotListView = new BrightIdeasSoftware.FastDataListView();
             this.futureUListView = new BrightIdeasSoftware.FastDataListView();
@@ -52,14 +52,6 @@ namespace BinanceHand
             this.FUPositionListView = new BrightIdeasSoftware.FastDataListView();
             this.FUOpenOrdersTab = new System.Windows.Forms.TabPage();
             this.FUOpenOrdersListView = new BrightIdeasSoftware.FastDataListView();
-            this.FUOrderHistoryTab = new System.Windows.Forms.TabPage();
-            this.FUOrderHistoryListView = new BrightIdeasSoftware.FastDataListView();
-            this.FUTradeHistoryTab = new System.Windows.Forms.TabPage();
-            this.FUTradeHistoryListView = new BrightIdeasSoftware.FastDataListView();
-            this.FUTransactionHistoryTab = new System.Windows.Forms.TabPage();
-            this.FUTransHistoryListView = new BrightIdeasSoftware.FastDataListView();
-            this.FUAssetsTab = new System.Windows.Forms.TabPage();
-            this.FUAssetsListView = new BrightIdeasSoftware.FastDataListView();
             this.futuresCTab = new System.Windows.Forms.TabPage();
             this.logTab = new System.Windows.Forms.TabPage();
             this.logListBox = new System.Windows.Forms.ListBox();
@@ -107,6 +99,8 @@ namespace BinanceHand
             this.GTCRadioButton = new System.Windows.Forms.RadioButton();
             this.sellButton = new System.Windows.Forms.Button();
             this.buyButton = new System.Windows.Forms.Button();
+            this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.resultListView = new BrightIdeasSoftware.FastDataListView();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.spotListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.futureUListView)).BeginInit();
@@ -117,14 +111,6 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).BeginInit();
             this.FUOpenOrdersTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).BeginInit();
-            this.FUOrderHistoryTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FUOrderHistoryListView)).BeginInit();
-            this.FUTradeHistoryTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FUTradeHistoryListView)).BeginInit();
-            this.FUTransactionHistoryTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FUTransHistoryListView)).BeginInit();
-            this.FUAssetsTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FUAssetsListView)).BeginInit();
             this.logTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.futureCListView)).BeginInit();
             this.chartTabControl.SuspendLayout();
@@ -135,13 +121,15 @@ namespace BinanceHand
             this.FUGroupBox.SuspendLayout();
             this.FCGroupBox.SuspendLayout();
             this.orderGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultListView)).BeginInit();
             this.SuspendLayout();
             // 
             // chart1
             // 
-            legend1.Enabled = false;
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
+            legend5.Enabled = false;
+            legend5.Name = "Legend1";
+            this.chart1.Legends.Add(legend5);
             this.chart1.Location = new System.Drawing.Point(19, 24);
             this.chart1.Name = "chart1";
             this.chart1.Size = new System.Drawing.Size(718, 310);
@@ -187,7 +175,7 @@ namespace BinanceHand
             this.mainTabControl.Location = new System.Drawing.Point(12, 474);
             this.mainTabControl.Name = "mainTabControl";
             this.mainTabControl.SelectedIndex = 0;
-            this.mainTabControl.Size = new System.Drawing.Size(796, 188);
+            this.mainTabControl.Size = new System.Drawing.Size(728, 188);
             this.mainTabControl.TabIndex = 5;
             // 
             // spotTab
@@ -195,7 +183,7 @@ namespace BinanceHand
             this.spotTab.Location = new System.Drawing.Point(4, 22);
             this.spotTab.Name = "spotTab";
             this.spotTab.Padding = new System.Windows.Forms.Padding(3);
-            this.spotTab.Size = new System.Drawing.Size(788, 162);
+            this.spotTab.Size = new System.Drawing.Size(720, 162);
             this.spotTab.TabIndex = 1;
             this.spotTab.Text = "Spot";
             this.spotTab.UseVisualStyleBackColor = true;
@@ -216,7 +204,7 @@ namespace BinanceHand
             this.futuresUTab.Location = new System.Drawing.Point(4, 22);
             this.futuresUTab.Name = "futuresUTab";
             this.futuresUTab.Padding = new System.Windows.Forms.Padding(3);
-            this.futuresUTab.Size = new System.Drawing.Size(788, 162);
+            this.futuresUTab.Size = new System.Drawing.Size(720, 162);
             this.futuresUTab.TabIndex = 2;
             this.futuresUTab.Text = "Futures-U";
             this.futuresUTab.UseVisualStyleBackColor = true;
@@ -325,10 +313,6 @@ namespace BinanceHand
             // 
             this.futuresUTabControl.Controls.Add(this.FUPositionTab);
             this.futuresUTabControl.Controls.Add(this.FUOpenOrdersTab);
-            this.futuresUTabControl.Controls.Add(this.FUOrderHistoryTab);
-            this.futuresUTabControl.Controls.Add(this.FUTradeHistoryTab);
-            this.futuresUTabControl.Controls.Add(this.FUTransactionHistoryTab);
-            this.futuresUTabControl.Controls.Add(this.FUAssetsTab);
             this.futuresUTabControl.Location = new System.Drawing.Point(3, 3);
             this.futuresUTabControl.Name = "futuresUTabControl";
             this.futuresUTabControl.SelectedIndex = 0;
@@ -386,112 +370,12 @@ namespace BinanceHand
             this.FUOpenOrdersListView.View = System.Windows.Forms.View.Details;
             this.FUOpenOrdersListView.VirtualMode = true;
             // 
-            // FUOrderHistoryTab
-            // 
-            this.FUOrderHistoryTab.Controls.Add(this.FUOrderHistoryListView);
-            this.FUOrderHistoryTab.Location = new System.Drawing.Point(4, 22);
-            this.FUOrderHistoryTab.Name = "FUOrderHistoryTab";
-            this.FUOrderHistoryTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUOrderHistoryTab.Size = new System.Drawing.Size(596, 128);
-            this.FUOrderHistoryTab.TabIndex = 2;
-            this.FUOrderHistoryTab.Text = "Order History";
-            this.FUOrderHistoryTab.UseVisualStyleBackColor = true;
-            // 
-            // FUOrderHistoryListView
-            // 
-            this.FUOrderHistoryListView.CellEditUseWholeCell = false;
-            this.FUOrderHistoryListView.DataSource = null;
-            this.FUOrderHistoryListView.HideSelection = false;
-            this.FUOrderHistoryListView.Location = new System.Drawing.Point(304, 16);
-            this.FUOrderHistoryListView.Name = "FUOrderHistoryListView";
-            this.FUOrderHistoryListView.ShowGroups = false;
-            this.FUOrderHistoryListView.Size = new System.Drawing.Size(121, 97);
-            this.FUOrderHistoryListView.TabIndex = 1;
-            this.FUOrderHistoryListView.UseCompatibleStateImageBehavior = false;
-            this.FUOrderHistoryListView.View = System.Windows.Forms.View.Details;
-            this.FUOrderHistoryListView.VirtualMode = true;
-            // 
-            // FUTradeHistoryTab
-            // 
-            this.FUTradeHistoryTab.Controls.Add(this.FUTradeHistoryListView);
-            this.FUTradeHistoryTab.Location = new System.Drawing.Point(4, 22);
-            this.FUTradeHistoryTab.Name = "FUTradeHistoryTab";
-            this.FUTradeHistoryTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUTradeHistoryTab.Size = new System.Drawing.Size(596, 128);
-            this.FUTradeHistoryTab.TabIndex = 3;
-            this.FUTradeHistoryTab.Text = "Trade History";
-            this.FUTradeHistoryTab.UseVisualStyleBackColor = true;
-            // 
-            // FUTradeHistoryListView
-            // 
-            this.FUTradeHistoryListView.CellEditUseWholeCell = false;
-            this.FUTradeHistoryListView.DataSource = null;
-            this.FUTradeHistoryListView.HideSelection = false;
-            this.FUTradeHistoryListView.Location = new System.Drawing.Point(304, 16);
-            this.FUTradeHistoryListView.Name = "FUTradeHistoryListView";
-            this.FUTradeHistoryListView.ShowGroups = false;
-            this.FUTradeHistoryListView.Size = new System.Drawing.Size(121, 97);
-            this.FUTradeHistoryListView.TabIndex = 1;
-            this.FUTradeHistoryListView.UseCompatibleStateImageBehavior = false;
-            this.FUTradeHistoryListView.View = System.Windows.Forms.View.Details;
-            this.FUTradeHistoryListView.VirtualMode = true;
-            // 
-            // FUTransactionHistoryTab
-            // 
-            this.FUTransactionHistoryTab.Controls.Add(this.FUTransHistoryListView);
-            this.FUTransactionHistoryTab.Location = new System.Drawing.Point(4, 22);
-            this.FUTransactionHistoryTab.Name = "FUTransactionHistoryTab";
-            this.FUTransactionHistoryTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUTransactionHistoryTab.Size = new System.Drawing.Size(596, 128);
-            this.FUTransactionHistoryTab.TabIndex = 4;
-            this.FUTransactionHistoryTab.Text = "Transaction History";
-            this.FUTransactionHistoryTab.UseVisualStyleBackColor = true;
-            // 
-            // FUTransHistoryListView
-            // 
-            this.FUTransHistoryListView.CellEditUseWholeCell = false;
-            this.FUTransHistoryListView.DataSource = null;
-            this.FUTransHistoryListView.HideSelection = false;
-            this.FUTransHistoryListView.Location = new System.Drawing.Point(304, 16);
-            this.FUTransHistoryListView.Name = "FUTransHistoryListView";
-            this.FUTransHistoryListView.ShowGroups = false;
-            this.FUTransHistoryListView.Size = new System.Drawing.Size(121, 97);
-            this.FUTransHistoryListView.TabIndex = 1;
-            this.FUTransHistoryListView.UseCompatibleStateImageBehavior = false;
-            this.FUTransHistoryListView.View = System.Windows.Forms.View.Details;
-            this.FUTransHistoryListView.VirtualMode = true;
-            // 
-            // FUAssetsTab
-            // 
-            this.FUAssetsTab.Controls.Add(this.FUAssetsListView);
-            this.FUAssetsTab.Location = new System.Drawing.Point(4, 22);
-            this.FUAssetsTab.Name = "FUAssetsTab";
-            this.FUAssetsTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUAssetsTab.Size = new System.Drawing.Size(596, 128);
-            this.FUAssetsTab.TabIndex = 5;
-            this.FUAssetsTab.Text = "Assets";
-            this.FUAssetsTab.UseVisualStyleBackColor = true;
-            // 
-            // FUAssetsListView
-            // 
-            this.FUAssetsListView.CellEditUseWholeCell = false;
-            this.FUAssetsListView.DataSource = null;
-            this.FUAssetsListView.HideSelection = false;
-            this.FUAssetsListView.Location = new System.Drawing.Point(304, 16);
-            this.FUAssetsListView.Name = "FUAssetsListView";
-            this.FUAssetsListView.ShowGroups = false;
-            this.FUAssetsListView.Size = new System.Drawing.Size(121, 97);
-            this.FUAssetsListView.TabIndex = 1;
-            this.FUAssetsListView.UseCompatibleStateImageBehavior = false;
-            this.FUAssetsListView.View = System.Windows.Forms.View.Details;
-            this.FUAssetsListView.VirtualMode = true;
-            // 
             // futuresCTab
             // 
             this.futuresCTab.Location = new System.Drawing.Point(4, 22);
             this.futuresCTab.Name = "futuresCTab";
             this.futuresCTab.Padding = new System.Windows.Forms.Padding(3);
-            this.futuresCTab.Size = new System.Drawing.Size(788, 162);
+            this.futuresCTab.Size = new System.Drawing.Size(720, 162);
             this.futuresCTab.TabIndex = 3;
             this.futuresCTab.Text = "Futures-C";
             this.futuresCTab.UseVisualStyleBackColor = true;
@@ -502,7 +386,7 @@ namespace BinanceHand
             this.logTab.Location = new System.Drawing.Point(4, 22);
             this.logTab.Name = "logTab";
             this.logTab.Padding = new System.Windows.Forms.Padding(3);
-            this.logTab.Size = new System.Drawing.Size(788, 162);
+            this.logTab.Size = new System.Drawing.Size(720, 162);
             this.logTab.TabIndex = 4;
             this.logTab.Text = "Log";
             this.logTab.UseVisualStyleBackColor = true;
@@ -740,9 +624,9 @@ namespace BinanceHand
             // 
             // chart2
             // 
-            legend2.Enabled = false;
-            legend2.Name = "Legend1";
-            this.chart2.Legends.Add(legend2);
+            legend6.Enabled = false;
+            legend6.Name = "Legend1";
+            this.chart2.Legends.Add(legend6);
             this.chart2.Location = new System.Drawing.Point(45, 21);
             this.chart2.Name = "chart2";
             this.chart2.Size = new System.Drawing.Size(743, 373);
@@ -811,9 +695,9 @@ namespace BinanceHand
             this.orderGroupBox.Controls.Add(this.GTCRadioButton);
             this.orderGroupBox.Controls.Add(this.sellButton);
             this.orderGroupBox.Controls.Add(this.buyButton);
-            this.orderGroupBox.Location = new System.Drawing.Point(814, 460);
+            this.orderGroupBox.Location = new System.Drawing.Point(746, 469);
             this.orderGroupBox.Name = "orderGroupBox";
-            this.orderGroupBox.Size = new System.Drawing.Size(372, 189);
+            this.orderGroupBox.Size = new System.Drawing.Size(351, 189);
             this.orderGroupBox.TabIndex = 9;
             this.orderGroupBox.TabStop = false;
             this.orderGroupBox.Text = "Order";
@@ -822,6 +706,7 @@ namespace BinanceHand
             // 
             this.leverageTextBox0.Location = new System.Drawing.Point(263, 41);
             this.leverageTextBox0.Name = "leverageTextBox0";
+            this.leverageTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.leverageTextBox0.Size = new System.Drawing.Size(41, 21);
             this.leverageTextBox0.TabIndex = 9;
             // 
@@ -829,6 +714,7 @@ namespace BinanceHand
             // 
             this.orderPriceTextBox1.Location = new System.Drawing.Point(65, 39);
             this.orderPriceTextBox1.Name = "orderPriceTextBox1";
+            this.orderPriceTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.orderPriceTextBox1.Size = new System.Drawing.Size(41, 21);
             this.orderPriceTextBox1.TabIndex = 9;
             // 
@@ -855,6 +741,7 @@ namespace BinanceHand
             // 
             this.orderSizeTextBox1.Location = new System.Drawing.Point(65, 70);
             this.orderSizeTextBox1.Name = "orderSizeTextBox1";
+            this.orderSizeTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.orderSizeTextBox1.Size = new System.Drawing.Size(62, 21);
             this.orderSizeTextBox1.TabIndex = 7;
             // 
@@ -874,7 +761,7 @@ namespace BinanceHand
             this.orderSizeTextBox0.Location = new System.Drawing.Point(21, 78);
             this.orderSizeTextBox0.Name = "orderSizeTextBox0";
             this.orderSizeTextBox0.ReadOnly = true;
-            this.orderSizeTextBox0.Size = new System.Drawing.Size(38, 14);
+            this.orderSizeTextBox0.Size = new System.Drawing.Size(30, 14);
             this.orderSizeTextBox0.TabIndex = 6;
             this.orderSizeTextBox0.Text = "Size";
             // 
@@ -894,7 +781,7 @@ namespace BinanceHand
             this.orderPriceTextBox0.Location = new System.Drawing.Point(21, 42);
             this.orderPriceTextBox0.Name = "orderPriceTextBox0";
             this.orderPriceTextBox0.ReadOnly = true;
-            this.orderPriceTextBox0.Size = new System.Drawing.Size(38, 14);
+            this.orderPriceTextBox0.Size = new System.Drawing.Size(30, 14);
             this.orderPriceTextBox0.TabIndex = 6;
             this.orderPriceTextBox0.Text = "Price";
             // 
@@ -995,11 +882,36 @@ namespace BinanceHand
             this.buyButton.Text = "Buy/Long";
             this.buyButton.UseVisualStyleBackColor = false;
             // 
+            // pictureBox
+            // 
+            this.pictureBox.Location = new System.Drawing.Point(1274, 528);
+            this.pictureBox.Name = "pictureBox";
+            this.pictureBox.Size = new System.Drawing.Size(172, 142);
+            this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox.TabIndex = 10;
+            this.pictureBox.TabStop = false;
+            // 
+            // resultListView
+            // 
+            this.resultListView.CellEditUseWholeCell = false;
+            this.resultListView.DataSource = null;
+            this.resultListView.HideSelection = false;
+            this.resultListView.Location = new System.Drawing.Point(1115, 515);
+            this.resultListView.Name = "resultListView";
+            this.resultListView.ShowGroups = false;
+            this.resultListView.Size = new System.Drawing.Size(121, 97);
+            this.resultListView.TabIndex = 11;
+            this.resultListView.UseCompatibleStateImageBehavior = false;
+            this.resultListView.View = System.Windows.Forms.View.Details;
+            this.resultListView.VirtualMode = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1417, 682);
+            this.ClientSize = new System.Drawing.Size(1458, 682);
+            this.Controls.Add(this.resultListView);
+            this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.orderGroupBox);
             this.Controls.Add(this.FCGroupBox);
             this.Controls.Add(this.FUGroupBox);
@@ -1027,14 +939,6 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).EndInit();
             this.FUOpenOrdersTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).EndInit();
-            this.FUOrderHistoryTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FUOrderHistoryListView)).EndInit();
-            this.FUTradeHistoryTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FUTradeHistoryListView)).EndInit();
-            this.FUTransactionHistoryTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FUTransHistoryListView)).EndInit();
-            this.FUAssetsTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FUAssetsListView)).EndInit();
             this.logTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.futureCListView)).EndInit();
             this.chartTabControl.ResumeLayout(false);
@@ -1049,6 +953,8 @@ namespace BinanceHand
             this.FCGroupBox.PerformLayout();
             this.orderGroupBox.ResumeLayout(false);
             this.orderGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultListView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1090,16 +996,8 @@ namespace BinanceHand
         private System.Windows.Forms.TabPage futuresCTab;
         private System.Windows.Forms.TabPage logTab;
         private System.Windows.Forms.ListBox logListBox;
-        private System.Windows.Forms.TabPage FUOrderHistoryTab;
-        private System.Windows.Forms.TabPage FUTradeHistoryTab;
-        private System.Windows.Forms.TabPage FUTransactionHistoryTab;
-        private System.Windows.Forms.TabPage FUAssetsTab;
         private BrightIdeasSoftware.FastDataListView FUPositionListView;
         private BrightIdeasSoftware.FastDataListView FUOpenOrdersListView;
-        private BrightIdeasSoftware.FastDataListView FUOrderHistoryListView;
-        private BrightIdeasSoftware.FastDataListView FUTradeHistoryListView;
-        private BrightIdeasSoftware.FastDataListView FUTransHistoryListView;
-        private BrightIdeasSoftware.FastDataListView FUAssetsListView;
         private System.Windows.Forms.TextBox FUAvailBalanceTextBox1;
         private System.Windows.Forms.TextBox FUAvailBalanceTextBox0;
         private System.Windows.Forms.TextBox FUMarginBalanceTextBox1;
@@ -1132,6 +1030,8 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox orderPriceTextBox1;
         private System.Windows.Forms.TextBox leverageTextBox0;
         private System.Windows.Forms.TextBox leverageTextBox1;
+        private System.Windows.Forms.PictureBox pictureBox;
+        private BrightIdeasSoftware.FastDataListView resultListView;
     }
 }
 

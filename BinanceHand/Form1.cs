@@ -22,6 +22,8 @@ using System.Windows.Forms.DataVisualization.Charting;
 using BrightIdeasSoftware;
 using Binance.Net.Objects.Futures.MarketStream;
 using Binance.Net.Objects.Futures.UserStream;
+using System.Drawing.Imaging;
+using IrrKlang;
 
 namespace BinanceHand
 {
@@ -117,18 +119,19 @@ namespace BinanceHand
 
         void SetComponents()
         {
-            startTime = DateTime.UtcNow.ToString();
-            Text = "Binance       UTC-" + startTime;
+            SetTheme();
 
             SetComponentsLocationAndSize();
 
-            SetChart();
+            SetComponentsDetails();
+        }
+        void SetTheme()
+        {
+            startTime = DateTime.UtcNow.ToString();
+            
+            Text = "Binance       UTC-" + startTime;
 
-            SetSymbolsListView();
-
-            SetMainListView();
-
-            SetOrderView();
+            BackColor = chart1.BackColor;
         }
         void SetComponentsLocationAndSize()
         {
@@ -141,6 +144,8 @@ namespace BinanceHand
             SetSymbolsListViewLocationAndSize();
 
             SetOrderViewLocationAndSize();
+
+            SetResultViewLocationAndSize();
         }
         void SetChartLocationAndSize()
         {
@@ -151,7 +156,7 @@ namespace BinanceHand
             minChartTab.Size = secChartTab.Size;
 
             marketComboBox.Size = new Size(60, nameTextBox.Size.Height);
-            marketComboBox.Location = chartTabControl.Location;
+            marketComboBox.Location = new Point(chartTabControl.Location.X + 3, chartTabControl.Location.Y);
             marketComboBox.BringToFront();
             nameTextBox.Location = new Point(marketComboBox.Location.X + marketComboBox.Size.Width, marketComboBox.Location.Y);
             nameTextBox.BringToFront();
@@ -160,22 +165,11 @@ namespace BinanceHand
             chart1.Size = new Size(secChartTab.Size.Width - 8, secChartTab.Size.Height - 8);
             chart2.Location = chart1.Location;
             chart2.Size = chart1.Size;
-
-            priceTextBox.Location = new Point(chartTabControl.Location.X + chartTabControl.Size.Width - 230, chartTabControl.Location.Y + chartTabControl.Size.Height - 20);
-            priceTextBox.BackColor = chart1.BackColor;
-            priceTextBox.BringToFront();
-            amtTextBox.Location = new Point(priceTextBox.Location.X + priceTextBox.Size.Width, priceTextBox.Location.Y);
-            amtTextBox.BackColor = chart1.BackColor;
-            amtTextBox.BringToFront();
-            timeDiffTextBox.Location = new Point(amtTextBox.Location.X + amtTextBox.Size.Width, amtTextBox.Location.Y);
-            timeDiffTextBox.Size = new Size(30, amtTextBox.Size.Height);
-            timeDiffTextBox.BackColor = chart1.BackColor;
-            timeDiffTextBox.BringToFront();
         }
         void SetMainTabControlLocationAndSize()
         {
             mainTabControl.Location = new Point(chartTabControl.Location.X, chartTabControl.Location.Y + chartTabControl.Size.Height);
-            mainTabControl.Size = new Size((int)(chartTabControl.Size.Width * 0.7), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 30);
+            mainTabControl.Size = new Size((int)(chartTabControl.Size.Width * 0.7), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 25);
 
             futuresUTab.Size = new Size(mainTabControl.Size.Width - 8, mainTabControl.Size.Height - 26);
             logTab.Size = futuresUTab.Size;
@@ -228,26 +222,26 @@ namespace BinanceHand
 
             FUPositionTab.Size = new Size(futuresUTabControl.Size.Width - 8, futuresUTabControl.Size.Height - 26);
             FUOpenOrdersTab.Size = FUPositionTab.Size;
-            FUOrderHistoryTab.Size = FUPositionTab.Size;
-            FUTradeHistoryTab.Size = FUPositionTab.Size;
-            FUTransactionHistoryTab.Size = FUPositionTab.Size;
-            FUAssetsTab.Size = FUPositionTab.Size;
 
             FUPositionListView.Location = chart1.Location;
             FUPositionListView.Size = new Size(FUPositionTab.Size.Width - 8, FUPositionTab.Size.Height - 8);
             FUOpenOrdersListView.Location = chart1.Location;
             FUOpenOrdersListView.Size = FUPositionListView.Size;
-            FUOrderHistoryListView.Location = chart1.Location;
-            FUOrderHistoryListView.Size = FUPositionListView.Size;
-            FUTradeHistoryListView.Location = chart1.Location;
-            FUTradeHistoryListView.Size = FUPositionListView.Size;
-            FUTransHistoryListView.Location = chart1.Location;
-            FUTransHistoryListView.Size = FUPositionListView.Size;
-            FUAssetsListView.Location = chart1.Location;
-            FUAssetsListView.Size = FUPositionListView.Size;
 
             logListBox.Location = chart1.Location;
             logListBox.Size = futuresUTabControl.Size;
+
+            priceTextBox.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width - priceTextBox.Size.Width - amtTextBox.Size.Width - timeDiffTextBox.Size.Width
+                , mainTabControl.Location.Y);
+            priceTextBox.BackColor = chart1.BackColor;
+            priceTextBox.BringToFront();
+            amtTextBox.Location = new Point(priceTextBox.Location.X + priceTextBox.Size.Width, priceTextBox.Location.Y);
+            amtTextBox.BackColor = chart1.BackColor;
+            amtTextBox.BringToFront();
+            timeDiffTextBox.Location = new Point(amtTextBox.Location.X + amtTextBox.Size.Width, amtTextBox.Location.Y);
+            timeDiffTextBox.Size = new Size(30, amtTextBox.Size.Height);
+            timeDiffTextBox.BackColor = chart1.BackColor;
+            timeDiffTextBox.BringToFront();
         }
         void SetSymbolsListViewLocationAndSize()
         {
@@ -306,64 +300,45 @@ namespace BinanceHand
             IOCRadioButton.Location = new Point(GTCRadioButton.Location.X + GTCRadioButton.Size.Width + 3, GTCRadioButton.Location.Y);
             PORadioButton.Location = new Point(IOCRadioButton.Location.X + IOCRadioButton.Size.Width + 3, GTCRadioButton.Location.Y);
             leverageTextBox0.Location = new Point(PORadioButton.Location.X + PORadioButton.Size.Width + 20, GTCRadioButton.Location.Y);
-            leverageTextBox1.Location = new Point(leverageTextBox0.Location.X + leverageTextBox0.Size.Width + 3, leverageTextBox0.Location.Y - leverageTextBox0.Size.Height + leverageTextBox1.Size.Height);
+            leverageTextBox1.Location = new Point(leverageTextBox0.Location.X + leverageTextBox0.Size.Width + 5, leverageTextBox0.Location.Y + (leverageTextBox0.Size.Height - leverageTextBox1.Size.Height) / 2);
 
-            orderPriceTextBox0.Location = new Point(GTCRadioButton.Location.X, GTCRadioButton.Location.Y + GTCRadioButton.Size.Height + 10 - orderPriceTextBox1.Size.Height + orderPriceTextBox0.Size.Height);
-            orderPriceTextBox1.Location = new Point(orderPriceTextBox0.Location.X + orderPriceTextBox0.Size.Width + 3, orderPriceTextBox0.Location.Y - orderPriceTextBox0.Size.Height + orderPriceTextBox1.Size.Height);
+            orderPriceTextBox0.Location = new Point(GTCRadioButton.Location.X, GTCRadioButton.Location.Y + GTCRadioButton.Size.Height + 7 + (orderPriceTextBox1.Size.Height - orderPriceTextBox0.Size.Height) / 2);
+            orderPriceTextBox1.Location = new Point(orderPriceTextBox0.Location.X + orderPriceTextBox0.Size.Width + 3, orderPriceTextBox0.Location.Y - (orderPriceTextBox1.Size.Height - orderPriceTextBox0.Size.Height) / 2);
             orderPriceTextBox2.Location = new Point(orderPriceTextBox1.Location.X + orderPriceTextBox1.Size.Width + 3, orderPriceTextBox0.Location.Y);
-            marketRadioButton.Location = new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 10, orderPriceTextBox1.Location.Y);
+            marketRadioButton.Location = new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 10, orderPriceTextBox0.Location.Y);
 
-            orderSizeTextBox0.Location = new Point(orderPriceTextBox0.Location.X, orderPriceTextBox0.Location.Y + orderPriceTextBox0.Size.Height + 10 - orderSizeTextBox1.Size.Height + orderSizeTextBox0.Size.Height);
-            orderSizeTextBox1.Location = new Point(orderSizeTextBox0.Location.X + orderSizeTextBox0.Size.Width + 3, orderSizeTextBox0.Location.Y - orderSizeTextBox0.Size.Height + orderSizeTextBox1.Size.Height);
-            miniSizeCheckBox.Location = new Point(marketRadioButton.Location.X, orderSizeTextBox1.Location.Y);
+            orderSizeTextBox0.Location = new Point(orderPriceTextBox0.Location.X, orderPriceTextBox0.Location.Y + orderPriceTextBox0.Size.Height + 7 + (orderSizeTextBox1.Size.Height - orderSizeTextBox0.Size.Height) / 2);
+            orderSizeTextBox1.Location = new Point(orderSizeTextBox0.Location.X + orderSizeTextBox0.Size.Width + 3, orderSizeTextBox0.Location.Y - (orderSizeTextBox1.Size.Height - orderSizeTextBox0.Size.Height) / 2);
+            miniSizeCheckBox.Location = new Point(marketRadioButton.Location.X, orderSizeTextBox0.Location.Y);
 
-            autoSizeCheckBox.Location = new Point(orderSizeTextBox0.Location.X + 20, orderSizeTextBox0.Location.Y + orderSizeTextBox0.Size.Height + 10);
-            autoSizeTextBox0.Location = new Point(autoSizeCheckBox.Location.X + autoSizeCheckBox.Size.Width + 3, autoSizeCheckBox.Location.Y);
-            autoSizeTextBox1.Location = new Point(autoSizeTextBox0.Location.X + autoSizeTextBox0.Size.Width + 3, autoSizeTextBox0.Location.Y - autoSizeTextBox0.Size.Height + autoSizeTextBox1.Size.Height);
+            autoSizeCheckBox.Location = new Point(orderSizeTextBox0.Location.X + 20, orderSizeTextBox0.Location.Y + orderSizeTextBox0.Size.Height + 10 + (autoSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2);
+            autoSizeTextBox0.Location = new Point(autoSizeCheckBox.Location.X + autoSizeCheckBox.Size.Width + 3, autoSizeCheckBox.Location.Y - (autoSizeTextBox0.Size.Height - autoSizeTextBox1.Size.Height) / 2);
+            autoSizeTextBox1.Location = new Point(autoSizeTextBox0.Location.X + autoSizeTextBox0.Size.Width + 3, autoSizeTextBox0.Location.Y + (autoSizeTextBox0.Size.Height - autoSizeTextBox1.Size.Height) / 2);
+        }
+        void SetResultViewLocationAndSize()
+        {
+            pictureBox.Size = new Size(mainTabControl.Size.Height / 3 * 4, mainTabControl.Size.Height);
+            pictureBox.Location = new Point(Screen.GetWorkingArea(this).Size.Width - pictureBox.Size.Width - 3, mainTabControl.Location.Y);
+
+            resultListView.Size = new Size(pictureBox.Location.X - orderGroupBox.Location.X - orderGroupBox.Size.Width - 6, mainTabControl.Size.Height);
+            resultListView.Location = new Point(orderGroupBox.Location.X + orderGroupBox.Size.Width + 3, mainTabControl.Location.Y);
         }
 
+        void SetComponentsDetails()
+        {
+            SetChart();
+
+            SetSymbolsListView();
+
+            SetMainListView();
+
+            SetOrderView();
+
+            SetResultView();
+        }
         void SetChart()
         {
             marketComboBox.SelectedItem = marketComboBox.Items[1];
-
-            nameTextBox.KeyDown += (sender, e) =>
-            {
-                if (e.KeyCode != Keys.Enter)
-                    return;
-
-                switch (marketComboBox.SelectedItem.ToString())
-                {
-                    case "S":
-                        if (!SPOTItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                        {
-                            MessageBox.Show("No symbol");
-                            return;
-                        }
-                        ShowChart(SPOTItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                        break;
-
-                    case "F_U":
-                        if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                        {
-                            MessageBox.Show("No symbol");
-                            return;
-                        }
-                        ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                        break;
-
-                    case "F_C":
-                        if (!FCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                        {
-                            MessageBox.Show("No symbol");
-                            return;
-                        }
-                        ShowChart(FCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                        break;
-
-                    default:
-                        break;
-                }
-            };
 
             chart1.AxisViewChanged += (sender, e) => { AdjustChart(chart1); };
 
@@ -383,7 +358,6 @@ namespace BinanceHand
             chartAreaMain.AxisY.LabelStyle.Enabled = false;
 
             chartAreaMain.Position = new ElementPosition(0, 0, 100, 100);
-
 
             var chartAreaMsMd = chart1.ChartAreas.Add("ChartAreaMsMd");
             chartAreaMsMd.BackColor = Color.Transparent;
@@ -633,7 +607,6 @@ namespace BinanceHand
                 { timeColumn, nameColumn, typeColumn, sideColumn, priceColumn, amountColumn,
                     filledColumn, ROColumn, conditionColumn });
             FUOpenOrdersListView.SelectionChanged += (sender, e) => { if (FUOpenOrdersListView.SelectedIndices.Count == 1) ShowChart(FUOpenOrdersListView.SelectedObject as ItemData); };
-            FUOpenOrdersListView.ButtonClick += (sender, e) => { CancelOrder(e.Model as ItemData); };
 
             mainTabControl.SelectedTab = futuresUTab;
             futuresUTabControl.SelectedTab = FUPositionTab;
@@ -674,6 +647,85 @@ namespace BinanceHand
 
             buyButton.Click += (sender, e) => { PlaceOrder(OrderSide.Buy); };
             sellButton.Click += (sender, e) => { PlaceOrder(OrderSide.Sell); };
+        }
+        void SetResultView()
+        {
+            pictureBox.Enabled = false;
+            pictureBox.Paint += (sender, e) =>
+            {
+                currentFrame++;
+                if (currentFrame == numberOfFrames)
+                {
+                    pictureBox.Visible = false;
+                    pictureBox.Enabled = false;
+                }
+            };
+
+            var numberColumn = new OLVColumn("No.", "Number");
+            var profitColumn = new OLVColumn("Profit(%)", "Profit");
+            numberColumn.FreeSpaceProportion = 2;
+            profitColumn.FreeSpaceProportion = 3;
+            resultListView.AllColumns.Add(numberColumn);
+            resultListView.AllColumns.Add(profitColumn);
+            resultListView.Columns.AddRange(new ColumnHeader[] { numberColumn, profitColumn });
+            resultListView.FormatRow += (sender, e) =>
+            {
+                if (((ResultData)e.Model).Profit > 0.15m)
+                    e.Item.ForeColor = Color.Gold;
+            };
+        }
+
+        #region LoadResultGIF vars
+        int numberOfFrames = 0;
+        int currentFrame = 0;
+        Image fail = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\fail0\fail0.gif");
+        Image win0 = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win0\win0.gif");
+        Image win1 = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win1\win1.gif");
+        Image win2 = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win2\win2.gif");
+        Image win3 = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win3\win3.gif");
+
+        static ISoundEngine soundEngine = new ISoundEngine() { SoundVolume = 0.13f };
+        ISound currentlyPlayingSound;
+        ISoundSource failSound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\fail0\fail0.ogg");
+        ISoundSource win0Sound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win0\win0.ogg");
+        ISoundSource win1Sound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win1\win1.ogg");
+        ISoundSource win2Sound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win2\win2.ogg");
+        ISoundSource win3Sound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win3\win3.ogg");
+        #endregion
+        void LoadResultEffect(decimal profit)
+        {
+            if (profit <= 0.1m)
+            {
+                pictureBox.Image = fail;
+                currentlyPlayingSound = soundEngine.Play2D(failSound, false, false, false);
+            }
+            else if (profit <= 0.4m)
+            {
+                pictureBox.Image = win0;
+                currentlyPlayingSound = soundEngine.Play2D(win0Sound, false, false, false);
+            }
+            else if (profit <= 0.7m)
+            {
+                pictureBox.Image = win1;
+                currentlyPlayingSound = soundEngine.Play2D(win1Sound, false, false, false);
+            }
+            else if (profit <= 1.0m)
+            {
+                pictureBox.Image = win2;
+                currentlyPlayingSound = soundEngine.Play2D(win2Sound, false, false, false);
+            }
+            else
+            {
+                pictureBox.Image = win3;
+                currentlyPlayingSound = soundEngine.Play2D(win3Sound, false, false, false);
+            }
+
+            var dimension = new FrameDimension(pictureBox.Image.FrameDimensionsList[0]);
+            currentFrame = 0;
+            numberOfFrames = pictureBox.Image.GetFrameCount(dimension);
+            pictureBox.Image.SelectActiveFrame(dimension, 0);
+            pictureBox.Visible = true;
+            pictureBox.Enabled = true;
         }
 
         void PlaceOrder(OrderSide orderSide)
@@ -793,7 +845,10 @@ namespace BinanceHand
             {
                 var stick = itemDataShowing.secStickList[itemDataShowing.secStickList.Count - 1];
 
-                var autoSize = (stick.Ms + stick.Md) / 2 / ((stick.Price[0] / stick.Price[1] - 1) * 1000) / 10;
+                var autoSize = (stick.Ms + stick.Md) / 2  / 10;
+
+                if (stick.Price[0] != stick.Price[1] && stick.Price[0] / stick.Price[1] > 1.001m)
+                    autoSize /= (stick.Price[0] / stick.Price[1] - 1) * 1000 ;
 
                 var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / ((stick.Price[0] + stick.Price[1]) / 2) / itemDataShowing.minSize) * itemDataShowing.minSize;
 
@@ -1867,6 +1922,21 @@ namespace BinanceHand
             else if (data.UpdateData.Status == OrderStatus.Filled || data.UpdateData.Status == OrderStatus.Canceled 
                 || data.UpdateData.Status == OrderStatus.Rejected || data.UpdateData.Status == OrderStatus.Expired)
             {
+                if (data.UpdateData.RealizedProfit != 0 && data.UpdateData.Status == OrderStatus.Filled)
+                {
+                    var resultData = new ResultData(resultListView.Items.Count + 1);
+
+                    if (data.UpdateData.Side == OrderSide.Sell)
+                        resultData.Profit = Math.Round((data.UpdateData.AveragePrice / itemData.EntryPrice - 1) * 100, 2);
+                    else
+                        resultData.Profit = Math.Round((itemData.EntryPrice / data.UpdateData.AveragePrice - 1) * 100, 2);
+
+                    resultListView.InsertObjects(0, new List<ResultData> { resultData });
+                    resultListView.RefreshObject(resultData);
+
+                    LoadResultEffect(resultData.Profit);
+                }
+
                 itemData.order = false;
 
                 FUOpenOrdersListView.RemoveObject(itemData);
@@ -2086,13 +2156,103 @@ namespace BinanceHand
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (nameTextBox.Focused)
-                return;
-
-            if (itemDataShowing != null && itemDataShowing.order && e.KeyCode == Keys.Delete)
+            switch (e.KeyCode)
             {
-                CancelOrder(itemDataShowing);
+                case Keys.ControlKey:
+                    if (itemDataShowing != null)
+                        buyButton.PerformClick();
+                    e.Handled = true;
+                    break;
+
+                case Keys.Menu:
+                    if (itemDataShowing != null)
+                        sellButton.PerformClick();
+                    e.Handled = true;
+                    break;
+
+                case Keys.X:
+                    if (chartTabControl.SelectedTab == secChartTab)
+                        chart1.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
+                    else if (chartTabControl.SelectedTab == minChartTab)
+                        chart2.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
+                    e.Handled = true;
+                    break;
+
+                case Keys.Z:
+                    if (chartTabControl.SelectedTab == secChartTab)
+                        chart1.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
+                    else if (chartTabControl.SelectedTab == minChartTab)
+                        chart2.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
+                    e.Handled = true;
+                    break;
+
+                case Keys.A:
+                    chartTabControl.SelectedTab = minChartTab;
+                    e.Handled = true;
+                    break;
+
+                case Keys.S:
+                    chartTabControl.SelectedTab = secChartTab;
+                    e.Handled = true;
+                    break;
+
+                case Keys.Enter:
+                    if (nameTextBox.Focused)
+                        switch (marketComboBox.SelectedItem.ToString())
+                        {
+                            case "S":
+                                if (!SPOTItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                                {
+                                    MessageBox.Show("No symbol");
+                                    return;
+                                }
+                                ShowChart(SPOTItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                                break;
+
+                            case "F_U":
+                                if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                                {
+                                    MessageBox.Show("No symbol");
+                                    return;
+                                }
+                                ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                                break;
+
+                            case "F_C":
+                                if (!FCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
+                                {
+                                    MessageBox.Show("No symbol");
+                                    return;
+                                }
+                                ShowChart(FCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                                break;
+
+                            default:
+                                break;
+                        }
+                    e.Handled = true;
+                    break;
+
+                case Keys.Delete:
+                    if (itemDataShowing != null && itemDataShowing.order)
+                        CancelOrder(itemDataShowing);
+                    e.Handled = true;
+                    break;
+
+                default:
+                    break;
             }
+        }
+    }
+
+    class ResultData
+    {
+        public int Number;
+        public decimal Profit;
+
+        public ResultData(int n)
+        {
+            Number = n;
         }
     }
 }

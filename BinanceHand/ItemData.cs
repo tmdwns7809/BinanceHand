@@ -107,6 +107,7 @@ namespace BinanceHand
         public decimal maxNotionalValue;
         public decimal PNL;
         public decimal ROE;
+        public long positionOrderID;
 
         public List<BinanceFuturesBracket> brackets;
 
