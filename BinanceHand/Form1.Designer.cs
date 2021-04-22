@@ -31,12 +31,12 @@ namespace BinanceHand
         {
             System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.spotListView = new BrightIdeasSoftware.FastDataListView();
-            this.futureUListView = new BrightIdeasSoftware.FastDataListView();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend7 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend8 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            this.secChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.FUListView = new BrightIdeasSoftware.FastDataListView();
             this.mainTabControl = new System.Windows.Forms.TabControl();
-            this.spotTab = new System.Windows.Forms.TabPage();
-            this.futuresUTab = new System.Windows.Forms.TabPage();
+            this.FUTab = new System.Windows.Forms.TabPage();
             this.FUWalletBalanceTextBox1 = new System.Windows.Forms.TextBox();
             this.FUAvailBalanceTextBox1 = new System.Windows.Forms.TextBox();
             this.FUWalletBalanceTextBox0 = new System.Windows.Forms.TextBox();
@@ -47,12 +47,11 @@ namespace BinanceHand
             this.FUMarginRatioTextBox0 = new System.Windows.Forms.TextBox();
             this.FUMaintMarginTextBox0 = new System.Windows.Forms.TextBox();
             this.FUMarginBalanceTextBox0 = new System.Windows.Forms.TextBox();
-            this.futuresUTabControl = new System.Windows.Forms.TabControl();
+            this.FUTabControl = new System.Windows.Forms.TabControl();
             this.FUPositionTab = new System.Windows.Forms.TabPage();
             this.FUPositionListView = new BrightIdeasSoftware.FastDataListView();
             this.FUOpenOrdersTab = new System.Windows.Forms.TabPage();
             this.FUOpenOrdersListView = new BrightIdeasSoftware.FastDataListView();
-            this.futuresCTab = new System.Windows.Forms.TabPage();
             this.logTab = new System.Windows.Forms.TabPage();
             this.logListBox = new System.Windows.Forms.ListBox();
             this.nameTextBox = new System.Windows.Forms.TextBox();
@@ -60,26 +59,12 @@ namespace BinanceHand
             this.priceTextBox = new System.Windows.Forms.TextBox();
             this.amtTextBox = new System.Windows.Forms.TextBox();
             this.marketComboBox = new System.Windows.Forms.ComboBox();
-            this.futureCListView = new BrightIdeasSoftware.FastDataListView();
-            this.spotKlineRcvTextBox = new System.Windows.Forms.TextBox();
-            this.spotKlineReqTextBox = new System.Windows.Forms.TextBox();
-            this.spotAggRcvTextBox = new System.Windows.Forms.TextBox();
-            this.spotAggReqTextBox = new System.Windows.Forms.TextBox();
-            this.futureUKlineRcvTextBox = new System.Windows.Forms.TextBox();
-            this.futureUKlineReqTextBox = new System.Windows.Forms.TextBox();
-            this.futureUAggRcvTextBox = new System.Windows.Forms.TextBox();
-            this.futureUAggReqTextBox = new System.Windows.Forms.TextBox();
-            this.futureCKlineRcvTextBox = new System.Windows.Forms.TextBox();
-            this.futureCKlineReqTextBox = new System.Windows.Forms.TextBox();
-            this.futureCAggRcvTextBox = new System.Windows.Forms.TextBox();
-            this.futureCAggReqTextBox = new System.Windows.Forms.TextBox();
-            this.chartTabControl = new System.Windows.Forms.TabControl();
-            this.secChartTab = new System.Windows.Forms.TabPage();
-            this.minChartTab = new System.Windows.Forms.TabPage();
-            this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.spotGroupBox = new System.Windows.Forms.GroupBox();
+            this.FUKlineRcvTextBox = new System.Windows.Forms.TextBox();
+            this.FUKlineReqTextBox = new System.Windows.Forms.TextBox();
+            this.FUAggRcvTextBox = new System.Windows.Forms.TextBox();
+            this.FUAggReqTextBox = new System.Windows.Forms.TextBox();
+            this.minChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUGroupBox = new System.Windows.Forms.GroupBox();
-            this.FCGroupBox = new System.Windows.Forms.GroupBox();
             this.orderGroupBox = new System.Windows.Forms.GroupBox();
             this.leverageTextBox0 = new System.Windows.Forms.TextBox();
             this.orderPriceTextBox1 = new System.Windows.Forms.TextBox();
@@ -101,76 +86,66 @@ namespace BinanceHand
             this.buyButton = new System.Windows.Forms.Button();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.resultListView = new BrightIdeasSoftware.FastDataListView();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.spotListView)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.futureUListView)).BeginInit();
+            this.chartTabControl = new System.Windows.Forms.TabControl();
+            this.secTabPage = new System.Windows.Forms.TabPage();
+            this.minTabPage = new System.Windows.Forms.TabPage();
+            this.hourTabPage = new System.Windows.Forms.TabPage();
+            this.hourChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.dayTabPage = new System.Windows.Forms.TabPage();
+            this.dayChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             this.mainTabControl.SuspendLayout();
-            this.futuresUTab.SuspendLayout();
-            this.futuresUTabControl.SuspendLayout();
+            this.FUTab.SuspendLayout();
+            this.FUTabControl.SuspendLayout();
             this.FUPositionTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).BeginInit();
             this.FUOpenOrdersTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).BeginInit();
             this.logTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.futureCListView)).BeginInit();
-            this.chartTabControl.SuspendLayout();
-            this.secChartTab.SuspendLayout();
-            this.minChartTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
-            this.spotGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.minChart)).BeginInit();
             this.FUGroupBox.SuspendLayout();
-            this.FCGroupBox.SuspendLayout();
             this.orderGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).BeginInit();
+            this.chartTabControl.SuspendLayout();
+            this.secTabPage.SuspendLayout();
+            this.minTabPage.SuspendLayout();
+            this.hourTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.hourChart)).BeginInit();
+            this.dayTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dayChart)).BeginInit();
             this.SuspendLayout();
             // 
-            // chart1
+            // secChart
             // 
+            this.secChart.BackColor = System.Drawing.Color.Black;
             legend5.Enabled = false;
             legend5.Name = "Legend1";
-            this.chart1.Legends.Add(legend5);
-            this.chart1.Location = new System.Drawing.Point(19, 24);
-            this.chart1.Name = "chart1";
-            this.chart1.Size = new System.Drawing.Size(718, 310);
-            this.chart1.TabIndex = 0;
-            this.chart1.Text = "chart1";
+            this.secChart.Legends.Add(legend5);
+            this.secChart.Location = new System.Drawing.Point(24, 55);
+            this.secChart.Name = "secChart";
+            this.secChart.Size = new System.Drawing.Size(224, 200);
+            this.secChart.TabIndex = 0;
+            this.secChart.Text = "chart1";
             // 
-            // spotListView
+            // FUListView
             // 
-            this.spotListView.CellEditUseWholeCell = false;
-            this.spotListView.DataSource = null;
-            this.spotListView.HideSelection = false;
-            this.spotListView.Location = new System.Drawing.Point(6, 20);
-            this.spotListView.Name = "spotListView";
-            this.spotListView.ShowGroups = false;
-            this.spotListView.Size = new System.Drawing.Size(189, 79);
-            this.spotListView.TabIndex = 4;
-            this.spotListView.UseCompatibleStateImageBehavior = false;
-            this.spotListView.View = System.Windows.Forms.View.Details;
-            this.spotListView.VirtualMode = true;
-            this.spotListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
-            // 
-            // futureUListView
-            // 
-            this.futureUListView.CellEditUseWholeCell = false;
-            this.futureUListView.DataSource = null;
-            this.futureUListView.HideSelection = false;
-            this.futureUListView.Location = new System.Drawing.Point(9, 20);
-            this.futureUListView.Name = "futureUListView";
-            this.futureUListView.ShowGroups = false;
-            this.futureUListView.Size = new System.Drawing.Size(121, 49);
-            this.futureUListView.TabIndex = 4;
-            this.futureUListView.UseCompatibleStateImageBehavior = false;
-            this.futureUListView.View = System.Windows.Forms.View.Details;
-            this.futureUListView.VirtualMode = true;
-            this.futureUListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
+            this.FUListView.CellEditUseWholeCell = false;
+            this.FUListView.DataSource = null;
+            this.FUListView.HideSelection = false;
+            this.FUListView.Location = new System.Drawing.Point(9, 20);
+            this.FUListView.Name = "FUListView";
+            this.FUListView.ShowGroups = false;
+            this.FUListView.Size = new System.Drawing.Size(121, 49);
+            this.FUListView.TabIndex = 4;
+            this.FUListView.UseCompatibleStateImageBehavior = false;
+            this.FUListView.View = System.Windows.Forms.View.Details;
+            this.FUListView.VirtualMode = true;
             // 
             // mainTabControl
             // 
-            this.mainTabControl.Controls.Add(this.spotTab);
-            this.mainTabControl.Controls.Add(this.futuresUTab);
-            this.mainTabControl.Controls.Add(this.futuresCTab);
+            this.mainTabControl.Controls.Add(this.FUTab);
             this.mainTabControl.Controls.Add(this.logTab);
             this.mainTabControl.Location = new System.Drawing.Point(12, 474);
             this.mainTabControl.Name = "mainTabControl";
@@ -178,36 +153,26 @@ namespace BinanceHand
             this.mainTabControl.Size = new System.Drawing.Size(728, 188);
             this.mainTabControl.TabIndex = 5;
             // 
-            // spotTab
+            // FUTab
             // 
-            this.spotTab.Location = new System.Drawing.Point(4, 22);
-            this.spotTab.Name = "spotTab";
-            this.spotTab.Padding = new System.Windows.Forms.Padding(3);
-            this.spotTab.Size = new System.Drawing.Size(720, 162);
-            this.spotTab.TabIndex = 1;
-            this.spotTab.Text = "Spot";
-            this.spotTab.UseVisualStyleBackColor = true;
-            // 
-            // futuresUTab
-            // 
-            this.futuresUTab.Controls.Add(this.FUWalletBalanceTextBox1);
-            this.futuresUTab.Controls.Add(this.FUAvailBalanceTextBox1);
-            this.futuresUTab.Controls.Add(this.FUWalletBalanceTextBox0);
-            this.futuresUTab.Controls.Add(this.FUAvailBalanceTextBox0);
-            this.futuresUTab.Controls.Add(this.FUMarginRatioTextBox1);
-            this.futuresUTab.Controls.Add(this.FUMaintMarginTextBox1);
-            this.futuresUTab.Controls.Add(this.FUMarginBalanceTextBox1);
-            this.futuresUTab.Controls.Add(this.FUMarginRatioTextBox0);
-            this.futuresUTab.Controls.Add(this.FUMaintMarginTextBox0);
-            this.futuresUTab.Controls.Add(this.FUMarginBalanceTextBox0);
-            this.futuresUTab.Controls.Add(this.futuresUTabControl);
-            this.futuresUTab.Location = new System.Drawing.Point(4, 22);
-            this.futuresUTab.Name = "futuresUTab";
-            this.futuresUTab.Padding = new System.Windows.Forms.Padding(3);
-            this.futuresUTab.Size = new System.Drawing.Size(720, 162);
-            this.futuresUTab.TabIndex = 2;
-            this.futuresUTab.Text = "Futures-U";
-            this.futuresUTab.UseVisualStyleBackColor = true;
+            this.FUTab.Controls.Add(this.FUWalletBalanceTextBox1);
+            this.FUTab.Controls.Add(this.FUAvailBalanceTextBox1);
+            this.FUTab.Controls.Add(this.FUWalletBalanceTextBox0);
+            this.FUTab.Controls.Add(this.FUAvailBalanceTextBox0);
+            this.FUTab.Controls.Add(this.FUMarginRatioTextBox1);
+            this.FUTab.Controls.Add(this.FUMaintMarginTextBox1);
+            this.FUTab.Controls.Add(this.FUMarginBalanceTextBox1);
+            this.FUTab.Controls.Add(this.FUMarginRatioTextBox0);
+            this.FUTab.Controls.Add(this.FUMaintMarginTextBox0);
+            this.FUTab.Controls.Add(this.FUMarginBalanceTextBox0);
+            this.FUTab.Controls.Add(this.FUTabControl);
+            this.FUTab.Location = new System.Drawing.Point(4, 22);
+            this.FUTab.Name = "FUTab";
+            this.FUTab.Padding = new System.Windows.Forms.Padding(3);
+            this.FUTab.Size = new System.Drawing.Size(720, 162);
+            this.FUTab.TabIndex = 2;
+            this.FUTab.Text = "Futures-USD";
+            this.FUTab.UseVisualStyleBackColor = true;
             // 
             // FUWalletBalanceTextBox1
             // 
@@ -309,15 +274,15 @@ namespace BinanceHand
             this.FUMarginBalanceTextBox0.TabIndex = 1;
             this.FUMarginBalanceTextBox0.Text = "MB :";
             // 
-            // futuresUTabControl
+            // FUTabControl
             // 
-            this.futuresUTabControl.Controls.Add(this.FUPositionTab);
-            this.futuresUTabControl.Controls.Add(this.FUOpenOrdersTab);
-            this.futuresUTabControl.Location = new System.Drawing.Point(3, 3);
-            this.futuresUTabControl.Name = "futuresUTabControl";
-            this.futuresUTabControl.SelectedIndex = 0;
-            this.futuresUTabControl.Size = new System.Drawing.Size(604, 154);
-            this.futuresUTabControl.TabIndex = 1;
+            this.FUTabControl.Controls.Add(this.FUPositionTab);
+            this.FUTabControl.Controls.Add(this.FUOpenOrdersTab);
+            this.FUTabControl.Location = new System.Drawing.Point(3, 3);
+            this.FUTabControl.Name = "FUTabControl";
+            this.FUTabControl.SelectedIndex = 0;
+            this.FUTabControl.Size = new System.Drawing.Size(604, 154);
+            this.FUTabControl.TabIndex = 1;
             // 
             // FUPositionTab
             // 
@@ -370,16 +335,6 @@ namespace BinanceHand
             this.FUOpenOrdersListView.View = System.Windows.Forms.View.Details;
             this.FUOpenOrdersListView.VirtualMode = true;
             // 
-            // futuresCTab
-            // 
-            this.futuresCTab.Location = new System.Drawing.Point(4, 22);
-            this.futuresCTab.Name = "futuresCTab";
-            this.futuresCTab.Padding = new System.Windows.Forms.Padding(3);
-            this.futuresCTab.Size = new System.Drawing.Size(720, 162);
-            this.futuresCTab.TabIndex = 3;
-            this.futuresCTab.Text = "Futures-C";
-            this.futuresCTab.UseVisualStyleBackColor = true;
-            // 
             // logTab
             // 
             this.logTab.Controls.Add(this.logListBox);
@@ -402,11 +357,13 @@ namespace BinanceHand
             // 
             // nameTextBox
             // 
+            this.nameTextBox.BackColor = System.Drawing.Color.White;
+            this.nameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nameTextBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.nameTextBox.Location = new System.Drawing.Point(86, 12);
             this.nameTextBox.Name = "nameTextBox";
             this.nameTextBox.Size = new System.Drawing.Size(90, 21);
             this.nameTextBox.TabIndex = 6;
-            this.nameTextBox.Text = "ABCDEF";
             // 
             // timeDiffTextBox
             // 
@@ -442,238 +399,81 @@ namespace BinanceHand
             // 
             // marketComboBox
             // 
+            this.marketComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.marketComboBox.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.marketComboBox.FormattingEnabled = true;
             this.marketComboBox.Items.AddRange(new object[] {
-            "S",
-            "F_U",
-            "F_C"});
+            "F_U"});
             this.marketComboBox.Location = new System.Drawing.Point(35, 12);
             this.marketComboBox.Name = "marketComboBox";
             this.marketComboBox.Size = new System.Drawing.Size(50, 20);
             this.marketComboBox.TabIndex = 7;
             // 
-            // futureCListView
+            // FUKlineRcvTextBox
             // 
-            this.futureCListView.CellEditUseWholeCell = false;
-            this.futureCListView.DataSource = null;
-            this.futureCListView.HideSelection = false;
-            this.futureCListView.Location = new System.Drawing.Point(6, 20);
-            this.futureCListView.Name = "futureCListView";
-            this.futureCListView.ShowGroups = false;
-            this.futureCListView.Size = new System.Drawing.Size(133, 71);
-            this.futureCListView.TabIndex = 4;
-            this.futureCListView.UseCompatibleStateImageBehavior = false;
-            this.futureCListView.View = System.Windows.Forms.View.Details;
-            this.futureCListView.VirtualMode = true;
-            this.futureCListView.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.ListView_FormatRow);
+            this.FUKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUKlineRcvTextBox.Location = new System.Drawing.Point(9, 75);
+            this.FUKlineRcvTextBox.Name = "FUKlineRcvTextBox";
+            this.FUKlineRcvTextBox.ReadOnly = true;
+            this.FUKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
+            this.FUKlineRcvTextBox.TabIndex = 6;
+            this.FUKlineRcvTextBox.Text = "000";
             // 
-            // spotKlineRcvTextBox
+            // FUKlineReqTextBox
             // 
-            this.spotKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotKlineRcvTextBox.Location = new System.Drawing.Point(15, 105);
-            this.spotKlineRcvTextBox.Name = "spotKlineRcvTextBox";
-            this.spotKlineRcvTextBox.ReadOnly = true;
-            this.spotKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
-            this.spotKlineRcvTextBox.TabIndex = 6;
-            this.spotKlineRcvTextBox.Text = "0000";
+            this.FUKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUKlineReqTextBox.Location = new System.Drawing.Point(38, 75);
+            this.FUKlineReqTextBox.Name = "FUKlineReqTextBox";
+            this.FUKlineReqTextBox.ReadOnly = true;
+            this.FUKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
+            this.FUKlineReqTextBox.TabIndex = 6;
+            this.FUKlineReqTextBox.Text = "/000(K)";
             // 
-            // spotKlineReqTextBox
+            // FUAggRcvTextBox
             // 
-            this.spotKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotKlineReqTextBox.Location = new System.Drawing.Point(44, 105);
-            this.spotKlineReqTextBox.Name = "spotKlineReqTextBox";
-            this.spotKlineReqTextBox.ReadOnly = true;
-            this.spotKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
-            this.spotKlineReqTextBox.TabIndex = 6;
-            this.spotKlineReqTextBox.Text = "/0000(K)";
+            this.FUAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUAggRcvTextBox.Location = new System.Drawing.Point(114, 75);
+            this.FUAggRcvTextBox.Name = "FUAggRcvTextBox";
+            this.FUAggRcvTextBox.ReadOnly = true;
+            this.FUAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
+            this.FUAggRcvTextBox.TabIndex = 6;
+            this.FUAggRcvTextBox.Text = "0";
             // 
-            // spotAggRcvTextBox
+            // FUAggReqTextBox
             // 
-            this.spotAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotAggRcvTextBox.Location = new System.Drawing.Point(120, 105);
-            this.spotAggRcvTextBox.Name = "spotAggRcvTextBox";
-            this.spotAggRcvTextBox.ReadOnly = true;
-            this.spotAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
-            this.spotAggRcvTextBox.TabIndex = 6;
-            this.spotAggRcvTextBox.Text = "0";
+            this.FUAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.FUAggReqTextBox.Location = new System.Drawing.Point(126, 75);
+            this.FUAggReqTextBox.Name = "FUAggReqTextBox";
+            this.FUAggReqTextBox.ReadOnly = true;
+            this.FUAggReqTextBox.Size = new System.Drawing.Size(47, 14);
+            this.FUAggReqTextBox.TabIndex = 6;
+            this.FUAggReqTextBox.Text = "/0(A)";
             // 
-            // spotAggReqTextBox
-            // 
-            this.spotAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.spotAggReqTextBox.Location = new System.Drawing.Point(132, 105);
-            this.spotAggReqTextBox.Name = "spotAggReqTextBox";
-            this.spotAggReqTextBox.ReadOnly = true;
-            this.spotAggReqTextBox.Size = new System.Drawing.Size(47, 14);
-            this.spotAggReqTextBox.TabIndex = 6;
-            this.spotAggReqTextBox.Text = "/0(A)";
-            // 
-            // futureUKlineRcvTextBox
-            // 
-            this.futureUKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUKlineRcvTextBox.Location = new System.Drawing.Point(9, 75);
-            this.futureUKlineRcvTextBox.Name = "futureUKlineRcvTextBox";
-            this.futureUKlineRcvTextBox.ReadOnly = true;
-            this.futureUKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
-            this.futureUKlineRcvTextBox.TabIndex = 6;
-            this.futureUKlineRcvTextBox.Text = "000";
-            // 
-            // futureUKlineReqTextBox
-            // 
-            this.futureUKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUKlineReqTextBox.Location = new System.Drawing.Point(38, 75);
-            this.futureUKlineReqTextBox.Name = "futureUKlineReqTextBox";
-            this.futureUKlineReqTextBox.ReadOnly = true;
-            this.futureUKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
-            this.futureUKlineReqTextBox.TabIndex = 6;
-            this.futureUKlineReqTextBox.Text = "/000(K)";
-            // 
-            // futureUAggRcvTextBox
-            // 
-            this.futureUAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUAggRcvTextBox.Location = new System.Drawing.Point(114, 75);
-            this.futureUAggRcvTextBox.Name = "futureUAggRcvTextBox";
-            this.futureUAggRcvTextBox.ReadOnly = true;
-            this.futureUAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
-            this.futureUAggRcvTextBox.TabIndex = 6;
-            this.futureUAggRcvTextBox.Text = "0";
-            // 
-            // futureUAggReqTextBox
-            // 
-            this.futureUAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureUAggReqTextBox.Location = new System.Drawing.Point(126, 75);
-            this.futureUAggReqTextBox.Name = "futureUAggReqTextBox";
-            this.futureUAggReqTextBox.ReadOnly = true;
-            this.futureUAggReqTextBox.Size = new System.Drawing.Size(47, 14);
-            this.futureUAggReqTextBox.TabIndex = 6;
-            this.futureUAggReqTextBox.Text = "/0(A)";
-            // 
-            // futureCKlineRcvTextBox
-            // 
-            this.futureCKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCKlineRcvTextBox.Location = new System.Drawing.Point(12, 98);
-            this.futureCKlineRcvTextBox.Name = "futureCKlineRcvTextBox";
-            this.futureCKlineRcvTextBox.ReadOnly = true;
-            this.futureCKlineRcvTextBox.Size = new System.Drawing.Size(26, 14);
-            this.futureCKlineRcvTextBox.TabIndex = 6;
-            this.futureCKlineRcvTextBox.Text = "000";
-            // 
-            // futureCKlineReqTextBox
-            // 
-            this.futureCKlineReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCKlineReqTextBox.Location = new System.Drawing.Point(41, 98);
-            this.futureCKlineReqTextBox.Name = "futureCKlineReqTextBox";
-            this.futureCKlineReqTextBox.ReadOnly = true;
-            this.futureCKlineReqTextBox.Size = new System.Drawing.Size(47, 14);
-            this.futureCKlineReqTextBox.TabIndex = 6;
-            this.futureCKlineReqTextBox.Text = "/000(K)";
-            // 
-            // futureCAggRcvTextBox
-            // 
-            this.futureCAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCAggRcvTextBox.Location = new System.Drawing.Point(117, 98);
-            this.futureCAggRcvTextBox.Name = "futureCAggRcvTextBox";
-            this.futureCAggRcvTextBox.ReadOnly = true;
-            this.futureCAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
-            this.futureCAggRcvTextBox.TabIndex = 6;
-            this.futureCAggRcvTextBox.Text = "0";
-            // 
-            // futureCAggReqTextBox
-            // 
-            this.futureCAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.futureCAggReqTextBox.Location = new System.Drawing.Point(129, 98);
-            this.futureCAggReqTextBox.Name = "futureCAggReqTextBox";
-            this.futureCAggReqTextBox.ReadOnly = true;
-            this.futureCAggReqTextBox.Size = new System.Drawing.Size(47, 14);
-            this.futureCAggReqTextBox.TabIndex = 6;
-            this.futureCAggReqTextBox.Text = "/0(A)";
-            // 
-            // chartTabControl
-            // 
-            this.chartTabControl.Controls.Add(this.secChartTab);
-            this.chartTabControl.Controls.Add(this.minChartTab);
-            this.chartTabControl.Location = new System.Drawing.Point(29, 41);
-            this.chartTabControl.Multiline = true;
-            this.chartTabControl.Name = "chartTabControl";
-            this.chartTabControl.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.chartTabControl.RightToLeftLayout = true;
-            this.chartTabControl.SelectedIndex = 0;
-            this.chartTabControl.Size = new System.Drawing.Size(766, 393);
-            this.chartTabControl.TabIndex = 8;
-            // 
-            // secChartTab
-            // 
-            this.secChartTab.Controls.Add(this.chart1);
-            this.secChartTab.Location = new System.Drawing.Point(4, 22);
-            this.secChartTab.Name = "secChartTab";
-            this.secChartTab.Padding = new System.Windows.Forms.Padding(30);
-            this.secChartTab.Size = new System.Drawing.Size(758, 367);
-            this.secChartTab.TabIndex = 0;
-            this.secChartTab.Text = "Seconds";
-            this.secChartTab.UseVisualStyleBackColor = true;
-            // 
-            // minChartTab
-            // 
-            this.minChartTab.Controls.Add(this.chart2);
-            this.minChartTab.Location = new System.Drawing.Point(4, 22);
-            this.minChartTab.Name = "minChartTab";
-            this.minChartTab.Padding = new System.Windows.Forms.Padding(3);
-            this.minChartTab.Size = new System.Drawing.Size(758, 367);
-            this.minChartTab.TabIndex = 1;
-            this.minChartTab.Text = "Minutes";
-            this.minChartTab.UseVisualStyleBackColor = true;
-            // 
-            // chart2
+            // minChart
             // 
             legend6.Enabled = false;
             legend6.Name = "Legend1";
-            this.chart2.Legends.Add(legend6);
-            this.chart2.Location = new System.Drawing.Point(45, 21);
-            this.chart2.Name = "chart2";
-            this.chart2.Size = new System.Drawing.Size(743, 373);
-            this.chart2.TabIndex = 1;
-            this.chart2.Text = "chart2";
-            // 
-            // spotGroupBox
-            // 
-            this.spotGroupBox.Controls.Add(this.spotListView);
-            this.spotGroupBox.Controls.Add(this.spotKlineRcvTextBox);
-            this.spotGroupBox.Controls.Add(this.spotKlineReqTextBox);
-            this.spotGroupBox.Controls.Add(this.spotAggRcvTextBox);
-            this.spotGroupBox.Controls.Add(this.spotAggReqTextBox);
-            this.spotGroupBox.Location = new System.Drawing.Point(1027, 33);
-            this.spotGroupBox.Name = "spotGroupBox";
-            this.spotGroupBox.Size = new System.Drawing.Size(210, 126);
-            this.spotGroupBox.TabIndex = 2;
-            this.spotGroupBox.TabStop = false;
-            this.spotGroupBox.Text = "Spot";
+            this.minChart.Legends.Add(legend6);
+            this.minChart.Location = new System.Drawing.Point(47, 6);
+            this.minChart.Name = "minChart";
+            this.minChart.Size = new System.Drawing.Size(214, 247);
+            this.minChart.TabIndex = 1;
+            this.minChart.Text = "chart2";
             // 
             // FUGroupBox
             // 
-            this.FUGroupBox.Controls.Add(this.futureUListView);
-            this.FUGroupBox.Controls.Add(this.futureUKlineRcvTextBox);
-            this.FUGroupBox.Controls.Add(this.futureUKlineReqTextBox);
-            this.FUGroupBox.Controls.Add(this.futureUAggRcvTextBox);
-            this.FUGroupBox.Controls.Add(this.futureUAggReqTextBox);
-            this.FUGroupBox.Location = new System.Drawing.Point(1027, 165);
+            this.FUGroupBox.Controls.Add(this.FUListView);
+            this.FUGroupBox.Controls.Add(this.FUKlineRcvTextBox);
+            this.FUGroupBox.Controls.Add(this.FUKlineReqTextBox);
+            this.FUGroupBox.Controls.Add(this.FUAggRcvTextBox);
+            this.FUGroupBox.Controls.Add(this.FUAggReqTextBox);
+            this.FUGroupBox.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.FUGroupBox.Location = new System.Drawing.Point(1205, 97);
             this.FUGroupBox.Name = "FUGroupBox";
             this.FUGroupBox.Size = new System.Drawing.Size(209, 98);
             this.FUGroupBox.TabIndex = 9;
             this.FUGroupBox.TabStop = false;
-            this.FUGroupBox.Text = "Futures-U";
-            // 
-            // FCGroupBox
-            // 
-            this.FCGroupBox.Controls.Add(this.futureCListView);
-            this.FCGroupBox.Controls.Add(this.futureCKlineRcvTextBox);
-            this.FCGroupBox.Controls.Add(this.futureCKlineReqTextBox);
-            this.FCGroupBox.Controls.Add(this.futureCAggRcvTextBox);
-            this.FCGroupBox.Controls.Add(this.futureCAggReqTextBox);
-            this.FCGroupBox.Location = new System.Drawing.Point(1022, 278);
-            this.FCGroupBox.Name = "FCGroupBox";
-            this.FCGroupBox.Size = new System.Drawing.Size(200, 141);
-            this.FCGroupBox.TabIndex = 9;
-            this.FCGroupBox.TabStop = false;
-            this.FCGroupBox.Text = "Futures-C";
+            this.FUGroupBox.Text = "Futures-USD";
             // 
             // orderGroupBox
             // 
@@ -704,6 +504,7 @@ namespace BinanceHand
             // 
             // leverageTextBox0
             // 
+            this.leverageTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.leverageTextBox0.Location = new System.Drawing.Point(263, 41);
             this.leverageTextBox0.Name = "leverageTextBox0";
             this.leverageTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -712,6 +513,7 @@ namespace BinanceHand
             // 
             // orderPriceTextBox1
             // 
+            this.orderPriceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.orderPriceTextBox1.Location = new System.Drawing.Point(65, 39);
             this.orderPriceTextBox1.Name = "orderPriceTextBox1";
             this.orderPriceTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -739,6 +541,7 @@ namespace BinanceHand
             // 
             // orderSizeTextBox1
             // 
+            this.orderSizeTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.orderSizeTextBox1.Location = new System.Drawing.Point(65, 70);
             this.orderSizeTextBox1.Name = "orderSizeTextBox1";
             this.orderSizeTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -798,12 +601,13 @@ namespace BinanceHand
             // miniSizeCheckBox
             // 
             this.miniSizeCheckBox.AutoSize = true;
+            this.miniSizeCheckBox.BackColor = System.Drawing.Color.Transparent;
             this.miniSizeCheckBox.Location = new System.Drawing.Point(133, 72);
             this.miniSizeCheckBox.Name = "miniSizeCheckBox";
             this.miniSizeCheckBox.Size = new System.Drawing.Size(106, 16);
             this.miniSizeCheckBox.TabIndex = 4;
             this.miniSizeCheckBox.Text = "Minimum Size";
-            this.miniSizeCheckBox.UseVisualStyleBackColor = true;
+            this.miniSizeCheckBox.UseVisualStyleBackColor = false;
             // 
             // ROCheckBox
             // 
@@ -820,13 +624,14 @@ namespace BinanceHand
             // PORadioButton
             // 
             this.PORadioButton.AutoSize = true;
+            this.PORadioButton.BackColor = System.Drawing.Color.Transparent;
             this.PORadioButton.Location = new System.Drawing.Point(140, 20);
             this.PORadioButton.Name = "PORadioButton";
             this.PORadioButton.Size = new System.Drawing.Size(78, 16);
             this.PORadioButton.TabIndex = 3;
             this.PORadioButton.TabStop = true;
             this.PORadioButton.Text = "Post Only";
-            this.PORadioButton.UseVisualStyleBackColor = true;
+            this.PORadioButton.UseVisualStyleBackColor = false;
             // 
             // marketRadioButton
             // 
@@ -865,6 +670,7 @@ namespace BinanceHand
             // sellButton
             // 
             this.sellButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.sellButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.sellButton.Location = new System.Drawing.Point(133, 154);
             this.sellButton.Name = "sellButton";
             this.sellButton.Size = new System.Drawing.Size(117, 29);
@@ -875,6 +681,7 @@ namespace BinanceHand
             // buyButton
             // 
             this.buyButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.buyButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buyButton.Location = new System.Drawing.Point(10, 154);
             this.buyButton.Name = "buyButton";
             this.buyButton.Size = new System.Drawing.Size(117, 29);
@@ -896,7 +703,7 @@ namespace BinanceHand
             this.resultListView.CellEditUseWholeCell = false;
             this.resultListView.DataSource = null;
             this.resultListView.HideSelection = false;
-            this.resultListView.Location = new System.Drawing.Point(1115, 515);
+            this.resultListView.Location = new System.Drawing.Point(1139, 539);
             this.resultListView.Name = "resultListView";
             this.resultListView.ShowGroups = false;
             this.resultListView.Size = new System.Drawing.Size(121, 97);
@@ -905,22 +712,99 @@ namespace BinanceHand
             this.resultListView.View = System.Windows.Forms.View.Details;
             this.resultListView.VirtualMode = true;
             // 
+            // chartTabControl
+            // 
+            this.chartTabControl.Controls.Add(this.secTabPage);
+            this.chartTabControl.Controls.Add(this.minTabPage);
+            this.chartTabControl.Controls.Add(this.hourTabPage);
+            this.chartTabControl.Controls.Add(this.dayTabPage);
+            this.chartTabControl.Location = new System.Drawing.Point(35, 62);
+            this.chartTabControl.Name = "chartTabControl";
+            this.chartTabControl.SelectedIndex = 0;
+            this.chartTabControl.Size = new System.Drawing.Size(449, 341);
+            this.chartTabControl.TabIndex = 13;
+            // 
+            // secTabPage
+            // 
+            this.secTabPage.Controls.Add(this.secChart);
+            this.secTabPage.Location = new System.Drawing.Point(4, 22);
+            this.secTabPage.Name = "secTabPage";
+            this.secTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.secTabPage.Size = new System.Drawing.Size(441, 315);
+            this.secTabPage.TabIndex = 0;
+            this.secTabPage.Text = "Seconds";
+            this.secTabPage.UseVisualStyleBackColor = true;
+            // 
+            // minTabPage
+            // 
+            this.minTabPage.Controls.Add(this.minChart);
+            this.minTabPage.Location = new System.Drawing.Point(4, 22);
+            this.minTabPage.Name = "minTabPage";
+            this.minTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.minTabPage.Size = new System.Drawing.Size(441, 315);
+            this.minTabPage.TabIndex = 1;
+            this.minTabPage.Text = "Minutes";
+            this.minTabPage.UseVisualStyleBackColor = true;
+            // 
+            // hourTabPage
+            // 
+            this.hourTabPage.Controls.Add(this.hourChart);
+            this.hourTabPage.Location = new System.Drawing.Point(4, 22);
+            this.hourTabPage.Name = "hourTabPage";
+            this.hourTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.hourTabPage.Size = new System.Drawing.Size(441, 315);
+            this.hourTabPage.TabIndex = 2;
+            this.hourTabPage.Text = "Hours";
+            this.hourTabPage.UseVisualStyleBackColor = true;
+            // 
+            // hourChart
+            // 
+            legend7.Enabled = false;
+            legend7.Name = "Legend1";
+            this.hourChart.Legends.Add(legend7);
+            this.hourChart.Location = new System.Drawing.Point(94, 33);
+            this.hourChart.Name = "hourChart";
+            this.hourChart.Size = new System.Drawing.Size(214, 247);
+            this.hourChart.TabIndex = 3;
+            this.hourChart.Text = "chart3";
+            // 
+            // dayTabPage
+            // 
+            this.dayTabPage.Controls.Add(this.dayChart);
+            this.dayTabPage.Location = new System.Drawing.Point(4, 22);
+            this.dayTabPage.Name = "dayTabPage";
+            this.dayTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.dayTabPage.Size = new System.Drawing.Size(441, 315);
+            this.dayTabPage.TabIndex = 3;
+            this.dayTabPage.Text = "Days";
+            this.dayTabPage.UseVisualStyleBackColor = true;
+            // 
+            // dayChart
+            // 
+            legend8.Enabled = false;
+            legend8.Name = "Legend1";
+            this.dayChart.Legends.Add(legend8);
+            this.dayChart.Location = new System.Drawing.Point(113, 34);
+            this.dayChart.Name = "dayChart";
+            this.dayChart.Size = new System.Drawing.Size(214, 247);
+            this.dayChart.TabIndex = 4;
+            this.dayChart.Text = "chart3";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
+            this.Controls.Add(this.chartTabControl);
             this.Controls.Add(this.resultListView);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.orderGroupBox);
-            this.Controls.Add(this.FCGroupBox);
             this.Controls.Add(this.FUGroupBox);
-            this.Controls.Add(this.spotGroupBox);
             this.Controls.Add(this.marketComboBox);
             this.Controls.Add(this.amtTextBox);
             this.Controls.Add(this.nameTextBox);
             this.Controls.Add(this.timeDiffTextBox);
-            this.Controls.Add(this.chartTabControl);
             this.Controls.Add(this.priceTextBox);
             this.Controls.Add(this.mainTabControl);
             this.KeyPreview = true;
@@ -928,33 +812,31 @@ namespace BinanceHand
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.spotListView)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.futureUListView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.secChart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FUListView)).EndInit();
             this.mainTabControl.ResumeLayout(false);
-            this.futuresUTab.ResumeLayout(false);
-            this.futuresUTab.PerformLayout();
-            this.futuresUTabControl.ResumeLayout(false);
+            this.FUTab.ResumeLayout(false);
+            this.FUTab.PerformLayout();
+            this.FUTabControl.ResumeLayout(false);
             this.FUPositionTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).EndInit();
             this.FUOpenOrdersTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).EndInit();
             this.logTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.futureCListView)).EndInit();
-            this.chartTabControl.ResumeLayout(false);
-            this.secChartTab.ResumeLayout(false);
-            this.minChartTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
-            this.spotGroupBox.ResumeLayout(false);
-            this.spotGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.minChart)).EndInit();
             this.FUGroupBox.ResumeLayout(false);
             this.FUGroupBox.PerformLayout();
-            this.FCGroupBox.ResumeLayout(false);
-            this.FCGroupBox.PerformLayout();
             this.orderGroupBox.ResumeLayout(false);
             this.orderGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).EndInit();
+            this.chartTabControl.ResumeLayout(false);
+            this.secTabPage.ResumeLayout(false);
+            this.minTabPage.ResumeLayout(false);
+            this.hourTabPage.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.hourChart)).EndInit();
+            this.dayTabPage.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dayChart)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -962,38 +844,23 @@ namespace BinanceHand
 
         #endregion
 
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
-        private BrightIdeasSoftware.FastDataListView spotListView;
-        private BrightIdeasSoftware.FastDataListView futureUListView;
+        private System.Windows.Forms.DataVisualization.Charting.Chart secChart;
+        private BrightIdeasSoftware.FastDataListView FUListView;
         private System.Windows.Forms.TabControl mainTabControl;
         private System.Windows.Forms.TextBox nameTextBox;
         private System.Windows.Forms.TextBox timeDiffTextBox;
         private System.Windows.Forms.TextBox priceTextBox;
         private System.Windows.Forms.TextBox amtTextBox;
         private System.Windows.Forms.ComboBox marketComboBox;
-        private BrightIdeasSoftware.FastDataListView futureCListView;
-        private System.Windows.Forms.TextBox spotKlineRcvTextBox;
-        private System.Windows.Forms.TextBox spotKlineReqTextBox;
-        private System.Windows.Forms.TextBox spotAggRcvTextBox;
-        private System.Windows.Forms.TextBox spotAggReqTextBox;
-        private System.Windows.Forms.TextBox futureUKlineRcvTextBox;
-        private System.Windows.Forms.TextBox futureUKlineReqTextBox;
-        private System.Windows.Forms.TextBox futureUAggRcvTextBox;
-        private System.Windows.Forms.TextBox futureUAggReqTextBox;
-        private System.Windows.Forms.TextBox futureCKlineRcvTextBox;
-        private System.Windows.Forms.TextBox futureCKlineReqTextBox;
-        private System.Windows.Forms.TextBox futureCAggRcvTextBox;
-        private System.Windows.Forms.TextBox futureCAggReqTextBox;
-        private System.Windows.Forms.TabControl chartTabControl;
-        private System.Windows.Forms.TabPage secChartTab;
-        private System.Windows.Forms.TabPage minChartTab;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
-        private System.Windows.Forms.TabPage spotTab;
-        private System.Windows.Forms.TabPage futuresUTab;
-        private System.Windows.Forms.TabControl futuresUTabControl;
+        private System.Windows.Forms.TextBox FUKlineRcvTextBox;
+        private System.Windows.Forms.TextBox FUKlineReqTextBox;
+        private System.Windows.Forms.TextBox FUAggRcvTextBox;
+        private System.Windows.Forms.TextBox FUAggReqTextBox;
+        private System.Windows.Forms.DataVisualization.Charting.Chart minChart;
+        private System.Windows.Forms.TabPage FUTab;
+        private System.Windows.Forms.TabControl FUTabControl;
         private System.Windows.Forms.TabPage FUPositionTab;
         private System.Windows.Forms.TabPage FUOpenOrdersTab;
-        private System.Windows.Forms.TabPage futuresCTab;
         private System.Windows.Forms.TabPage logTab;
         private System.Windows.Forms.ListBox logListBox;
         private BrightIdeasSoftware.FastDataListView FUPositionListView;
@@ -1008,9 +875,7 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox FUMaintMarginTextBox0;
         private System.Windows.Forms.TextBox FUMarginRatioTextBox1;
         private System.Windows.Forms.TextBox FUMarginRatioTextBox0;
-        private System.Windows.Forms.GroupBox spotGroupBox;
         private System.Windows.Forms.GroupBox FUGroupBox;
-        private System.Windows.Forms.GroupBox FCGroupBox;
         private System.Windows.Forms.GroupBox orderGroupBox;
         private System.Windows.Forms.Button sellButton;
         private System.Windows.Forms.Button buyButton;
@@ -1032,6 +897,13 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox leverageTextBox1;
         private System.Windows.Forms.PictureBox pictureBox;
         private BrightIdeasSoftware.FastDataListView resultListView;
+        private System.Windows.Forms.TabControl chartTabControl;
+        private System.Windows.Forms.TabPage secTabPage;
+        private System.Windows.Forms.TabPage minTabPage;
+        private System.Windows.Forms.TabPage hourTabPage;
+        private System.Windows.Forms.DataVisualization.Charting.Chart hourChart;
+        private System.Windows.Forms.TabPage dayTabPage;
+        private System.Windows.Forms.DataVisualization.Charting.Chart dayChart;
     }
 }
 

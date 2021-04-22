@@ -10,9 +10,6 @@ namespace BinanceHand
 {
     class ItemData
     {
-        public bool isSpot;
-        public bool isFutureUsdt;
-
         public UpdateSubscription sub;
 
         public string Name;
@@ -28,9 +25,6 @@ namespace BinanceHand
         public bool aggFirst = true;
         public bool klineFirst = true;
 
-        public bool scSave = false;
-        public int scSaveTimeStamp;
-
         public Stick secStick = new Stick();
         public List<Stick> secStickList = new List<Stick>();
         public static string secChartLabel = "HH:mm:ss";
@@ -39,13 +33,20 @@ namespace BinanceHand
         public List<Stick> minStickList = new List<Stick>();
         public static string minChartLabel = "dd HH:mm";
 
+        public Stick hourStick = new Stick();
+        public List<Stick> hourStickList = new List<Stick>();
+        public static string hourChartLabel = "MM-dd HH";
+
+        public Stick dayStick = new Stick();
+        public List<Stick> dayStickList = new List<Stick>();
+        public static string dayChartLabel = "yyyy-MM-dd";
+
         public bool isChartShowing = false;
         public bool isAggReady = false;
         public bool isAggOn = false;
         public short FlatMinRow;
         public short AggReadyRow = 0;
         public bool LorS = true;
-        public OLVListItem item;
 
         public short win;
         public short lose;
@@ -107,40 +108,17 @@ namespace BinanceHand
         public decimal maxNotionalValue;
         public decimal PNL;
         public decimal ROE;
-        public long positionOrderID;
 
         public List<BinanceFuturesBracket> brackets;
 
         public decimal minSize;
         public decimal priceTickSize;
 
-
-        public ItemData(BinanceSymbol s, BinanceFuturesUsdtSymbol fu, BinanceFuturesCoinSymbol fc)
+        public ItemData(BinanceFuturesUsdtSymbol fu)
         {
-
-            if (s != null)
-            {
-                Name = s.Name.Trim().ToUpper();
-                isSpot = true;
-                minSize = s.LotSizeFilter.MinQuantity;
-                priceTickSize = s.PriceFilter.TickSize;
-            }
-            else if (fu != null)
-            {
-                Name = fu.Name.Trim().ToUpper();
-                isSpot = false;
-                isFutureUsdt = true;
-                minSize = fu.LotSizeFilter.MinQuantity;
-                priceTickSize = fu.PriceFilter.TickSize;
-            }
-            else if (fc != null)
-            {
-                Name = fc.Name.Trim().ToUpper();
-                isSpot = false;
-                isFutureUsdt = false;
-                minSize = fc.LotSizeFilter.MinQuantity;
-                priceTickSize = fc.PriceFilter.TickSize;
-            }
+            Name = fu.Name.Trim().ToUpper();
+            minSize = fu.LotSizeFilter.MinQuantity;
+            priceTickSize = fu.PriceFilter.TickSize;
 
             for (int i = 0; i < amt1; i++)
                 pureSecCountQ.Enqueue(0);

@@ -34,19 +34,16 @@ namespace BinanceHand
 
         //DBHelper dbHelper = DBHelper.GetInstance();
 
-        Dictionary<string, ItemData> SPOTItemDataList = new Dictionary<string, ItemData>();
         Dictionary<string, ItemData> FUItemDataList = new Dictionary<string, ItemData>();
-        Dictionary<string, ItemData> FCItemDataList = new Dictionary<string, ItemData>();
-        List<ItemData> FUPositionItemData = new List<ItemData>();
 
         ItemData itemDataShowing;
 
         static int amtAnPrcAlpha = 130;
-        Color msAmtColor = Color.FromArgb(amtAnPrcAlpha, Color.Orange);
-        Color mdAmtColor = Color.FromArgb(amtAnPrcAlpha, Color.ForestGreen);
-        Color msAndMdAmtColor = Color.FromArgb(amtAnPrcAlpha, 145, 151, 17);
-        Color plsPrcColor = Color.FromArgb(amtAnPrcAlpha, Color.Red);
-        Color mnsPrcColor = Color.FromArgb(amtAnPrcAlpha, Color.Blue);
+        Color msAmtColor = Color.FromArgb(amtAnPrcAlpha, 0, 89, 64);
+        Color mdAmtColor = Color.FromArgb(amtAnPrcAlpha, 130, 17, 43);
+        Color msAndMdAmtColor = Color.FromArgb(amtAnPrcAlpha, 65, 53, 53);
+        Color plsPrcColor = Color.FromArgb(amtAnPrcAlpha, 14, 203, 129);
+        Color mnsPrcColor = Color.FromArgb(amtAnPrcAlpha, 207, 48, 74);
 
         int baseChartViewSticksSize = 120;
 
@@ -125,14 +122,138 @@ namespace BinanceHand
 
             SetComponentsDetails();
         }
+
         void SetTheme()
         {
             startTime = DateTime.UtcNow.ToString();
             
             Text = "Binance       UTC-" + startTime;
 
-            BackColor = chart1.BackColor;
+            BackColor = Color.FromArgb(30, 32, 38);
+            ForeColor = Color.AntiqueWhite;
+
+            marketComboBox.BackColor = Color.FromArgb(27, 29, 35); 
+            marketComboBox.ForeColor = ForeColor;
+            nameTextBox.BackColor = marketComboBox.BackColor;
+            nameTextBox.ForeColor = ForeColor;
+
+            secTabPage.BackColor = marketComboBox.BackColor;
+            secTabPage.ForeColor = ForeColor;
+            minTabPage.BackColor = secTabPage.BackColor;
+            minTabPage.ForeColor = ForeColor;
+
+            secChart.BackColor = secTabPage.BackColor;
+            secChart.ForeColor = ForeColor;
+            minChart.BackColor = secTabPage.BackColor;
+            minChart.ForeColor = ForeColor;
+
+            priceTextBox.BackColor = BackColor;
+            priceTextBox.ForeColor = ForeColor;
+            amtTextBox.BackColor = BackColor;
+            amtTextBox.ForeColor = ForeColor;
+            timeDiffTextBox.BackColor = BackColor;
+            timeDiffTextBox.ForeColor = ForeColor;
+
+            FUGroupBox.BackColor = BackColor;
+            FUGroupBox.ForeColor = ForeColor;
+            FUListView.BackColor = marketComboBox.BackColor;
+            FUListView.ForeColor = ForeColor;
+
+            FUKlineRcvTextBox.BackColor = BackColor;
+            FUKlineRcvTextBox.ForeColor = ForeColor;
+            FUKlineReqTextBox.BackColor = BackColor;
+            FUKlineReqTextBox.ForeColor = ForeColor;
+
+            FUAggRcvTextBox.BackColor = BackColor;
+            FUAggRcvTextBox.ForeColor = ForeColor;
+            FUAggReqTextBox.BackColor = BackColor;
+            FUAggReqTextBox.ForeColor = ForeColor;
+
+            FUTab.BackColor = secTabPage.BackColor;
+            FUTab.ForeColor = ForeColor;
+            logTab.BackColor = secTabPage.BackColor;
+            logTab.ForeColor = ForeColor;
+
+            FUPositionTab.BackColor = secTabPage.BackColor;
+            FUPositionTab.ForeColor = ForeColor;
+            FUOpenOrdersTab.BackColor = secTabPage.BackColor;
+            FUOpenOrdersTab.ForeColor = ForeColor;
+
+            FUPositionListView.BackColor = secTabPage.BackColor;
+            FUPositionListView.ForeColor = ForeColor;
+            FUOpenOrdersTab.BackColor = secTabPage.BackColor;
+            FUOpenOrdersTab.ForeColor = ForeColor;
+
+            FUMarginRatioTextBox0.BackColor = FUTab.BackColor;
+            FUMarginRatioTextBox0.ForeColor = ForeColor;
+            FUMarginRatioTextBox1.BackColor = FUTab.BackColor;
+            FUMarginRatioTextBox1.ForeColor = ForeColor;
+            FUMaintMarginTextBox0.BackColor = FUTab.BackColor;
+            FUMaintMarginTextBox0.ForeColor = ForeColor;
+            FUMaintMarginTextBox1.BackColor = FUTab.BackColor;
+            FUMaintMarginTextBox1.ForeColor = ForeColor;
+            FUMarginBalanceTextBox0.BackColor = FUTab.BackColor;
+            FUMarginBalanceTextBox0.ForeColor = ForeColor;
+            FUMarginBalanceTextBox1.BackColor = FUTab.BackColor;
+            FUMarginBalanceTextBox1.ForeColor = ForeColor;
+            FUAvailBalanceTextBox0.BackColor = FUTab.BackColor;
+            FUAvailBalanceTextBox0.ForeColor = ForeColor;
+            FUAvailBalanceTextBox1.BackColor = FUTab.BackColor;
+            FUAvailBalanceTextBox1.ForeColor = ForeColor;
+            FUWalletBalanceTextBox0.BackColor = FUTab.BackColor;
+            FUWalletBalanceTextBox0.ForeColor = ForeColor;
+            FUWalletBalanceTextBox1.BackColor = FUTab.BackColor;
+            FUWalletBalanceTextBox1.ForeColor = ForeColor;
+
+            orderGroupBox.BackColor = BackColor;
+            orderGroupBox.ForeColor = ForeColor;
+            GTCRadioButton.BackColor = BackColor;
+            GTCRadioButton.ForeColor = ForeColor;
+            IOCRadioButton.BackColor = BackColor;
+            IOCRadioButton.ForeColor = ForeColor;
+            PORadioButton.BackColor = BackColor;
+            PORadioButton.ForeColor = ForeColor;
+            marketRadioButton.BackColor = BackColor;
+            marketRadioButton.ForeColor = ForeColor;
+
+            orderPriceTextBox0.BackColor = BackColor;
+            orderPriceTextBox0.ForeColor = ForeColor;
+            orderPriceTextBox1.BackColor = secTabPage.BackColor;
+            orderPriceTextBox1.ForeColor = ForeColor;
+            orderPriceTextBox2.BackColor = BackColor;
+            orderPriceTextBox2.ForeColor = ForeColor;
+            orderSizeTextBox0.BackColor = BackColor;
+            orderSizeTextBox0.ForeColor = ForeColor;
+            orderSizeTextBox1.BackColor = secTabPage.BackColor;
+            orderSizeTextBox1.ForeColor = ForeColor;
+
+            miniSizeCheckBox.BackColor = BackColor;
+            miniSizeCheckBox.ForeColor = ForeColor;
+            autoSizeCheckBox.BackColor = BackColor;
+            autoSizeCheckBox.ForeColor = ForeColor;
+
+            autoSizeTextBox0.BackColor = secTabPage.BackColor;
+            autoSizeTextBox0.ForeColor = ForeColor;
+            autoSizeTextBox1.BackColor = BackColor;
+            autoSizeTextBox1.ForeColor = ForeColor;
+
+            ROCheckBox.BackColor = BackColor;
+            ROCheckBox.ForeColor = ForeColor;
+
+            leverageTextBox0.BackColor = secTabPage.BackColor;
+            leverageTextBox0.ForeColor = ForeColor;
+            leverageTextBox1.BackColor = BackColor;
+            leverageTextBox1.ForeColor = ForeColor;
+
+            buyButton.BackColor = Color.FromArgb(255, plsPrcColor);
+            buyButton.ForeColor = ForeColor;
+            sellButton.BackColor = Color.FromArgb(255, mnsPrcColor);
+            sellButton.ForeColor = ForeColor;
+
+            resultListView.BackColor = secTabPage.BackColor;
+            resultListView.ForeColor = ForeColor;
         }
+
         void SetComponentsLocationAndSize()
         {
             WindowState = FormWindowState.Maximized;
@@ -152,53 +273,57 @@ namespace BinanceHand
             chartTabControl.Location = new Point(0, 0);
             chartTabControl.Size = new Size((int)(Screen.GetWorkingArea(this).Size.Width * 0.8), (int)(Screen.GetWorkingArea(this).Size.Height * 0.8));
 
-            secChartTab.Size = new Size(chartTabControl.Size.Width - 8, chartTabControl.Size.Height - 26);
-            minChartTab.Size = secChartTab.Size;
+            secTabPage.Size = new Size(chartTabControl.Size.Width - 8, chartTabControl.Size.Height - 26);
+            minTabPage.Size = secTabPage.Size;
 
             marketComboBox.Size = new Size(60, nameTextBox.Size.Height);
-            marketComboBox.Location = new Point(chartTabControl.Location.X + 3, chartTabControl.Location.Y);
+            marketComboBox.Location = new Point(chartTabControl.Location.X + chartTabControl.Size.Width - marketComboBox.Size.Width - nameTextBox.Size.Width - 10, chartTabControl.Location.Y);
             marketComboBox.BringToFront();
             nameTextBox.Location = new Point(marketComboBox.Location.X + marketComboBox.Size.Width, marketComboBox.Location.Y);
             nameTextBox.BringToFront();
 
-            chart1.Location = new Point(3, 3);
-            chart1.Size = new Size(secChartTab.Size.Width - 8, secChartTab.Size.Height - 8);
-            chart2.Location = chart1.Location;
-            chart2.Size = chart1.Size;
+            secChart.Location = new Point(3, 3);
+            secChart.Size = new Size(secTabPage.Size.Width - 8, secTabPage.Size.Height - 8);
+            minChart.Location = secChart.Location;
+            minChart.Size = secChart.Size;
+            hourChart.Location = secChart.Location;
+            hourChart.Size = secChart.Size;
+            dayChart.Location = secChart.Location;
+            dayChart.Size = secChart.Size;
         }
         void SetMainTabControlLocationAndSize()
         {
             mainTabControl.Location = new Point(chartTabControl.Location.X, chartTabControl.Location.Y + chartTabControl.Size.Height);
             mainTabControl.Size = new Size((int)(chartTabControl.Size.Width * 0.7), Screen.GetWorkingArea(this).Size.Height - chartTabControl.Size.Height - 25);
 
-            futuresUTab.Size = new Size(mainTabControl.Size.Width - 8, mainTabControl.Size.Height - 26);
-            logTab.Size = futuresUTab.Size;
+            FUTab.Size = new Size(mainTabControl.Size.Width - 8, mainTabControl.Size.Height - 26);
+            logTab.Size = FUTab.Size;
 
-            futuresUTabControl.Location = chart1.Location;
-            futuresUTabControl.Size = new Size(futuresUTab.Size.Width - 8, futuresUTab.Size.Height - 8);
+            FUTabControl.Location = secChart.Location;
+            FUTabControl.Size = new Size(FUTab.Size.Width - 8, FUTab.Size.Height - 8);
 
             FUMarginRatioTextBox0.Location =
-                new Point(futuresUTabControl.Location.X + futuresUTabControl.Size.Width - FUMarginRatioTextBox0.Size.Width - FUMarginRatioTextBox1.Size.Width
+                new Point(FUTabControl.Location.X + FUTabControl.Size.Width - FUMarginRatioTextBox0.Size.Width - FUMarginRatioTextBox1.Size.Width
                     - FUMaintMarginTextBox0.Size.Width - FUMaintMarginTextBox1.Size.Width - FUMarginBalanceTextBox0.Size.Width - FUMarginBalanceTextBox1.Size.Width
-                    - FUAvailBalanceTextBox0.Size.Width - FUAvailBalanceTextBox1.Size.Width - FUWalletBalanceTextBox0.Size.Width - FUWalletBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+                    - FUAvailBalanceTextBox0.Size.Width - FUAvailBalanceTextBox1.Size.Width - FUWalletBalanceTextBox0.Size.Width - FUWalletBalanceTextBox1.Size.Width, FUTabControl.Location.Y);
             FUMarginRatioTextBox1.Location =
-                new Point(FUMarginRatioTextBox0.Location.X + FUMarginRatioTextBox0.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUMarginRatioTextBox0.Location.X + FUMarginRatioTextBox0.Size.Width, FUTabControl.Location.Y);
             FUMaintMarginTextBox0.Location =
-                new Point(FUMarginRatioTextBox1.Location.X + FUMarginRatioTextBox1.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUMarginRatioTextBox1.Location.X + FUMarginRatioTextBox1.Size.Width, FUTabControl.Location.Y);
             FUMaintMarginTextBox1.Location =
-                new Point(FUMaintMarginTextBox0.Location.X + FUMaintMarginTextBox0.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUMaintMarginTextBox0.Location.X + FUMaintMarginTextBox0.Size.Width, FUTabControl.Location.Y);
             FUMarginBalanceTextBox0.Location = 
-                new Point(FUMaintMarginTextBox1.Location.X + FUMaintMarginTextBox1.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUMaintMarginTextBox1.Location.X + FUMaintMarginTextBox1.Size.Width, FUTabControl.Location.Y);
             FUMarginBalanceTextBox1.Location =
-                new Point(FUMarginBalanceTextBox0.Location.X + FUMarginBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUMarginBalanceTextBox0.Location.X + FUMarginBalanceTextBox0.Size.Width, FUTabControl.Location.Y);
             FUAvailBalanceTextBox0.Location =
-                new Point(FUMarginBalanceTextBox1.Location.X + FUMarginBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUMarginBalanceTextBox1.Location.X + FUMarginBalanceTextBox1.Size.Width, FUTabControl.Location.Y);
             FUAvailBalanceTextBox1.Location =
-                new Point(FUAvailBalanceTextBox0.Location.X + FUAvailBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUAvailBalanceTextBox0.Location.X + FUAvailBalanceTextBox0.Size.Width, FUTabControl.Location.Y);
             FUWalletBalanceTextBox0.Location =
-                new Point(FUAvailBalanceTextBox1.Location.X + FUAvailBalanceTextBox1.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUAvailBalanceTextBox1.Location.X + FUAvailBalanceTextBox1.Size.Width, FUTabControl.Location.Y);
             FUWalletBalanceTextBox1.Location =
-                new Point(FUWalletBalanceTextBox0.Location.X + FUWalletBalanceTextBox0.Size.Width, futuresUTabControl.Location.Y);
+                new Point(FUWalletBalanceTextBox0.Location.X + FUWalletBalanceTextBox0.Size.Width, FUTabControl.Location.Y);
             FUMarginRatioTextBox0.BringToFront();
             FUMarginRatioTextBox1.BringToFront();
             FUMaintMarginTextBox0.BringToFront();
@@ -209,7 +334,7 @@ namespace BinanceHand
             FUAvailBalanceTextBox1.BringToFront();
             FUWalletBalanceTextBox0.BringToFront();
             FUWalletBalanceTextBox1.BringToFront();
-            FUMarginRatioTextBox0.BackColor = Color.FromArgb(futuresUTab.BackColor.R, futuresUTab.BackColor.G, futuresUTab.BackColor.B);
+            FUMarginRatioTextBox0.BackColor = Color.FromArgb(FUTab.BackColor.R, FUTab.BackColor.G, FUTab.BackColor.B);
             FUMarginRatioTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
             FUMaintMarginTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
             FUMaintMarginTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
@@ -220,74 +345,42 @@ namespace BinanceHand
             FUWalletBalanceTextBox0.BackColor = FUMaintMarginTextBox0.BackColor;
             FUWalletBalanceTextBox1.BackColor = FUMaintMarginTextBox0.BackColor;
 
-            FUPositionTab.Size = new Size(futuresUTabControl.Size.Width - 8, futuresUTabControl.Size.Height - 26);
+            FUPositionTab.Size = new Size(FUTabControl.Size.Width - 8, FUTabControl.Size.Height - 26);
             FUOpenOrdersTab.Size = FUPositionTab.Size;
 
-            FUPositionListView.Location = chart1.Location;
+            FUPositionListView.Location = secChart.Location;
             FUPositionListView.Size = new Size(FUPositionTab.Size.Width - 8, FUPositionTab.Size.Height - 8);
-            FUOpenOrdersListView.Location = chart1.Location;
+            FUOpenOrdersListView.Location = secChart.Location;
             FUOpenOrdersListView.Size = FUPositionListView.Size;
 
-            logListBox.Location = chart1.Location;
-            logListBox.Size = futuresUTabControl.Size;
+            logListBox.Location = secChart.Location;
+            logListBox.Size = FUTabControl.Size;
 
             priceTextBox.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width - priceTextBox.Size.Width - amtTextBox.Size.Width - timeDiffTextBox.Size.Width
-                , mainTabControl.Location.Y);
-            priceTextBox.BackColor = chart1.BackColor;
-            priceTextBox.BringToFront();
+                , mainTabControl.Location.Y + 3);
             amtTextBox.Location = new Point(priceTextBox.Location.X + priceTextBox.Size.Width, priceTextBox.Location.Y);
-            amtTextBox.BackColor = chart1.BackColor;
-            amtTextBox.BringToFront();
             timeDiffTextBox.Location = new Point(amtTextBox.Location.X + amtTextBox.Size.Width, amtTextBox.Location.Y);
             timeDiffTextBox.Size = new Size(30, amtTextBox.Size.Height);
-            timeDiffTextBox.BackColor = chart1.BackColor;
-            timeDiffTextBox.BringToFront();
         }
         void SetSymbolsListViewLocationAndSize()
         {
-            spotKlineRcvTextBox.Size = new Size(25, 14);
-            spotGroupBox.Location = new Point(chartTabControl.Location.X + chartTabControl.Size.Width, chartTabControl.Location.Y);
-            spotGroupBox.Size = new Size(Screen.GetWorkingArea(this).Size.Width - chartTabControl.Size.Width, chartTabControl.Size.Height / 3);
-            spotListView.Location = new Point(3, 15);
-            spotListView.Size = new Size(spotGroupBox.Size.Width - 6, spotGroupBox.Size.Height - spotListView.Location.Y - spotKlineRcvTextBox.Size.Height - 6);
-            spotKlineRcvTextBox.Location = new Point(spotListView.Location.X, spotListView.Location.Y + spotListView.Size.Height + 3);
-            spotKlineReqTextBox.Size = new Size(47, spotKlineRcvTextBox.Height);
-            spotKlineReqTextBox.Location = new Point(spotKlineRcvTextBox.Location.X + spotKlineRcvTextBox.Size.Width, spotKlineRcvTextBox.Location.Y);
-            spotAggRcvTextBox.Size = new Size(7, spotKlineRcvTextBox.Height);
-            spotAggRcvTextBox.Location = new Point(spotKlineReqTextBox.Location.X + spotKlineReqTextBox.Size.Width + spotKlineRcvTextBox.Size.Width, spotKlineReqTextBox.Location.Y);
-            spotAggReqTextBox.Size = new Size(30, spotKlineRcvTextBox.Height);
-            spotAggReqTextBox.Location = new Point(spotAggRcvTextBox.Location.X + spotAggRcvTextBox.Size.Width, spotAggRcvTextBox.Location.Y);
-
-            FUGroupBox.Location = new Point(spotGroupBox.Location.X, spotGroupBox.Location.Y + spotGroupBox.Size.Height);
-            FUGroupBox.Size = spotGroupBox.Size;
-            futureUListView.Location = spotListView.Location;
-            futureUListView.Size = spotListView.Size;
-            futureUKlineRcvTextBox.Size = spotKlineRcvTextBox.Size;
-            futureUKlineRcvTextBox.Location = spotKlineRcvTextBox.Location;
-            futureUKlineReqTextBox.Size = spotKlineReqTextBox.Size;
-            futureUKlineReqTextBox.Location = spotKlineReqTextBox.Location;
-            futureUAggRcvTextBox.Size = spotAggRcvTextBox.Size;
-            futureUAggRcvTextBox.Location = spotAggRcvTextBox.Location;
-            futureUAggReqTextBox.Size = spotAggReqTextBox.Size;
-            futureUAggReqTextBox.Location = spotAggReqTextBox.Location;
-
-            FCGroupBox.Location = new Point(FUGroupBox.Location.X, FUGroupBox.Location.Y + FUGroupBox.Size.Height);
-            FCGroupBox.Size = spotGroupBox.Size;
-            futureCListView.Location = spotListView.Location;
-            futureCListView.Size = spotListView.Size;
-            futureCKlineRcvTextBox.Size = spotKlineRcvTextBox.Size;
-            futureCKlineRcvTextBox.Location = spotKlineRcvTextBox.Location;
-            futureCKlineReqTextBox.Size = spotKlineReqTextBox.Size;
-            futureCKlineReqTextBox.Location = spotKlineReqTextBox.Location;
-            futureCAggRcvTextBox.Size = spotAggRcvTextBox.Size;
-            futureCAggRcvTextBox.Location = spotAggRcvTextBox.Location;
-            futureCAggReqTextBox.Size = spotAggReqTextBox.Size;
-            futureCAggReqTextBox.Location = spotAggReqTextBox.Location;
+            FUKlineRcvTextBox.Size = new Size(25, 14);
+            FUGroupBox.Location = new Point(chartTabControl.Location.X + chartTabControl.Size.Width, chartTabControl.Location.Y + 3);
+            FUGroupBox.Size = new Size(Screen.GetWorkingArea(this).Size.Width - chartTabControl.Size.Width, chartTabControl.Size.Height);
+            FUListView.Location = new Point(3, 15);
+            FUListView.Size = new Size(FUGroupBox.Size.Width - 6, FUGroupBox.Size.Height - FUListView.Location.Y - FUKlineRcvTextBox.Size.Height - 6);
+            FUKlineRcvTextBox.Location = new Point(FUListView.Location.X, FUListView.Location.Y + FUListView.Size.Height + 3);
+            FUKlineReqTextBox.Size = new Size(47, FUKlineRcvTextBox.Height);
+            FUKlineReqTextBox.Location = new Point(FUKlineRcvTextBox.Location.X + FUKlineRcvTextBox.Size.Width, FUKlineRcvTextBox.Location.Y);
+            FUAggRcvTextBox.Size = new Size(7, FUKlineRcvTextBox.Height);
+            FUAggRcvTextBox.Location = new Point(FUKlineReqTextBox.Location.X + FUKlineReqTextBox.Size.Width + FUKlineRcvTextBox.Size.Width, FUKlineReqTextBox.Location.Y);
+            FUAggReqTextBox.Size = new Size(30, FUKlineRcvTextBox.Height);
+            FUAggReqTextBox.Location = new Point(FUAggRcvTextBox.Location.X + FUAggRcvTextBox.Size.Width, FUAggRcvTextBox.Location.Y);
         }
         void SetOrderViewLocationAndSize()
         {
-            orderGroupBox.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width, mainTabControl.Location.Y);
-            orderGroupBox.Size = new Size(chartTabControl.Size.Width - mainTabControl.Size.Width, mainTabControl.Size.Height);
+            orderGroupBox.Location = new Point(mainTabControl.Location.X + mainTabControl.Size.Width, mainTabControl.Location.Y + 3);
+            orderGroupBox.Size = new Size(chartTabControl.Size.Width - mainTabControl.Size.Width, mainTabControl.Size.Height - 3);
 
             buyButton.Size = new Size((orderGroupBox.Size.Width - 3 * 3) / 2, orderGroupBox.Size.Height / 5 - 3);
             buyButton.Location = new Point(3, orderGroupBox.Size.Height - 3 - buyButton.Size.Height);
@@ -336,13 +429,18 @@ namespace BinanceHand
 
             SetResultView();
         }
+        Chart chartNow;
         void SetChart()
         {
-            marketComboBox.SelectedItem = marketComboBox.Items[1];
+            Program.a = secChart;
 
-            chart1.AxisViewChanged += (sender, e) => { AdjustChart(chart1); };
+            chartTabControl.SelectedIndexChanged += (sender, e) => { if (itemDataShowing != null) SetChartNowOrLoad(); };
 
-            var chartAreaMain = chart1.ChartAreas.Add("ChartAreaMain");
+            marketComboBox.SelectedItem = marketComboBox.Items[0];
+
+            secChart.AxisViewChanged += (sender, e) => { AdjustChart(secChart); };
+
+            var chartAreaMain = secChart.ChartAreas.Add("ChartAreaMain");
             chartAreaMain.AxisX.ScaleView.SizeType = DateTimeIntervalType.Seconds;
             chartAreaMain.AxisX.ScaleView.Small​Scroll​Size = 1;
             chartAreaMain.AxisX.MajorGrid.LineColor = gridColor;
@@ -350,16 +448,24 @@ namespace BinanceHand
             chartAreaMain.AxisX.MajorTickMark.Size = 0.4f;
             chartAreaMain.AxisX.LabelStyle.Interval = 30;
             chartAreaMain.AxisX.LabelStyle.Format = ItemData.secChartLabel;
+            chartAreaMain.AxisX.LabelStyle.ForeColor = ForeColor;
+            chartAreaMain.AxisX.ScrollBar.BackColor = BackColor;
+            chartAreaMain.AxisX.ScrollBar.ButtonColor = Color.FromArgb(18, 22, 28);
+            chartAreaMain.AxisX.ScrollBar.LineColor = gridColor;
+            chartAreaMain.AxisX.LineColor = gridColor;
 
             chartAreaMain.AxisY.MajorGrid.LineColor = gridColor;
             chartAreaMain.AxisY.ScrollBar.Enabled = false;
             chartAreaMain.AxisY.MajorTickMark.Enabled = false;
             chartAreaMain.AxisY.IsStartedFromZero = false;
             chartAreaMain.AxisY.LabelStyle.Enabled = false;
+            chartAreaMain.AxisY.LineColor = gridColor;
 
             chartAreaMain.Position = new ElementPosition(0, 0, 100, 100);
+            chartAreaMain.BackColor = secChart.BackColor;
+            chartAreaMain.BorderColor = ForeColor;
 
-            var chartAreaMsMd = chart1.ChartAreas.Add("ChartAreaMsMd");
+            var chartAreaMsMd = secChart.ChartAreas.Add("ChartAreaMsMd");
             chartAreaMsMd.BackColor = Color.Transparent;
             chartAreaMsMd.BorderColor = Color.Transparent;
             chartAreaMsMd.Position.FromRectangleF(chartAreaMain.Position.ToRectangleF());
@@ -375,16 +481,19 @@ namespace BinanceHand
             chartAreaMsMd.AxisX.ScrollBar.BackColor = Color.Transparent;
             chartAreaMsMd.AxisX.ScrollBar.ButtonColor = Color.Transparent;
             chartAreaMsMd.AxisX.ScrollBar.LineColor = Color.Transparent;
+            chartAreaMsMd.AxisX.LineColor = gridColor;
 
             chartAreaMsMd.AxisY.MajorGrid.Enabled = false;
             chartAreaMsMd.AxisY.ScrollBar.Enabled = false;
             chartAreaMsMd.AxisY.MajorTickMark.Enabled = false;
             chartAreaMsMd.AxisY.LabelStyle.Enabled = false;
+            chartAreaMsMd.AxisY.LineColor = gridColor;
 
             chartAreaMsMd.AlignWithChartArea = chartAreaMain.Name;
+            chartAreaMsMd.BackColor = Color.Transparent;
 
 
-            var seriesPrice = chart1.Series.Add("가격");
+            var seriesPrice = secChart.Series.Add("가격");
             seriesPrice.ChartType = SeriesChartType.Candlestick;
             seriesPrice.XValueMember = "Time";
             seriesPrice.YValueMembers = "High,Low,Open,Close";
@@ -393,49 +502,57 @@ namespace BinanceHand
             seriesPrice.YAxisType = AxisType.Primary;
             seriesPrice.ChartArea = chartAreaMain.Name;
 
-            var seriesMsAndMdAmt = chart1.Series.Add("매수and매도량");
+            var seriesMsAndMdAmt = secChart.Series.Add("매수and매도량");
             seriesMsAndMdAmt.ChartType = SeriesChartType.StackedColumn;
             seriesMsAndMdAmt.XValueType = ChartValueType.Time;
             seriesMsAndMdAmt.Color = msAndMdAmtColor;
             seriesMsAndMdAmt.YAxisType = AxisType.Primary;
             seriesMsAndMdAmt.ChartArea = chartAreaMsMd.Name;
 
-            var seriesMsOrMdAmt = chart1.Series.Add("매수or매도량");
+            var seriesMsOrMdAmt = secChart.Series.Add("매수or매도량");
             seriesMsOrMdAmt.ChartType = SeriesChartType.StackedColumn;
             seriesMsOrMdAmt.XValueType = ChartValueType.Time;
             seriesMsOrMdAmt.Color = msAmtColor;
             seriesMsOrMdAmt.YAxisType = AxisType.Primary;
             seriesMsOrMdAmt.ChartArea = chartAreaMsMd.Name;
 
-            chart2.AxisViewChanged += (sender, e) => { AdjustChart(chart2); };
-            chart2.AxisScrollBarClicked += (sender, e) =>
+            minChart.AxisViewChanged += (sender, e) => { AdjustChart(minChart); };
+            minChart.AxisScrollBarClicked += (sender, e) =>
             {
-                if (e.ButtonType == ScrollBarButtonType.SmallDecrement && (int)chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum == 0)
+                if (e.ButtonType == ScrollBarButtonType.SmallDecrement && (int)minChart.ChartAreas[0].AxisX.ScaleView.ViewMinimum == 0)
                 {
-                    LoadMinutesMore(itemDataShowing);
+                    ChartScroll(chartNow, ScrollType.SmallDecrement);
                     e.IsHandled = true;
                 }
             };
 
-            chartAreaMain = chart2.ChartAreas.Add("ChartAreaMain");
+            chartAreaMain = minChart.ChartAreas.Add("ChartAreaMain");
             chartAreaMain.AxisX.ScaleView.SizeType = DateTimeIntervalType.Seconds;
             chartAreaMain.AxisX.ScaleView.Small​Scroll​Size = 1;
             chartAreaMain.AxisX.MajorGrid.LineColor = gridColor;
             chartAreaMain.AxisX.MajorGrid.Interval = 10;
             chartAreaMain.AxisX.MajorTickMark.Size = 0.4f;
-            chartAreaMain.AxisX.LabelStyle.Interval = chart1.ChartAreas[0].AxisX.LabelStyle.Interval;
+            chartAreaMain.AxisX.LabelStyle.Interval = secChart.ChartAreas[0].AxisX.LabelStyle.Interval;
             chartAreaMain.AxisX.LabelStyle.Format = ItemData.minChartLabel;
+            chartAreaMain.AxisX.LabelStyle.ForeColor = ForeColor;
+            chartAreaMain.AxisX.ScrollBar.BackColor = secChart.ChartAreas[0].AxisX.ScrollBar.BackColor;
+            chartAreaMain.AxisX.ScrollBar.ButtonColor = secChart.ChartAreas[0].AxisX.ScrollBar.ButtonColor;
+            chartAreaMain.AxisX.ScrollBar.LineColor = secChart.ChartAreas[0].AxisX.ScrollBar.LineColor;
+            chartAreaMain.AxisX.LineColor = gridColor;
 
             chartAreaMain.AxisY.MajorGrid.LineColor = gridColor;
             chartAreaMain.AxisY.ScrollBar.Enabled = false;
             chartAreaMain.AxisY.MajorTickMark.Enabled = false;
             chartAreaMain.AxisY.IsStartedFromZero = false;
             chartAreaMain.AxisY.LabelStyle.Enabled = false;
+            chartAreaMain.AxisY.LineColor = gridColor;
 
-            chartAreaMain.Position = chart1.ChartAreas[0].Position;
+            chartAreaMain.Position = secChart.ChartAreas[0].Position;
+            chartAreaMain.BackColor = Color.Transparent;
+            chartAreaMain.BorderColor = ForeColor;
 
 
-            chartAreaMsMd = chart2.ChartAreas.Add("ChartAreaMsMd");
+            chartAreaMsMd = minChart.ChartAreas.Add("ChartAreaMsMd");
             chartAreaMsMd.BackColor = Color.Transparent;
             chartAreaMsMd.BorderColor = Color.Transparent;
             chartAreaMsMd.Position.FromRectangleF(chartAreaMain.Position.ToRectangleF());
@@ -451,16 +568,19 @@ namespace BinanceHand
             chartAreaMsMd.AxisX.ScrollBar.BackColor = Color.Transparent;
             chartAreaMsMd.AxisX.ScrollBar.ButtonColor = Color.Transparent;
             chartAreaMsMd.AxisX.ScrollBar.LineColor = Color.Transparent;
+            chartAreaMsMd.AxisX.LineColor = gridColor;
 
             chartAreaMsMd.AxisY.MajorGrid.Enabled = false;
             chartAreaMsMd.AxisY.ScrollBar.Enabled = false;
             chartAreaMsMd.AxisY.MajorTickMark.Enabled = false;
             chartAreaMsMd.AxisY.LabelStyle.Enabled = false;
+            chartAreaMsMd.AxisY.LineColor = gridColor;
 
             chartAreaMsMd.AlignWithChartArea = chartAreaMain.Name;
+            chartAreaMsMd.BackColor = Color.Transparent;
 
 
-            seriesPrice = chart2.Series.Add("가격");
+            seriesPrice = minChart.Series.Add("가격");
             seriesPrice.ChartType = SeriesChartType.Candlestick;
             seriesPrice.XValueMember = "Time";
             seriesPrice.YValueMembers = "High,Low,Open,Close";
@@ -469,20 +589,222 @@ namespace BinanceHand
             seriesPrice.YAxisType = AxisType.Primary;
             seriesPrice.ChartArea = chartAreaMain.Name;
 
-            seriesMsAndMdAmt = chart2.Series.Add("매수and매도량");
+            seriesMsAndMdAmt = minChart.Series.Add("매수and매도량");
             seriesMsAndMdAmt.ChartType = SeriesChartType.StackedColumn;
             seriesMsAndMdAmt.XValueType = ChartValueType.Time;
             seriesMsAndMdAmt.Color = msAndMdAmtColor;
             seriesMsAndMdAmt.YAxisType = AxisType.Primary;
             seriesMsAndMdAmt.ChartArea = chartAreaMsMd.Name;
 
-            seriesMsOrMdAmt = chart2.Series.Add("매수or매도량");
+            seriesMsOrMdAmt = minChart.Series.Add("매수or매도량");
+            seriesMsOrMdAmt.ChartType = SeriesChartType.StackedColumn;
+            seriesMsOrMdAmt.XValueType = ChartValueType.Time;
+            seriesMsOrMdAmt.Color = msAmtColor;
+            seriesMsOrMdAmt.YAxisType = AxisType.Primary;
+            seriesMsOrMdAmt.ChartArea = chartAreaMsMd.Name;
+
+            hourChart.AxisViewChanged += (sender, e) => { AdjustChart(hourChart); };
+            hourChart.AxisScrollBarClicked += (sender, e) =>
+            {
+                if (e.ButtonType == ScrollBarButtonType.SmallDecrement && (int)hourChart.ChartAreas[0].AxisX.ScaleView.ViewMinimum == 0)
+                {
+                    ChartScroll(chartNow, ScrollType.SmallDecrement);
+                    e.IsHandled = true;
+                }
+            };
+
+            chartAreaMain = hourChart.ChartAreas.Add("ChartAreaMain");
+            chartAreaMain.AxisX.ScaleView.SizeType = DateTimeIntervalType.Seconds;
+            chartAreaMain.AxisX.ScaleView.Small​Scroll​Size = 1;
+            chartAreaMain.AxisX.MajorGrid.LineColor = gridColor;
+            chartAreaMain.AxisX.MajorGrid.Interval = 10;
+            chartAreaMain.AxisX.MajorTickMark.Size = 0.4f;
+            chartAreaMain.AxisX.LabelStyle.Interval = secChart.ChartAreas[0].AxisX.LabelStyle.Interval;
+            chartAreaMain.AxisX.LabelStyle.Format = ItemData.minChartLabel;
+            chartAreaMain.AxisX.LabelStyle.ForeColor = ForeColor;
+            chartAreaMain.AxisX.ScrollBar.BackColor = secChart.ChartAreas[0].AxisX.ScrollBar.BackColor;
+            chartAreaMain.AxisX.ScrollBar.ButtonColor = secChart.ChartAreas[0].AxisX.ScrollBar.ButtonColor;
+            chartAreaMain.AxisX.ScrollBar.LineColor = secChart.ChartAreas[0].AxisX.ScrollBar.LineColor;
+            chartAreaMain.AxisX.LineColor = gridColor;
+
+            chartAreaMain.AxisY.MajorGrid.LineColor = gridColor;
+            chartAreaMain.AxisY.ScrollBar.Enabled = false;
+            chartAreaMain.AxisY.MajorTickMark.Enabled = false;
+            chartAreaMain.AxisY.IsStartedFromZero = false;
+            chartAreaMain.AxisY.LabelStyle.Enabled = false;
+            chartAreaMain.AxisY.LineColor = gridColor;
+
+            chartAreaMain.Position = secChart.ChartAreas[0].Position;
+            chartAreaMain.BackColor = Color.Transparent;
+            chartAreaMain.BorderColor = ForeColor;
+
+
+            chartAreaMsMd = hourChart.ChartAreas.Add("ChartAreaMsMd");
+            chartAreaMsMd.BackColor = Color.Transparent;
+            chartAreaMsMd.BorderColor = Color.Transparent;
+            chartAreaMsMd.Position.FromRectangleF(chartAreaMain.Position.ToRectangleF());
+            chartAreaMsMd.Position.Height -= 50;
+            chartAreaMsMd.Position.Y += 50;
+
+            chartAreaMsMd.AxisX.MajorGrid.Enabled = false;
+            chartAreaMsMd.AxisX.MajorTickMark.LineColor = Color.Transparent;
+            chartAreaMsMd.AxisX.MajorTickMark.Size = chartAreaMain.AxisX.MajorTickMark.Size;
+            chartAreaMsMd.AxisX.LabelStyle.ForeColor = Color.Transparent;
+            chartAreaMsMd.AxisX.ScaleView.SizeType = DateTimeIntervalType.Seconds;
+            chartAreaMsMd.AxisX.ScaleView.Small​Scroll​Size = 1;
+            chartAreaMsMd.AxisX.ScrollBar.BackColor = Color.Transparent;
+            chartAreaMsMd.AxisX.ScrollBar.ButtonColor = Color.Transparent;
+            chartAreaMsMd.AxisX.ScrollBar.LineColor = Color.Transparent;
+            chartAreaMsMd.AxisX.LineColor = gridColor;
+
+            chartAreaMsMd.AxisY.MajorGrid.Enabled = false;
+            chartAreaMsMd.AxisY.ScrollBar.Enabled = false;
+            chartAreaMsMd.AxisY.MajorTickMark.Enabled = false;
+            chartAreaMsMd.AxisY.LabelStyle.Enabled = false;
+            chartAreaMsMd.AxisY.LineColor = gridColor;
+
+            chartAreaMsMd.AlignWithChartArea = chartAreaMain.Name;
+            chartAreaMsMd.BackColor = Color.Transparent;
+
+
+            seriesPrice = hourChart.Series.Add("가격");
+            seriesPrice.ChartType = SeriesChartType.Candlestick;
+            seriesPrice.XValueMember = "Time";
+            seriesPrice.YValueMembers = "High,Low,Open,Close";
+            seriesPrice.XValueType = ChartValueType.Time;
+            seriesPrice.Color = Color.FromArgb(0, plsPrcColor);
+            seriesPrice.YAxisType = AxisType.Primary;
+            seriesPrice.ChartArea = chartAreaMain.Name;
+
+            seriesMsAndMdAmt = hourChart.Series.Add("매수and매도량");
+            seriesMsAndMdAmt.ChartType = SeriesChartType.StackedColumn;
+            seriesMsAndMdAmt.XValueType = ChartValueType.Time;
+            seriesMsAndMdAmt.Color = msAndMdAmtColor;
+            seriesMsAndMdAmt.YAxisType = AxisType.Primary;
+            seriesMsAndMdAmt.ChartArea = chartAreaMsMd.Name;
+
+            seriesMsOrMdAmt = hourChart.Series.Add("매수or매도량");
+            seriesMsOrMdAmt.ChartType = SeriesChartType.StackedColumn;
+            seriesMsOrMdAmt.XValueType = ChartValueType.Time;
+            seriesMsOrMdAmt.Color = msAmtColor;
+            seriesMsOrMdAmt.YAxisType = AxisType.Primary;
+            seriesMsOrMdAmt.ChartArea = chartAreaMsMd.Name;
+
+            dayChart.AxisViewChanged += (sender, e) => { AdjustChart(dayChart); };
+            dayChart.AxisScrollBarClicked += (sender, e) =>
+            {
+                if (e.ButtonType == ScrollBarButtonType.SmallDecrement && (int)dayChart.ChartAreas[0].AxisX.ScaleView.ViewMinimum == 0)
+                {
+                    ChartScroll(chartNow, ScrollType.SmallDecrement);
+                    e.IsHandled = true;
+                }
+            };
+
+            chartAreaMain = dayChart.ChartAreas.Add("ChartAreaMain");
+            chartAreaMain.AxisX.ScaleView.SizeType = DateTimeIntervalType.Seconds;
+            chartAreaMain.AxisX.ScaleView.Small​Scroll​Size = 1;
+            chartAreaMain.AxisX.MajorGrid.LineColor = gridColor;
+            chartAreaMain.AxisX.MajorGrid.Interval = 10;
+            chartAreaMain.AxisX.MajorTickMark.Size = 0.4f;
+            chartAreaMain.AxisX.LabelStyle.Interval = secChart.ChartAreas[0].AxisX.LabelStyle.Interval;
+            chartAreaMain.AxisX.LabelStyle.Format = ItemData.minChartLabel;
+            chartAreaMain.AxisX.LabelStyle.ForeColor = ForeColor;
+            chartAreaMain.AxisX.ScrollBar.BackColor = secChart.ChartAreas[0].AxisX.ScrollBar.BackColor;
+            chartAreaMain.AxisX.ScrollBar.ButtonColor = secChart.ChartAreas[0].AxisX.ScrollBar.ButtonColor;
+            chartAreaMain.AxisX.ScrollBar.LineColor = secChart.ChartAreas[0].AxisX.ScrollBar.LineColor;
+            chartAreaMain.AxisX.LineColor = gridColor;
+
+            chartAreaMain.AxisY.MajorGrid.LineColor = gridColor;
+            chartAreaMain.AxisY.ScrollBar.Enabled = false;
+            chartAreaMain.AxisY.MajorTickMark.Enabled = false;
+            chartAreaMain.AxisY.IsStartedFromZero = false;
+            chartAreaMain.AxisY.LabelStyle.Enabled = false;
+            chartAreaMain.AxisY.LineColor = gridColor;
+
+            chartAreaMain.Position = secChart.ChartAreas[0].Position;
+            chartAreaMain.BackColor = Color.Transparent;
+            chartAreaMain.BorderColor = ForeColor;
+
+
+            chartAreaMsMd = dayChart.ChartAreas.Add("ChartAreaMsMd");
+            chartAreaMsMd.BackColor = Color.Transparent;
+            chartAreaMsMd.BorderColor = Color.Transparent;
+            chartAreaMsMd.Position.FromRectangleF(chartAreaMain.Position.ToRectangleF());
+            chartAreaMsMd.Position.Height -= 50;
+            chartAreaMsMd.Position.Y += 50;
+
+            chartAreaMsMd.AxisX.MajorGrid.Enabled = false;
+            chartAreaMsMd.AxisX.MajorTickMark.LineColor = Color.Transparent;
+            chartAreaMsMd.AxisX.MajorTickMark.Size = chartAreaMain.AxisX.MajorTickMark.Size;
+            chartAreaMsMd.AxisX.LabelStyle.ForeColor = Color.Transparent;
+            chartAreaMsMd.AxisX.ScaleView.SizeType = DateTimeIntervalType.Seconds;
+            chartAreaMsMd.AxisX.ScaleView.Small​Scroll​Size = 1;
+            chartAreaMsMd.AxisX.ScrollBar.BackColor = Color.Transparent;
+            chartAreaMsMd.AxisX.ScrollBar.ButtonColor = Color.Transparent;
+            chartAreaMsMd.AxisX.ScrollBar.LineColor = Color.Transparent;
+            chartAreaMsMd.AxisX.LineColor = gridColor;
+
+            chartAreaMsMd.AxisY.MajorGrid.Enabled = false;
+            chartAreaMsMd.AxisY.ScrollBar.Enabled = false;
+            chartAreaMsMd.AxisY.MajorTickMark.Enabled = false;
+            chartAreaMsMd.AxisY.LabelStyle.Enabled = false;
+            chartAreaMsMd.AxisY.LineColor = gridColor;
+
+            chartAreaMsMd.AlignWithChartArea = chartAreaMain.Name;
+            chartAreaMsMd.BackColor = Color.Transparent;
+
+
+            seriesPrice = dayChart.Series.Add("가격");
+            seriesPrice.ChartType = SeriesChartType.Candlestick;
+            seriesPrice.XValueMember = "Time";
+            seriesPrice.YValueMembers = "High,Low,Open,Close";
+            seriesPrice.XValueType = ChartValueType.Time;
+            seriesPrice.Color = Color.FromArgb(0, plsPrcColor);
+            seriesPrice.YAxisType = AxisType.Primary;
+            seriesPrice.ChartArea = chartAreaMain.Name;
+
+            seriesMsAndMdAmt = dayChart.Series.Add("매수and매도량");
+            seriesMsAndMdAmt.ChartType = SeriesChartType.StackedColumn;
+            seriesMsAndMdAmt.XValueType = ChartValueType.Time;
+            seriesMsAndMdAmt.Color = msAndMdAmtColor;
+            seriesMsAndMdAmt.YAxisType = AxisType.Primary;
+            seriesMsAndMdAmt.ChartArea = chartAreaMsMd.Name;
+
+            seriesMsOrMdAmt = dayChart.Series.Add("매수or매도량");
             seriesMsOrMdAmt.ChartType = SeriesChartType.StackedColumn;
             seriesMsOrMdAmt.XValueType = ChartValueType.Time;
             seriesMsOrMdAmt.Color = msAmtColor;
             seriesMsOrMdAmt.YAxisType = AxisType.Primary;
             seriesMsOrMdAmt.ChartArea = chartAreaMsMd.Name;
         }
+        void SetChartNowOrLoad()
+        {
+            if (chartTabControl.SelectedIndex == secChart.TabIndex)
+                chartNow = secChart;
+            else if (chartTabControl.SelectedIndex == minChart.TabIndex)
+            {
+                chartNow = minChart;
+                if (itemDataShowing.minStickList.Count <= baseChartViewSticksSize)
+                    LoadMore(chartNow, 300);
+            }
+            else if (chartTabControl.SelectedIndex == hourChart.TabIndex)
+            {
+                chartNow = hourChart;
+                if (itemDataShowing.hourStickList.Count <= baseChartViewSticksSize)
+                    LoadMore(chartNow, 300);
+                else 
+                    LoadMore(chartNow, 0);
+            }
+            else if (chartTabControl.SelectedIndex == dayChart.TabIndex)
+            {
+                chartNow = dayChart;
+                if (itemDataShowing.hourStickList.Count <= baseChartViewSticksSize)
+                    LoadMore(chartNow, 300);
+                else
+                    LoadMore(chartNow, 0);
+            }
+        }
+        HeaderFormatStyle headerstyle = new HeaderFormatStyle();
         void SetSymbolsListView()
         {
             var nameColumnSize = 7;
@@ -491,7 +813,10 @@ namespace BinanceHand
             var winColumnSize = 6;
             var proColumnSize = 6;
 
-            var nameColumn = new OLVColumn("이름(현물)", "Name");
+            headerstyle.SetBackColor(BackColor);
+            headerstyle.SetForeColor(ForeColor);
+
+            var nameColumn = new OLVColumn("이름", "Name");
             var flucColumn = new OLVColumn("분봉", "RateBfor");
             var durColumn = new OLVColumn("지속", "AggReadyRow");
             var winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
@@ -501,52 +826,40 @@ namespace BinanceHand
             durColumn.FreeSpaceProportion = durColumnSize;
             winColumn.FreeSpaceProportion = winColumnSize;
             proColumn.FreeSpaceProportion = proColumnSize;
-            spotListView.AllColumns.Add(nameColumn);
-            spotListView.AllColumns.Add(flucColumn);
-            spotListView.AllColumns.Add(durColumn);
-            spotListView.AllColumns.Add(winColumn);
-            spotListView.AllColumns.Add(proColumn);
-            spotListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
-            spotListView.SelectionChanged += (sender, e) => { if (spotListView.SelectedIndices.Count == 1) ShowChart(spotListView.SelectedObject as ItemData); };
+            nameColumn.HeaderFormatStyle = headerstyle;
+            flucColumn.HeaderFormatStyle = headerstyle;
+            durColumn.HeaderFormatStyle = headerstyle;
+            winColumn.HeaderFormatStyle = headerstyle;
+            proColumn.HeaderFormatStyle = headerstyle;
+            FUListView.AllColumns.Add(nameColumn);
+            FUListView.AllColumns.Add(flucColumn);
+            FUListView.AllColumns.Add(durColumn);
+            FUListView.AllColumns.Add(winColumn);
+            FUListView.AllColumns.Add(proColumn);
+            FUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
+            FUListView.SelectionChanged += (sender, e) => { if (FUListView.SelectedIndices.Count == 1) ShowChart(FUListView.SelectedObject as ItemData); };
+            FUListView.FormatRow += (sender, e) =>
+            {
+                if (((ItemData)e.Model).isAggOn)
+                {
+                    var itemData = (ItemData)e.Model;
 
-            nameColumn = new OLVColumn("이름(선물U)", "Name");
-            flucColumn = new OLVColumn("분봉", "RateBfor");
-            durColumn = new OLVColumn("지속", "AggReadyRow");
-            winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
-            proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
-            nameColumn.FreeSpaceProportion = nameColumnSize;
-            flucColumn.FreeSpaceProportion = flucColumnSize;
-            durColumn.FreeSpaceProportion = durColumnSize;
-            winColumn.FreeSpaceProportion = winColumnSize;
-            proColumn.FreeSpaceProportion = proColumnSize;
-            futureUListView.AllColumns.Add(nameColumn);
-            futureUListView.AllColumns.Add(flucColumn);
-            futureUListView.AllColumns.Add(durColumn);
-            futureUListView.AllColumns.Add(winColumn);
-            futureUListView.AllColumns.Add(proColumn);
-            futureUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
-            futureUListView.SelectionChanged += (sender, e) => { if (futureUListView.SelectedIndices.Count == 1) ShowChart(futureUListView.SelectedObject as ItemData); };
-
-            nameColumn = new OLVColumn("이름(선물C)", "Name");
-            flucColumn = new OLVColumn("분봉", "RateBfor");
-            durColumn = new OLVColumn("지속", "AggReadyRow");
-            winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
-            proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
-            nameColumn.FreeSpaceProportion = nameColumnSize;
-            flucColumn.FreeSpaceProportion = flucColumnSize;
-            durColumn.FreeSpaceProportion = durColumnSize;
-            winColumn.FreeSpaceProportion = winColumnSize;
-            proColumn.FreeSpaceProportion = proColumnSize;
-            futureCListView.AllColumns.Add(nameColumn);
-            futureCListView.AllColumns.Add(flucColumn);
-            futureCListView.AllColumns.Add(durColumn);
-            futureCListView.AllColumns.Add(winColumn);
-            futureCListView.AllColumns.Add(proColumn);
-            futureCListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, durColumn, winColumn, proColumn });
-            futureCListView.SelectionChanged += (sender, e) => { if (futureCListView.SelectedIndices.Count == 1) ShowChart(futureCListView.SelectedObject as ItemData); };
+                    if (itemData.LorS)
+                        e.Item.ForeColor = plsPrcColor;
+                    else
+                        e.Item.ForeColor = mnsPrcColor;
+                }
+            };
         }
         void SetMainListView()
         {
+            //mainTabControl.DrawItem += tabControl_DrawItem;
+            //FUTabControl.DrawItem += tabControl_DrawItem;
+
+            priceTextBox.BringToFront();
+            amtTextBox.BringToFront();
+            timeDiffTextBox.BringToFront();
+
             var nameColumn = new OLVColumn("Symbol", "Name");
             var leverageColumn = new OLVColumn("Leverage", "Leverage");
             var sizeColumn = new OLVColumn("Size", "Size");
@@ -563,6 +876,14 @@ namespace BinanceHand
             initialmarginColumn.FreeSpaceProportion = 2;
             PNLColumn.FreeSpaceProportion = 2;
             ROEColumn.FreeSpaceProportion = 2;
+            nameColumn.HeaderFormatStyle = headerstyle;
+            leverageColumn.HeaderFormatStyle = headerstyle;
+            sizeColumn.HeaderFormatStyle = headerstyle;
+            entryPriceColumn.HeaderFormatStyle = headerstyle;
+            markPriceColumn.HeaderFormatStyle = headerstyle;
+            initialmarginColumn.HeaderFormatStyle = headerstyle;
+            PNLColumn.HeaderFormatStyle = headerstyle;
+            ROEColumn.HeaderFormatStyle = headerstyle;
             FUPositionListView.AllColumns.Add(nameColumn);
             FUPositionListView.AllColumns.Add(leverageColumn);
             FUPositionListView.AllColumns.Add(sizeColumn);
@@ -594,6 +915,17 @@ namespace BinanceHand
             filledColumn.FreeSpaceProportion = 3;
             ROColumn.FreeSpaceProportion = 3;
             conditionColumn.FreeSpaceProportion = 3;
+
+            timeColumn.HeaderFormatStyle = headerstyle;
+            nameColumn.HeaderFormatStyle = headerstyle;
+            typeColumn.HeaderFormatStyle = headerstyle;
+            sideColumn.HeaderFormatStyle = headerstyle;
+            priceColumn.HeaderFormatStyle = headerstyle;
+            amountColumn.HeaderFormatStyle = headerstyle;
+            filledColumn.HeaderFormatStyle = headerstyle;
+            ROColumn.HeaderFormatStyle = headerstyle;
+            conditionColumn.HeaderFormatStyle = headerstyle;
+
             FUOpenOrdersListView.AllColumns.Add(timeColumn);
             FUOpenOrdersListView.AllColumns.Add(nameColumn);
             FUOpenOrdersListView.AllColumns.Add(typeColumn);
@@ -608,8 +940,8 @@ namespace BinanceHand
                     filledColumn, ROColumn, conditionColumn });
             FUOpenOrdersListView.SelectionChanged += (sender, e) => { if (FUOpenOrdersListView.SelectedIndices.Count == 1) ShowChart(FUOpenOrdersListView.SelectedObject as ItemData); };
 
-            mainTabControl.SelectedTab = futuresUTab;
-            futuresUTabControl.SelectedTab = FUPositionTab;
+            mainTabControl.SelectedTab = FUTab;
+            FUTabControl.SelectedTab = FUPositionTab;
         }
         void SetOrderView()
         {
@@ -665,6 +997,8 @@ namespace BinanceHand
             var profitColumn = new OLVColumn("Profit(%)", "Profit");
             numberColumn.FreeSpaceProportion = 2;
             profitColumn.FreeSpaceProportion = 3;
+            numberColumn.HeaderFormatStyle = headerstyle;
+            profitColumn.HeaderFormatStyle = headerstyle;
             resultListView.AllColumns.Add(numberColumn);
             resultListView.AllColumns.Add(profitColumn);
             resultListView.Columns.AddRange(new ColumnHeader[] { numberColumn, profitColumn });
@@ -675,7 +1009,7 @@ namespace BinanceHand
             };
         }
 
-        #region LoadResultGIF vars
+        #region LoadResultEffect vars
         int numberOfFrames = 0;
         int currentFrame = 0;
         Image fail = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\fail0\fail0.gif");
@@ -889,67 +1223,47 @@ namespace BinanceHand
 
             itemData.isChartShowing = true;
 
-            if (itemData.isSpot)
-            {
-                Text = itemData.Name + "-Spot      Binance       UTC-" + startTime;
-                marketComboBox.SelectedItem = marketComboBox.Items[0];
-            }
-            else if (itemData.isFutureUsdt)
-            {
-                Text = itemData.Name + "-Future(Usdt)      Binance       UTC-" + startTime;
-                marketComboBox.SelectedItem = marketComboBox.Items[1];
-            }
-            else
-            {
-                Text = itemData.Name + "-Future(Coin)      Binance       UTC-" + startTime;
-                marketComboBox.SelectedItem = marketComboBox.Items[2];
-            }
+            Text = itemData.Name + "-Future(Usdt)      Binance       UTC-" + startTime;
 
             nameTextBox.Text = itemData.Name;
 
-            foreach (var se in chart1.Series)
+            foreach (var se in secChart.Series)
                 se.Points.Clear();
-            foreach (var se in chart2.Series)
+            foreach (var se in minChart.Series)
+                se.Points.Clear();
+            foreach (var se in hourChart.Series)
+                se.Points.Clear();
+            foreach (var se in dayChart.Series)
                 se.Points.Clear();
 
-            Stick stick;
             for (int i = 0; i < itemData.minStickList.Count; i++)
-            {
-                stick = itemData.minStickList[i];
-                AddFullChartPoint(chart2, stick);
-            }
-            if (itemData.minStickList.Count <= baseChartViewSticksSize)
-                LoadMinutesMore(itemData);
-
-            chart2.ChartAreas[0].RecalculateAxesScale();
-            chart2.ChartAreas[0].AxisX.ScaleView.Zoom(chart2.Series[0].Points.Count - baseChartViewSticksSize + 1, chart2.Series[0].Points.Count);
-            chart2.ChartAreas[0].RecalculateAxesScale();
-            AdjustChart(chart2);
+                AddFullChartPoint(minChart, itemData.minStickList[i]);
+            for (int i = 0; i < itemData.hourStickList.Count; i++)
+                AddFullChartPoint(hourChart, itemData.hourStickList[i]);
+            for (int i = 0; i < itemData.dayStickList.Count; i++)
+                AddFullChartPoint(dayChart, itemData.dayStickList[i]);
 
             if (itemData.isAggOn)
             {
                 for (int i = 0; i < itemData.secStickList.Count; i++)
-                {
-                    stick = itemData.secStickList[i];
-                    AddFullChartPoint(chart1, stick);
-                }
+                    AddFullChartPoint(secChart, itemData.secStickList[i]);
 
-                AddFullChartPoint(chart1, itemData.secStick);
+                AddFullChartPoint(secChart, itemData.secStick);
 
-                chart1.ChartAreas[0].RecalculateAxesScale();
-                if (chart1.Series[0].Points.Count > baseChartViewSticksSize)
+                secChart.ChartAreas[0].RecalculateAxesScale();
+                if (secChart.Series[0].Points.Count > baseChartViewSticksSize)
                 {
-                    chart1.ChartAreas[0].AxisX.ScaleView.Zoom(chart1.Series[0].Points.Count - baseChartViewSticksSize + 1, chart1.Series[0].Points.Count);
-                    chart1.ChartAreas[0].RecalculateAxesScale();
+                    secChart.ChartAreas[0].AxisX.ScaleView.Zoom(secChart.Series[0].Points.Count - baseChartViewSticksSize + 1, secChart.Series[0].Points.Count);
+                    secChart.ChartAreas[0].RecalculateAxesScale();
                 }
                 else
                 {
-                    chart1.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
-                    chart1.ChartAreas[0].RecalculateAxesScale();
+                    secChart.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+                    secChart.ChartAreas[0].RecalculateAxesScale();
                 }
-                AdjustChart(chart1);
+                AdjustChart(secChart);
 
-                chart1.ChartAreas[0].AxisY.MajorGrid.Interval = chart1.Series[0].Points.Last().YValues[0] * 0.005;
+                secChart.ChartAreas[0].AxisY.MajorGrid.Interval = secChart.Series[0].Points.Last().YValues[0] * 0.005;
             }
             else
                 SetAggOn(itemData, true);
@@ -971,78 +1285,97 @@ namespace BinanceHand
                     leverageTextBox1.Text = "/ " + itemData.maxLeverage.ToString();
                 }
             }
+            
+            SetChartNowOrLoad();
 
             FirstSetOrderView();
         }
-        void LoadMinutesMore(ItemData itemData)
+        void LoadMore(Chart chart, int limit, DateTime now = default)
         {
-            var start = (int)chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum + 1;
-            var end = (int)chart2.ChartAreas[0].AxisX.ScaleView.ViewMaximum - 1;
+            var interval = KlineInterval.OneMinute;
+            ref List<Stick> list = ref itemDataShowing.minStickList;
+            ref Stick stick = ref itemDataShowing.minStick;
 
-            if (double.IsNaN(chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum) || double.IsNaN(chart2.ChartAreas[0].AxisX.ScaleView.ViewMaximum))
+            if (chartTabControl.SelectedIndex == hourChart.TabIndex)
+            {
+                interval = KlineInterval.OneHour;
+                list = ref itemDataShowing.hourStickList;
+                stick = ref itemDataShowing.hourStick;
+            }
+            else if (chartTabControl.SelectedIndex == dayChart.TabIndex)
+            {
+                interval = KlineInterval.OneDay;
+                list = ref itemDataShowing.dayStickList;
+                stick = ref itemDataShowing.dayStick;
+            }
+
+            var start = (int)chart.ChartAreas[0].AxisX.ScaleView.ViewMinimum + 1;
+            var end = (int)chart.ChartAreas[0].AxisX.ScaleView.ViewMaximum - 1;
+
+            if (double.IsNaN(chart.ChartAreas[0].AxisX.ScaleView.ViewMinimum) || double.IsNaN(chart.ChartAreas[0].AxisX.ScaleView.ViewMaximum))
             {
                 start = 1;
-                end = itemData.minStickList.Count;
+                end = list.Count;
             }
 
             if (end - start + 1 <= baseChartViewSticksSize)
                 start = end - baseChartViewSticksSize + 1;
 
             DateTime endTime;
-            if (itemData.minStickList.Count == 0)
+            if (list.Count == 0)
                 endTime = DateTime.UtcNow;
             else
-                endTime = itemData.minStickList[0].Time.AddMinutes(-1);
+                endTime = list[0].Time;
 
             IEnumerable<IBinanceKline> klines;
-            if (itemData.isSpot)
-                klines = client.Spot.Market.GetKlines(itemData.Name, KlineInterval.OneMinute, null, endTime, 300).Data;
-            else if (itemData.isFutureUsdt)
-                klines = client.FuturesUsdt.Market.GetKlines(itemData.Name, KlineInterval.OneMinute, null, endTime, 300).Data;
-            else
-                klines = client.FuturesCoin.Market.GetKlines(itemData.Name, KlineInterval.OneMinute, null, endTime, 300).Data;
+            List<Stick> newList = new List<Stick>();
 
-            foreach (var se in chart2.Series)
-                se.Points.Clear();
-
-            var newMinStickList = new List<Stick>();
-            Stick stick;
-            foreach (var kline in klines)
+            if (limit > 0)
             {
-                stick = new Stick();
-                stick.Price[0] = kline.High;
-                stick.Price[1] = kline.Low;
-                stick.Price[2] = kline.Open;
-                stick.Price[3] = kline.Close;
-                stick.Ms = kline.TakerBuyBaseVolume;
-                stick.Md = kline.BaseVolume - kline.TakerBuyBaseVolume;
-                stick.Time = kline.OpenTime;
-                stick.TCount = kline.TradeCount;
-                AddFullChartPoint(chart2, stick);
-                newMinStickList.Add(stick);
+                klines = client.FuturesUsdt.Market.GetKlines(itemDataShowing.Name, interval, null, endTime, limit).Data;
+
+                foreach (var se in chart.Series)
+                    se.Points.Clear();
+
+                foreach (var kline in klines)
+                {
+                    if (list.Count != 0 && list[0].Time == kline.OpenTime)
+                        break;
+
+                    stick = new Stick();
+                    stick.Price[0] = kline.High;
+                    stick.Price[1] = kline.Low;
+                    stick.Price[2] = kline.Open;
+                    stick.Price[3] = kline.Close;
+                    stick.Ms = kline.TakerBuyBaseVolume;
+                    stick.Md = kline.BaseVolume - kline.TakerBuyBaseVolume;
+                    stick.Time = kline.OpenTime;
+                    stick.TCount = kline.TradeCount;
+                    AddFullChartPoint(chart, stick);
+                    newList.Add(stick);
+                }
+
+                start += newList.Count;
+                end += newList.Count;
             }
 
-            start += newMinStickList.Count;
-            end += newMinStickList.Count;
-
-            for (int i = 0; i < itemData.minStickList.Count; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                stick = itemData.minStickList[i];
-                AddFullChartPoint(chart2, stick);
-                newMinStickList.Add(stick);
+                AddFullChartPoint(chart, list[i]);
+                newList.Add(list[i]);
             }
 
-            if (itemData.isSpot)
-                klines = client.Spot.Market.GetKlines(itemData.Name, KlineInterval.OneMinute, newMinStickList.Last().Time.AddMinutes(1), null, null).Data;
-            else if (itemData.isFutureUsdt)
-                klines = client.FuturesUsdt.Market.GetKlines(itemData.Name, KlineInterval.OneMinute, newMinStickList.Last().Time.AddMinutes(1), null, null).Data;
-            else
-                klines = client.FuturesCoin.Market.GetKlines(itemData.Name, KlineInterval.OneMinute, newMinStickList.Last().Time.AddMinutes(1), null, null).Data;
+            klines = client.FuturesUsdt.Market.GetKlines(itemDataShowing.Name, interval, newList[newList.Count - 1].Time, now, null).Data;
 
-            int last = klines.Count();
+            int count = klines.Count();
             short j = 0;
             foreach (var kline in klines)
             {
+                j++;
+
+                if (newList[newList.Count - 1].Time == kline.OpenTime)
+                    continue;
+
                 stick = new Stick();
                 stick.Price[0] = kline.High;
                 stick.Price[1] = kline.Low;
@@ -1052,27 +1385,24 @@ namespace BinanceHand
                 stick.Md = kline.BaseVolume - kline.TakerBuyBaseVolume;
                 stick.Time = kline.OpenTime;
                 stick.TCount = kline.TradeCount;
-                if (j != last - 1)
-                {
-                    AddFullChartPoint(chart2, stick);
-                    newMinStickList.Add(stick);
-                }
-                else
-                    AddStartChartPoint(chart2, stick);
-                j++;
+                AddFullChartPoint(chart, stick);
+                if (j != count)
+                    newList.Add(stick);
             }
 
             start -= j - 1;
             end -= j - 1;
 
-            itemData.minStickList = newMinStickList;
+            list = newList;
 
-            chart2.ChartAreas[0].RecalculateAxesScale();
-            chart2.ChartAreas[0].AxisX.ScaleView.Zoom(start, end);
+            chart.ChartAreas[0].RecalculateAxesScale();
+            chart.ChartAreas[0].AxisX.ScaleView.Zoom(start, end);
+            chart.ChartAreas[0].RecalculateAxesScale();
+            AdjustChart(chart);
         }
         void AddFullChartPoint(Chart chart, Stick stick)
         {
-            chart.Series[0].Points.AddXY(stick.Time.ToString(chart.ChartAreas[0].AxisX.LabelStyle.Format), new object[] { stick.Price[0], stick.Price[1], stick.Price[2], stick.Price[3] });
+            chart.Series[0].Points.AddXY(stick.Time.ToString(chart.ChartAreas[0].AxisX.LabelStyle.Format), new object[] { (double)stick.Price[0], (double)stick.Price[1], (double)stick.Price[2], (double)stick.Price[3] });
             if (stick.Price[2] > stick.Price[3] || (stick.Price[2] == stick.Price[3] && stick.Price[2] - stick.Price[1] >= stick.Price[0] - stick.Price[3]))
             {
                 chart.Series[0].Points.Last().Color = mnsPrcColor;
@@ -1099,7 +1429,7 @@ namespace BinanceHand
         }
         void AddStartChartPoint(Chart chart, Stick stick)
         {
-            chart.Series[0].Points.AddXY(stick.Time.ToString(chart.ChartAreas[0].AxisX.LabelStyle.Format), new object[] { stick.Price[2], stick.Price[2], stick.Price[2], stick.Price[2] });
+            chart.Series[0].Points.AddXY(stick.Time.ToString(chart.ChartAreas[0].AxisX.LabelStyle.Format), new object[] { (double)stick.Price[2], (double)stick.Price[2], (double)stick.Price[2], (double)stick.Price[2] });
             chart.Series[1].Points.AddXY(chart.Series[0].Points.Last().Label, 0);
             chart.Series[2].Points.AddXY(chart.Series[0].Points.Last().Label, 0);
 
@@ -1196,57 +1526,21 @@ namespace BinanceHand
             accountUpdates = new AccountUpdates(OnAccountUpdates);
             orderUpdates = new OrderUpdates(OnOrderUpdates);
 
-            /*
-            var symbols = 0;
-            for (int i = 0; i < 5; i++)
-            {
-                socketClient.Spot.SubscribeToKlineUpdates(spotSymbolList[i], KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, spotItemDataList[data.Symbol]); });
-                symbols += spotSymbolList[i].Count;
-            }
-            spotKlineReqTextBox.Text = "/" + symbols + "(K)";
-            */
-
             socketClient.FuturesUsdt.SubscribeToKlineUpdates(FUSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, FUItemDataList[data.Symbol]); });
-            futureUKlineReqTextBox.Text = "/" + FUSymbolList.Count + "(K)";
-
-            //socketClient.FuturesCoin.SubscribeToKlineUpdates(futureCSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, futureCItemDataList[data.Symbol]); });
-            //futureCKlineReqTextBox.Text = "/" + futureCSymbolList.Count + "(K)";
+            FUKlineReqTextBox.Text = "/" + FUSymbolList.Count + "(K)";
         }
         #region SetItemDataList vars
-        List<string>[] spotSymbolList = Enumerable.Range(0, 5).Select(i => new List<string>()).ToArray();
         List<string> FUSymbolList = new List<string>();
-        List<string> futuresCSymbolList = new List<string>();
         #endregion
         void SetItemDataList()
         {
-            /*
-            var exchangeInfo = client.Spot.System.GetExchangeInfo();
-            short n = 0;
-            foreach (var s in exchangeInfo.Data.Symbols)
-            {
-                var itemData = new ItemData(s, null, null);
-                SPOTItemDataList.Add(itemData.Name, itemData);
-                spotSymbolList[n / 300].Add(itemData.Name);
-
-                n++;
-            }*/
-
             var exchangeInfo2 = client.FuturesUsdt.System.GetExchangeInfo();
             foreach (var s in exchangeInfo2.Data.Symbols)
             {
-                var itemData = new ItemData(null, s, null);
+                var itemData = new ItemData(s);
                 FUItemDataList.Add(itemData.Name, itemData);
                 FUSymbolList.Add(itemData.Name);
             }
-
-            /*
-            var exchangeInfo3 = client.FuturesCoin.System.GetExchangeInfo();
-            foreach (var s in exchangeInfo3.Data.Symbols)
-            {
-                var itemData = new ItemData(null, null, s);
-                FCItemDataList.Add(itemData.Name, itemData);
-                futuresCSymbolList.Add(itemData.Name);
-            }*/
         }
         void SubscribeToUserStream(bool testnet, bool testnetFutures)
         {
@@ -1398,12 +1692,8 @@ namespace BinanceHand
         }
 
         #region OnKlineUpdates vars
-        short spotAggOnNow = 0;
-        short futureUAggOnNow = 0;
-        short futureCAggOnNow = 0;
-        short spotKlineRcv = 0;
-        short futureUKlineRcv = 0;
-        short futureCKlineRcv = 0;
+        short FUAggOnNow = 0;
+        short FUKlineRcv = 0;
         #endregion
         void OnKlineUpdates(IBinanceStreamKlineData data, ItemData itemData)
         {
@@ -1411,21 +1701,8 @@ namespace BinanceHand
             {
                 itemData.klineFirst = false;
 
-                if (itemData.isSpot)
-                {
-                    spotKlineRcv++;
-                    spotKlineRcvTextBox.Text = spotKlineRcv.ToString();
-                }
-                else if (itemData.isFutureUsdt)
-                {
-                    futureUKlineRcv++;
-                    futureUKlineRcvTextBox.Text = futureUKlineRcv.ToString();
-                }
-                else
-                {
-                    futureCKlineRcv++;
-                    futureCKlineRcvTextBox.Text = futureCKlineRcv.ToString();
-                }
+                FUKlineRcv++;
+                FUKlineRcvTextBox.Text = FUKlineRcv.ToString();
             }
 
             if (data.Data.Final)
@@ -1437,24 +1714,16 @@ namespace BinanceHand
 
                 if (Math.Abs(itemData.RateBfor) > 1)
                 {
-                    if (itemData.isSpot && !itemData.isAggReady && itemData.RateBfor > 1 && data.Data.TradeCount > 180)
-                    {
-                        itemData.isAggReady = true;
-                        itemData.AggReadyRow = 0;
-                        spotListView.AddObject(itemData);
-                    }
-                    else if (!itemData.isSpot && !itemData.isAggReady && data.Data.TradeCount > 180)
+                    if (!itemData.isAggReady && data.Data.TradeCount > 180)
                     {
                         if (itemData.RateBfor > 1)
                             itemData.LorS = true;
                         else
                             itemData.LorS = false;
+
                         itemData.isAggReady = true;
                         itemData.AggReadyRow = 0;
-                        if (itemData.isFutureUsdt)
-                            futureUListView.AddObject(itemData);
-                        else
-                            futureCListView.AddObject(itemData);
+                        FUListView.AddObject(itemData);
                     }
                     itemData.FlatMinRow = 0;
                     itemData.AggReadyRow++;
@@ -1467,51 +1736,26 @@ namespace BinanceHand
                 else if (itemData.isAggReady && !itemData.isChartShowing)
                 {
                     socketClient.Unsubscribe(itemData.sub);
+
                     itemData.isAggReady = false;
                     itemData.isAggOn = false;
                     itemData.aggFirst = true;
-                    if (itemData.isSpot)
-                    {
-                        spotListView.RemoveObject(itemData);
-                        spotAggOnNow--;
-                        spotAggRcv--;
-                        spotAggReq--;
-                        spotAggRcvTextBox.Text = spotAggRcv.ToString();
-                        spotAggReqTextBox.Text = spotAggReq.ToString();
-                    }
-                    else if (itemData.isFutureUsdt)
-                    {
-                        futureUListView.RemoveObject(itemData);
-                        futureUAggOnNow--;
-                        futureUAggRcv--;
-                        futureUAggReq--;
-                        futureUAggRcvTextBox.Text = futureUAggRcv.ToString();
-                        futureUAggReqTextBox.Text = futureUAggReq.ToString();
-                    }
-                    else
-                    {
-                        futureCListView.RemoveObject(itemData);
-                        futureCAggOnNow--;
-                        futureCAggRcv--;
-                        futureCAggReq--;
-                        futureCAggRcvTextBox.Text = futureCAggRcv.ToString();
-                        futureCAggReqTextBox.Text = futureCAggReq.ToString();
-                    }
+
+                    FUListView.RemoveObject(itemData);
+                    FUAggOnNow--;
+                    FUAggRcv--;
+                    FUAggReq--;
+                    FUAggRcvTextBox.Text = FUAggRcv.ToString();
+                    FUAggReqTextBox.Text = FUAggReq.ToString();
                 }
 
                 if (itemData.isAggReady)
-                {
-                    if (itemData.isSpot)
-                        spotListView.RefreshObject(itemData);
-                    else if (itemData.isFutureUsdt)
-                        futureUListView.RefreshObject(itemData);
-                    else
-                        futureCListView.RefreshObject(itemData);
-                }
+                    FUListView.RefreshObject(itemData);
 
-                if (itemData.isAggReady && !itemData.isAggOn &&
-                    ((itemData.isSpot && spotAggOnNow < 5) || (!itemData.isSpot && itemData.isFutureUsdt && futureUAggOnNow < 5) || (!itemData.isSpot && !itemData.isFutureUsdt && futureCAggOnNow < 5)))
+                if (itemData.isAggReady && !itemData.isAggOn && FUAggOnNow < 5)
                     SetAggOn(itemData, false);
+
+
 
                 itemData.minStick.Price[0] = data.Data.High;
                 itemData.minStick.Price[1] = data.Data.Low;
@@ -1523,23 +1767,34 @@ namespace BinanceHand
                 itemData.minStick.TCount = data.Data.TradeCount;
                 itemData.minStickList.Add(itemData.minStick);
 
-
                 if (itemData.isChartShowing)
                 {
-                    UpdateChartPoint(chart2, itemData.minStick);
+                    if (itemData.minStickList.Count > 1 && itemData.minStickList[itemData.minStickList.Count - 1].Time.AddMinutes(-1) != itemData.minStickList[itemData.minStickList.Count - 2].Time)
+                    {
+                        itemData.minStickList.RemoveAt(itemData.minStickList.Count - 1);
+                        LoadMore(minChart, 0, data.Data.OpenTime);
+                        itemData.minStickList.Add(itemData.minStick);
+                    }
 
-                    itemData.minStick = new Stick();
+                    if (minChart.Series[0].Points.Count != 0)
+                        UpdateChartPoint(minChart, itemData.minStick);
+                    else
+                        AddFullChartPoint(minChart, itemData.minStick);
 
-                    itemData.minStick.Price[2] = data.Data.Close;
-                    itemData.minStick.Time = data.Data.OpenTime.AddMinutes(1);
-                    AddStartChartPoint(chart2, itemData.minStick);
-                    AdjustChart(chart2);
+                    AdjustChart(minChart);
                 }
-                else
-                    itemData.minStick = new Stick();
+
+                itemData.minStick = new Stick();
             }
             else if (itemData.isChartShowing)
             {
+                if (itemData.minStick.Time != data.Data.OpenTime)
+                {
+                    itemData.minStick.Price[2] = data.Data.Open;
+                    itemData.minStick.Time = data.Data.OpenTime;
+                    AddStartChartPoint(minChart, itemData.minStick);
+                }
+
                 itemData.minStick.Price[0] = data.Data.High;
                 itemData.minStick.Price[1] = data.Data.Low;
                 itemData.minStick.Price[2] = data.Data.Open;
@@ -1549,16 +1804,14 @@ namespace BinanceHand
                 itemData.minStick.Time = data.Data.OpenTime;
                 itemData.minStick.TCount = data.Data.TradeCount;
 
-                if (itemData.minStick.Time.ToString("HH:mm") != chart2.Series[0].Points[chart2.Series[0].Points.Count - 1].AxisLabel.Substring(3, 5))
-                    AddStartChartPoint(chart2, itemData.minStick);
+                if (itemData.minStick.Time.ToString("HH:mm") != minChart.Series[0].Points[minChart.Series[0].Points.Count - 1].AxisLabel.Substring(3, 5))
+                    AddStartChartPoint(minChart, itemData.minStick);
 
-                UpdateChartPoint(chart2, itemData.minStick);
+                UpdateChartPoint(minChart, itemData.minStick);
             }
         }
         #region OnAggregatedTradeUpdates vars
-        short spotAggRcv = 0;
-        short futureUAggRcv = 0;
-        short futureCAggRcv = 0;
+        short FUAggRcv = 0;
         #endregion
         void OnAggregatedTradeUpdates(BinanceStreamAggregatedTrade data, ItemData itemData)
         {
@@ -1569,21 +1822,8 @@ namespace BinanceHand
             {
                 itemData.aggFirst = false;
 
-                if (itemData.isSpot)
-                {
-                    spotAggRcv++;
-                    spotAggRcvTextBox.Text = spotAggRcv.ToString();
-                }
-                else if (itemData.isFutureUsdt)
-                {
-                    futureUAggRcv++;
-                    futureUAggRcvTextBox.Text = futureUAggRcv.ToString();
-                }
-                else
-                {
-                    futureCAggRcv++;
-                    futureCAggRcvTextBox.Text = futureCAggRcv.ToString();
-                }
+                FUAggRcv++;
+                FUAggRcvTextBox.Text = FUAggRcv.ToString();
             }
 
             itemData.date = data.TradeTime.ToString("yyyy-MM-dd");
@@ -1648,16 +1888,16 @@ namespace BinanceHand
 
                 if (itemData.isChartShowing)
                 {
-                    AddStartChartPoint(chart1, itemData.secStick);
+                    AddStartChartPoint(secChart, itemData.secStick);
 
-                    if (chart1.Series[0].Points.Count == baseChartViewSticksSize + 1)
+                    if (secChart.Series[0].Points.Count == baseChartViewSticksSize + 1)
                     {
-                        chart1.ChartAreas[0].RecalculateAxesScale();
-                        chart1.ChartAreas[0].AxisX.ScaleView.Zoom(chart1.Series[0].Points.Count - baseChartViewSticksSize + 1, chart1.Series[0].Points.Count);
-                        chart1.ChartAreas[0].RecalculateAxesScale();
+                        secChart.ChartAreas[0].RecalculateAxesScale();
+                        secChart.ChartAreas[0].AxisX.ScaleView.Zoom(secChart.Series[0].Points.Count - baseChartViewSticksSize + 1, secChart.Series[0].Points.Count);
+                        secChart.ChartAreas[0].RecalculateAxesScale();
                     }
-                    if (chart1.Series[0].Points.Count != 1)
-                        AdjustChart(chart1);
+                    if (secChart.Series[0].Points.Count != 1)
+                        AdjustChart(secChart);
                 }
 
                 if (itemData.secStickList.Count > 900)
@@ -1665,9 +1905,9 @@ namespace BinanceHand
                     itemData.secStickList.RemoveAt(0);
                     if (itemData.isChartShowing)
                     {
-                        chart1.Series[0].Points.RemoveAt(0);
-                        chart1.Series[1].Points.RemoveAt(0);
-                        chart1.Series[2].Points.RemoveAt(0);
+                        secChart.Series[0].Points.RemoveAt(0);
+                        secChart.Series[1].Points.RemoveAt(0);
+                        secChart.Series[2].Points.RemoveAt(0);
                     }
                 }
             }
@@ -1687,9 +1927,9 @@ namespace BinanceHand
                 if (!itemData.buyOrder && itemData.chuQReady
                     &&
                     (
-                       ((itemData.isSpot || (!itemData.isSpot && itemData.LorS)) && BuyConditionMs(itemData))
+                       (itemData.LorS && BuyConditionMs(itemData))
                        ||
-                       (!itemData.isSpot && !itemData.LorS && BuyConditionMd(itemData))
+                       (!itemData.LorS && BuyConditionMd(itemData))
                     )
                 )
                 {
@@ -1705,9 +1945,9 @@ namespace BinanceHand
                     if (!itemData.tooManyAmt
                         &&
                         (
-                            ((itemData.isSpot || (!itemData.isSpot && itemData.LorS)) && BuyCondition2ndMs(itemData))
+                            (itemData.LorS && BuyCondition2ndMs(itemData))
                             ||
-                            (!itemData.isSpot && !itemData.LorS && BuyCondition2ndMd(itemData))
+                            (!itemData.LorS && BuyCondition2ndMd(itemData))
                         )
                     )
                     {
@@ -1718,26 +1958,26 @@ namespace BinanceHand
                     if (itemData.bhtTime != itemData.newTime
                         &&
                         (
-                            ((itemData.isSpot || (!itemData.isSpot && itemData.LorS)) && SellConditionMs(itemData))
+                            (itemData.LorS && SellConditionMs(itemData))
                             ||
-                            (!itemData.isSpot && !itemData.LorS && SellConditionMd(itemData))
+                            (!itemData.LorS && SellConditionMd(itemData))
                             ||
                             (
                                 itemData.tooManyAmt && itemData.tooManyAmtTime != itemData.newTime
                                 &&
                                 (
-                                    ((itemData.isSpot || (!itemData.isSpot && itemData.LorS)) && SellCondition2ndMs(itemData))
+                                    (itemData.LorS && SellCondition2ndMs(itemData))
                                     ||
-                                    (!itemData.isSpot && !itemData.LorS && SellCondition2ndMd(itemData))
+                                    (!itemData.LorS && SellCondition2ndMd(itemData))
                                 )
                             )
                         )
                     )
                     {
-                        if (!itemData.isSpot && !itemData.LorS)
-                            itemData.profitRate = itemData.bhtPrc / data.Price * 0.999m / 1.001m;
-                        else
+                        if (itemData.LorS)
                             itemData.profitRate = data.Price / itemData.bhtPrc * 0.999m / 1.001m;
+                        else
+                            itemData.profitRate = itemData.bhtPrc / data.Price * 0.999m / 1.001m;
 
                         if (itemData.profitRate > 1.002m)
                             itemData.win++;
@@ -1751,12 +1991,7 @@ namespace BinanceHand
                         itemData.ProfitRateSumAndMul = Math.Round(((double)itemData.profitRateSum / itemData.winLoseTot - 1) * 100, 2) + "(" +
                             Math.Round((Math.Pow((double)itemData.profitRateMul, (double)1 / itemData.winLoseTot) - 1) * 100, 2) + ")";
 
-                        if (itemData.isSpot)
-                            spotListView.RefreshObject(itemData);
-                        else if (itemData.isFutureUsdt)
-                            futureUListView.RefreshObject(itemData);
-                        else
-                            futureCListView.RefreshObject(itemData);
+                        FUListView.RefreshObject(itemData);
 
                         itemData.hasAll = false;
                         itemData.buyOrder = false;
@@ -1772,18 +2007,18 @@ namespace BinanceHand
                 priceTextBox.Text = data.Price.ToString(ForDecimalString);
                 if (data.BuyerIsMaker)
                 {
-                    amtTextBox.ForeColor = mdAmtColor;
-                    priceTextBox.ForeColor = mdAmtColor;
-                    timeDiffTextBox.ForeColor = mdAmtColor;
+                    amtTextBox.ForeColor = mnsPrcColor;
+                    priceTextBox.ForeColor = mnsPrcColor;
+                    timeDiffTextBox.ForeColor = mnsPrcColor;
                 }
                 else
                 {
-                    amtTextBox.ForeColor = msAmtColor;
-                    priceTextBox.ForeColor = msAmtColor;
-                    timeDiffTextBox.ForeColor = msAmtColor;
+                    amtTextBox.ForeColor = plsPrcColor;
+                    priceTextBox.ForeColor = plsPrcColor;
+                    timeDiffTextBox.ForeColor = plsPrcColor;
                 }
 
-                UpdateChartPoint(chart1, itemData.secStick);
+                UpdateChartPoint(secChart, itemData.secStick);
             }
         }
         void OnMarkPriceUpdates(BinanceFuturesUsdtStreamMarkPrice data, ItemData itemData)
@@ -1946,9 +2181,7 @@ namespace BinanceHand
         }
 
         #region SetAggOn vars
-        short spotAggReq = 0;
-        short futureUAggReq = 0;
-        short futureCAggReq = 0;
+        short FUAggReq = 0;
         #endregion
         void SetAggOn(ItemData itemData, bool addObject)
         {
@@ -1970,42 +2203,16 @@ namespace BinanceHand
 
             itemData.secStickList.Clear();
             itemData.secStick = new Stick();
-            if (itemData.isSpot)
-            {
-                itemData.sub = socketClient.Spot.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, SPOTItemDataList[data2.Symbol]); }).Data;
-                if (addObject)
-                    spotListView.AddObject(itemData);
-                spotListView.RemoveObject(itemData);
-                spotListView.InsertObjects(0, new List<ItemData> { itemData });
-                spotListView.RefreshObject(itemData);
-                spotAggOnNow++;
-                spotAggReq++;
-                spotAggReqTextBox.Text = "/" + spotAggReq + "(A)";
-            }
-            else if (itemData.isFutureUsdt)
-            {
-                itemData.sub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
-                if (addObject)
-                    futureUListView.AddObject(itemData);
-                futureUListView.RemoveObject(itemData);
-                futureUListView.InsertObjects(0, new List<ItemData> { itemData });
-                futureUListView.RefreshObject(itemData);
-                futureUAggOnNow++;
-                futureUAggReq++;
-                futureUAggReqTextBox.Text = "/" + futureUAggReq + "(A)";
-            }
-            else
-            {
-                itemData.sub = socketClient.FuturesCoin.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FCItemDataList[data2.Symbol]); }).Data;
-                if (addObject)
-                    futureCListView.AddObject(itemData);
-                futureCListView.RemoveObject(itemData);
-                futureCListView.InsertObjects(0, new List<ItemData> { itemData });
-                futureCListView.RefreshObject(itemData);
-                futureCAggOnNow++;
-                futureCAggReq++;
-                futureCAggReqTextBox.Text = "/" + futureCAggReq + "(A)";
-            }
+
+            itemData.sub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
+            if (addObject)
+                FUListView.AddObject(itemData);
+            FUListView.RemoveObject(itemData);
+            FUListView.InsertObjects(0, new List<ItemData> { itemData });
+            FUListView.RefreshObject(itemData);
+            FUAggOnNow++;
+            FUAggReq++;
+            FUAggReqTextBox.Text = "/" + FUAggReq + "(A)";
         }
         bool BuyConditionMs(ItemData itemData)
         {
@@ -2141,95 +2348,76 @@ namespace BinanceHand
             //dbHelper.Close();
         }
 
-        void ListView_FormatRow(object sender, FormatRowEventArgs e)
-        {
-            if (((ItemData)e.Model).isAggOn)
-            {
-                var itemData = (ItemData)e.Model;
-
-                if (itemData.isSpot || itemData.LorS)
-                    e.Item.ForeColor = plsPrcColor;
-                else
-                    e.Item.ForeColor = mnsPrcColor;
-            }
-        }
-
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
-                case Keys.ControlKey:
+                case Keys.Z:
                     if (itemDataShowing != null)
                         buyButton.PerformClick();
                     e.Handled = true;
                     break;
 
-                case Keys.Menu:
+                case Keys.X:
                     if (itemDataShowing != null)
                         sellButton.PerformClick();
                     e.Handled = true;
                     break;
 
-                case Keys.X:
-                    if (chartTabControl.SelectedTab == secChartTab)
-                        chart1.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
-                    else if (chartTabControl.SelectedTab == minChartTab)
-                        chart2.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
-                    e.Handled = true;
-                    break;
-
-                case Keys.Z:
-                    if (chartTabControl.SelectedTab == secChartTab)
-                        chart1.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
-                    else if (chartTabControl.SelectedTab == minChartTab)
-                        chart2.ChartAreas[0].AxisX.ScaleView.Scroll(ScrollType.SmallDecrement);
-                    e.Handled = true;
-                    break;
-
                 case Keys.A:
-                    chartTabControl.SelectedTab = minChartTab;
+                    if (itemDataShowing != null)
+                        ChartScroll(chartNow, ScrollType.SmallDecrement);
                     e.Handled = true;
                     break;
 
                 case Keys.S:
-                    chartTabControl.SelectedTab = secChartTab;
+                    if (itemDataShowing != null)
+                        ChartScroll(chartNow, ScrollType.Last);
+                    e.Handled = true;
+                    break;
+
+                case Keys.D:
+                    if (itemDataShowing != null)
+                        ChartScroll(chartNow, ScrollType.SmallIncrement);
+                    e.Handled = true;
+                    break;
+
+                case Keys.Q:
+                    chartTabControl.SelectedTab = secTabPage;
+                    e.Handled = true;
+                    break;
+
+                case Keys.W:
+                    chartTabControl.SelectedTab = minTabPage;
+                    e.Handled = true;
+                    break;
+
+                case Keys.E:
+                    chartTabControl.SelectedTab = hourTabPage;
+                    e.Handled = true;
+                    break;
+
+                case Keys.R:
+                    chartTabControl.SelectedTab = dayTabPage;
+                    e.Handled = true;
+                    break;
+
+                case Keys.ControlKey:
+                    nameTextBox.Focus();
                     e.Handled = true;
                     break;
 
                 case Keys.Enter:
                     if (nameTextBox.Focused)
-                        switch (marketComboBox.SelectedItem.ToString())
+                    {
+                        if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
                         {
-                            case "S":
-                                if (!SPOTItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                                {
-                                    MessageBox.Show("No symbol");
-                                    return;
-                                }
-                                ShowChart(SPOTItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                                break;
-
-                            case "F_U":
-                                if (!FUItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                                {
-                                    MessageBox.Show("No symbol");
-                                    return;
-                                }
-                                ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                                break;
-
-                            case "F_C":
-                                if (!FCItemDataList.ContainsKey(nameTextBox.Text.Trim().ToUpper()))
-                                {
-                                    MessageBox.Show("No symbol");
-                                    return;
-                                }
-                                ShowChart(FCItemDataList[nameTextBox.Text.Trim().ToUpper()]);
-                                break;
-
-                            default:
-                                break;
+                            MessageBox.Show("No symbol");
+                            return;
                         }
+                        ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
+                        chartTabControl.Focus();
+                    }
                     e.Handled = true;
                     break;
 
@@ -2239,9 +2427,52 @@ namespace BinanceHand
                     e.Handled = true;
                     break;
 
+                case Keys.D1:
+                    if (FUPositionListView.Items.Count != 0)
+                        FUPositionListView.SelectedIndex = 0;
+                    break;
+
                 default:
                     break;
             }
+        }
+
+        void ChartScroll(Chart chart, ScrollType scrollType)
+        {
+            if (chart.ChartAreas[0].AxisX.ScaleView.IsZoomed)
+            {
+                if (chart.TabIndex != 0 && scrollType == ScrollType.SmallDecrement && chart.ChartAreas[0].AxisX.ScaleView.ViewMinimum == 0)
+                    LoadMore(chart, 300);
+
+                chart.ChartAreas[0].AxisX.ScaleView.Scroll(scrollType);
+                chart.ChartAreas[0].AxisX.ScaleView.Scroll(scrollType);
+                AdjustChart(chart);
+            }
+        }
+
+        private void tabControl_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            TabPage page = ((TabControl)sender).TabPages[e.Index];
+            e.Graphics.FillRectangle(new SolidBrush(page.BackColor), e.Bounds);
+
+            Rectangle paddedBounds = e.Bounds;
+            int yOffset = (e.State == DrawItemState.Selected) ? -2 : 1;
+            paddedBounds.Offset(1, yOffset);
+            TextRenderer.DrawText(e.Graphics, page.Text, e.Font, paddedBounds, page.ForeColor);
+
+            SolidBrush fillbrush = new SolidBrush(BackColor);
+
+            //draw rectangle behind the tabs
+            Rectangle lasttabrect = ((TabControl)sender).GetTabRect(((TabControl)sender).TabPages.Count - 1);
+            Rectangle background = new Rectangle();
+            background.Location = new Point(lasttabrect.Right, 0);
+
+            //pad the rectangle to cover the 1 pixel line between the top of the tabpage and the start of the tabs
+            background.Size = new Size(((TabControl)sender).Right - background.Left, lasttabrect.Height + 1);
+            e.Graphics.FillRectangle(fillbrush, background);
+
+            var pen = new Pen(Color.Violet, 1);
+            e.Graphics.DrawRectangle(pen, page.Bounds);
         }
     }
 
