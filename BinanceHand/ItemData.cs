@@ -87,7 +87,9 @@ namespace BinanceHand
         public DateTime OrderTime;
         public OrderType OrderType;
         public OrderSide OrderSide;
+        public decimal orderStartPrice;
         public decimal OrderPrice;
+        public decimal OrderPriceFix;
         public decimal OrderAmount;
         public decimal OrderFilled;
         public bool ReduceOnly;

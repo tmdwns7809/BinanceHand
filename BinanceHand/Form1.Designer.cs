@@ -29,10 +29,10 @@ namespace BinanceHand
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend7 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend8 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.secChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUListView = new BrightIdeasSoftware.FastDataListView();
             this.mainTabControl = new System.Windows.Forms.TabControl();
@@ -52,8 +52,6 @@ namespace BinanceHand
             this.FUPositionListView = new BrightIdeasSoftware.FastDataListView();
             this.FUOpenOrdersTab = new System.Windows.Forms.TabPage();
             this.FUOpenOrdersListView = new BrightIdeasSoftware.FastDataListView();
-            this.logTab = new System.Windows.Forms.TabPage();
-            this.logListBox = new System.Windows.Forms.ListBox();
             this.nameTextBox = new System.Windows.Forms.TextBox();
             this.timeDiffTextBox = new System.Windows.Forms.TextBox();
             this.priceTextBox = new System.Windows.Forms.TextBox();
@@ -86,13 +84,13 @@ namespace BinanceHand
             this.buyButton = new System.Windows.Forms.Button();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.resultListView = new BrightIdeasSoftware.FastDataListView();
-            this.chartTabControl = new System.Windows.Forms.TabControl();
-            this.secTabPage = new System.Windows.Forms.TabPage();
-            this.minTabPage = new System.Windows.Forms.TabPage();
-            this.hourTabPage = new System.Windows.Forms.TabPage();
             this.hourChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.dayTabPage = new System.Windows.Forms.TabPage();
             this.dayChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.secButton = new System.Windows.Forms.Button();
+            this.minButton = new System.Windows.Forms.Button();
+            this.hourButton = new System.Windows.Forms.Button();
+            this.dayButton = new System.Windows.Forms.Button();
+            this.gridItvTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             this.mainTabControl.SuspendLayout();
@@ -102,28 +100,22 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).BeginInit();
             this.FUOpenOrdersTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).BeginInit();
-            this.logTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minChart)).BeginInit();
             this.FUGroupBox.SuspendLayout();
             this.orderGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).BeginInit();
-            this.chartTabControl.SuspendLayout();
-            this.secTabPage.SuspendLayout();
-            this.minTabPage.SuspendLayout();
-            this.hourTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).BeginInit();
-            this.dayTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).BeginInit();
             this.SuspendLayout();
             // 
             // secChart
             // 
             this.secChart.BackColor = System.Drawing.Color.Black;
-            legend5.Enabled = false;
-            legend5.Name = "Legend1";
-            this.secChart.Legends.Add(legend5);
-            this.secChart.Location = new System.Drawing.Point(24, 55);
+            legend1.Enabled = false;
+            legend1.Name = "Legend1";
+            this.secChart.Legends.Add(legend1);
+            this.secChart.Location = new System.Drawing.Point(512, 109);
             this.secChart.Name = "secChart";
             this.secChart.Size = new System.Drawing.Size(224, 200);
             this.secChart.TabIndex = 0;
@@ -146,7 +138,6 @@ namespace BinanceHand
             // mainTabControl
             // 
             this.mainTabControl.Controls.Add(this.FUTab);
-            this.mainTabControl.Controls.Add(this.logTab);
             this.mainTabControl.Location = new System.Drawing.Point(12, 474);
             this.mainTabControl.Name = "mainTabControl";
             this.mainTabControl.SelectedIndex = 0;
@@ -335,26 +326,6 @@ namespace BinanceHand
             this.FUOpenOrdersListView.View = System.Windows.Forms.View.Details;
             this.FUOpenOrdersListView.VirtualMode = true;
             // 
-            // logTab
-            // 
-            this.logTab.Controls.Add(this.logListBox);
-            this.logTab.Location = new System.Drawing.Point(4, 22);
-            this.logTab.Name = "logTab";
-            this.logTab.Padding = new System.Windows.Forms.Padding(3);
-            this.logTab.Size = new System.Drawing.Size(720, 162);
-            this.logTab.TabIndex = 4;
-            this.logTab.Text = "Log";
-            this.logTab.UseVisualStyleBackColor = true;
-            // 
-            // logListBox
-            // 
-            this.logListBox.FormattingEnabled = true;
-            this.logListBox.ItemHeight = 12;
-            this.logListBox.Location = new System.Drawing.Point(115, 22);
-            this.logListBox.Name = "logListBox";
-            this.logListBox.Size = new System.Drawing.Size(233, 112);
-            this.logListBox.TabIndex = 1;
-            // 
             // nameTextBox
             // 
             this.nameTextBox.BackColor = System.Drawing.Color.White;
@@ -390,7 +361,7 @@ namespace BinanceHand
             // 
             this.amtTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.amtTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.amtTextBox.Location = new System.Drawing.Point(745, 440);
+            this.amtTextBox.Location = new System.Drawing.Point(742, 440);
             this.amtTextBox.Name = "amtTextBox";
             this.amtTextBox.ReadOnly = true;
             this.amtTextBox.Size = new System.Drawing.Size(63, 14);
@@ -451,10 +422,10 @@ namespace BinanceHand
             // 
             // minChart
             // 
-            legend6.Enabled = false;
-            legend6.Name = "Legend1";
-            this.minChart.Legends.Add(legend6);
-            this.minChart.Location = new System.Drawing.Point(47, 6);
+            legend2.Enabled = false;
+            legend2.Name = "Legend1";
+            this.minChart.Legends.Add(legend2);
+            this.minChart.Location = new System.Drawing.Point(562, 126);
             this.minChart.Name = "minChart";
             this.minChart.Size = new System.Drawing.Size(214, 247);
             this.minChart.TabIndex = 1;
@@ -691,6 +662,7 @@ namespace BinanceHand
             // 
             // pictureBox
             // 
+            this.pictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pictureBox.Location = new System.Drawing.Point(1274, 528);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(172, 142);
@@ -712,83 +684,78 @@ namespace BinanceHand
             this.resultListView.View = System.Windows.Forms.View.Details;
             this.resultListView.VirtualMode = true;
             // 
-            // chartTabControl
-            // 
-            this.chartTabControl.Controls.Add(this.secTabPage);
-            this.chartTabControl.Controls.Add(this.minTabPage);
-            this.chartTabControl.Controls.Add(this.hourTabPage);
-            this.chartTabControl.Controls.Add(this.dayTabPage);
-            this.chartTabControl.Location = new System.Drawing.Point(35, 62);
-            this.chartTabControl.Name = "chartTabControl";
-            this.chartTabControl.SelectedIndex = 0;
-            this.chartTabControl.Size = new System.Drawing.Size(449, 341);
-            this.chartTabControl.TabIndex = 13;
-            // 
-            // secTabPage
-            // 
-            this.secTabPage.Controls.Add(this.secChart);
-            this.secTabPage.Location = new System.Drawing.Point(4, 22);
-            this.secTabPage.Name = "secTabPage";
-            this.secTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.secTabPage.Size = new System.Drawing.Size(441, 315);
-            this.secTabPage.TabIndex = 0;
-            this.secTabPage.Text = "Seconds";
-            this.secTabPage.UseVisualStyleBackColor = true;
-            // 
-            // minTabPage
-            // 
-            this.minTabPage.Controls.Add(this.minChart);
-            this.minTabPage.Location = new System.Drawing.Point(4, 22);
-            this.minTabPage.Name = "minTabPage";
-            this.minTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.minTabPage.Size = new System.Drawing.Size(441, 315);
-            this.minTabPage.TabIndex = 1;
-            this.minTabPage.Text = "Minutes";
-            this.minTabPage.UseVisualStyleBackColor = true;
-            // 
-            // hourTabPage
-            // 
-            this.hourTabPage.Controls.Add(this.hourChart);
-            this.hourTabPage.Location = new System.Drawing.Point(4, 22);
-            this.hourTabPage.Name = "hourTabPage";
-            this.hourTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.hourTabPage.Size = new System.Drawing.Size(441, 315);
-            this.hourTabPage.TabIndex = 2;
-            this.hourTabPage.Text = "Hours";
-            this.hourTabPage.UseVisualStyleBackColor = true;
-            // 
             // hourChart
             // 
-            legend7.Enabled = false;
-            legend7.Name = "Legend1";
-            this.hourChart.Legends.Add(legend7);
-            this.hourChart.Location = new System.Drawing.Point(94, 33);
+            legend3.Enabled = false;
+            legend3.Name = "Legend1";
+            this.hourChart.Legends.Add(legend3);
+            this.hourChart.Location = new System.Drawing.Point(659, 126);
             this.hourChart.Name = "hourChart";
             this.hourChart.Size = new System.Drawing.Size(214, 247);
-            this.hourChart.TabIndex = 3;
+            this.hourChart.TabIndex = 2;
             this.hourChart.Text = "chart3";
-            // 
-            // dayTabPage
-            // 
-            this.dayTabPage.Controls.Add(this.dayChart);
-            this.dayTabPage.Location = new System.Drawing.Point(4, 22);
-            this.dayTabPage.Name = "dayTabPage";
-            this.dayTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.dayTabPage.Size = new System.Drawing.Size(441, 315);
-            this.dayTabPage.TabIndex = 3;
-            this.dayTabPage.Text = "Days";
-            this.dayTabPage.UseVisualStyleBackColor = true;
             // 
             // dayChart
             // 
-            legend8.Enabled = false;
-            legend8.Name = "Legend1";
-            this.dayChart.Legends.Add(legend8);
-            this.dayChart.Location = new System.Drawing.Point(113, 34);
+            legend4.Enabled = false;
+            legend4.Name = "Legend1";
+            this.dayChart.Legends.Add(legend4);
+            this.dayChart.Location = new System.Drawing.Point(742, 126);
             this.dayChart.Name = "dayChart";
             this.dayChart.Size = new System.Drawing.Size(214, 247);
-            this.dayChart.TabIndex = 4;
+            this.dayChart.TabIndex = 3;
             this.dayChart.Text = "chart3";
+            // 
+            // secButton
+            // 
+            this.secButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.secButton.Location = new System.Drawing.Point(323, 66);
+            this.secButton.Name = "secButton";
+            this.secButton.Size = new System.Drawing.Size(20, 20);
+            this.secButton.TabIndex = 12;
+            this.secButton.Text = "S";
+            this.secButton.UseVisualStyleBackColor = true;
+            // 
+            // minButton
+            // 
+            this.minButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.minButton.Location = new System.Drawing.Point(349, 66);
+            this.minButton.Name = "minButton";
+            this.minButton.Size = new System.Drawing.Size(20, 20);
+            this.minButton.TabIndex = 12;
+            this.minButton.Text = "M";
+            this.minButton.UseVisualStyleBackColor = true;
+            // 
+            // hourButton
+            // 
+            this.hourButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.hourButton.Location = new System.Drawing.Point(375, 66);
+            this.hourButton.Name = "hourButton";
+            this.hourButton.Size = new System.Drawing.Size(20, 20);
+            this.hourButton.TabIndex = 12;
+            this.hourButton.Text = "H";
+            this.hourButton.UseVisualStyleBackColor = true;
+            // 
+            // dayButton
+            // 
+            this.dayButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.dayButton.Location = new System.Drawing.Point(401, 66);
+            this.dayButton.Name = "dayButton";
+            this.dayButton.Size = new System.Drawing.Size(20, 20);
+            this.dayButton.TabIndex = 12;
+            this.dayButton.Text = "D";
+            this.dayButton.UseVisualStyleBackColor = true;
+            // 
+            // gridItvTextBox
+            // 
+            this.gridItvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.gridItvTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.gridItvTextBox.Location = new System.Drawing.Point(632, 440);
+            this.gridItvTextBox.Name = "gridItvTextBox";
+            this.gridItvTextBox.ReadOnly = true;
+            this.gridItvTextBox.Size = new System.Drawing.Size(32, 14);
+            this.gridItvTextBox.TabIndex = 6;
+            this.gridItvTextBox.Text = "0.0%";
             // 
             // Form1
             // 
@@ -796,12 +763,20 @@ namespace BinanceHand
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
-            this.Controls.Add(this.chartTabControl);
+            this.Controls.Add(this.dayButton);
+            this.Controls.Add(this.hourButton);
+            this.Controls.Add(this.minButton);
+            this.Controls.Add(this.secButton);
+            this.Controls.Add(this.dayChart);
+            this.Controls.Add(this.hourChart);
+            this.Controls.Add(this.minChart);
+            this.Controls.Add(this.secChart);
             this.Controls.Add(this.resultListView);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.orderGroupBox);
             this.Controls.Add(this.FUGroupBox);
             this.Controls.Add(this.marketComboBox);
+            this.Controls.Add(this.gridItvTextBox);
             this.Controls.Add(this.amtTextBox);
             this.Controls.Add(this.nameTextBox);
             this.Controls.Add(this.timeDiffTextBox);
@@ -822,7 +797,6 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).EndInit();
             this.FUOpenOrdersTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).EndInit();
-            this.logTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.minChart)).EndInit();
             this.FUGroupBox.ResumeLayout(false);
             this.FUGroupBox.PerformLayout();
@@ -830,12 +804,7 @@ namespace BinanceHand
             this.orderGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).EndInit();
-            this.chartTabControl.ResumeLayout(false);
-            this.secTabPage.ResumeLayout(false);
-            this.minTabPage.ResumeLayout(false);
-            this.hourTabPage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).EndInit();
-            this.dayTabPage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -861,8 +830,6 @@ namespace BinanceHand
         private System.Windows.Forms.TabControl FUTabControl;
         private System.Windows.Forms.TabPage FUPositionTab;
         private System.Windows.Forms.TabPage FUOpenOrdersTab;
-        private System.Windows.Forms.TabPage logTab;
-        private System.Windows.Forms.ListBox logListBox;
         private BrightIdeasSoftware.FastDataListView FUPositionListView;
         private BrightIdeasSoftware.FastDataListView FUOpenOrdersListView;
         private System.Windows.Forms.TextBox FUAvailBalanceTextBox1;
@@ -897,13 +864,13 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox leverageTextBox1;
         private System.Windows.Forms.PictureBox pictureBox;
         private BrightIdeasSoftware.FastDataListView resultListView;
-        private System.Windows.Forms.TabControl chartTabControl;
-        private System.Windows.Forms.TabPage secTabPage;
-        private System.Windows.Forms.TabPage minTabPage;
-        private System.Windows.Forms.TabPage hourTabPage;
         private System.Windows.Forms.DataVisualization.Charting.Chart hourChart;
-        private System.Windows.Forms.TabPage dayTabPage;
         private System.Windows.Forms.DataVisualization.Charting.Chart dayChart;
+        private System.Windows.Forms.Button secButton;
+        private System.Windows.Forms.Button minButton;
+        private System.Windows.Forms.Button hourButton;
+        private System.Windows.Forms.Button dayButton;
+        private System.Windows.Forms.TextBox gridItvTextBox;
     }
 }
 
