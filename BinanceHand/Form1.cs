@@ -70,54 +70,6 @@ namespace BinanceHand
             SetClientAndKey();
         }
 
-        #region SetClientAndKey vars
-        BinanceClient client;
-        BinanceSocketClient socketClient;
-        CancellationTokenSource tokenSource = new CancellationTokenSource();
-        bool testnet = true;
-        #endregion
-        void SetClientAndKey()
-        {
-            var clientOption = new BinanceClientOptions();
-            var socketOption = new BinanceSocketClientOptions();
-
-            if (testnet)       //testnet
-            {
-                if (true)
-                {   /*future*/
-                    clientOption.BaseAddressUsdtFutures = "https://testnet.binancefuture.com";
-                    clientOption.BaseAddressCoinFutures = "https://testnet.binancefuture.com";
-                    clientOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
-                    socketOption.BaseAddressUsdtFutures = "wss://stream.binancefuture.com";
-                    socketOption.BaseAddressCoinFutures = "wss://stream.binancefuture.com";
-                    socketOption.BaseAddress = "wss://stream.binancefuture.com";
-                    socketOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
-                }
-                else
-                {   /*spot 안됌
-                    clientOption.BaseAddress = "https://testnet.binance.vision/api";
-                    clientOption.ApiCredentials = new ApiCredentials("KMx8rvC0pd8yuR7yYKQYZSqteiuSQsfcID4WQ24bpv4Qm6M3OL66kntmLWDPmnIf", "64hzy1tONvRvlXBLmIkb609rTW2QbCEbAcACkqlJDTP7Ljk28QNpuBMi6sWE5ylj");
-                    socketOption.BaseAddress = "wss://testnet.binance.vision";
-                    socketOption.ApiCredentials = new ApiCredentials("KMx8rvC0pd8yuR7yYKQYZSqteiuSQsfcID4WQ24bpv4Qm6M3OL66kntmLWDPmnIf", "64hzy1tONvRvlXBLmIkb609rTW2QbCEbAcACkqlJDTP7Ljk28QNpuBMi6sWE5ylj");*/
-                }
-            }
-            else
-            {
-                clientOption.ApiCredentials = new ApiCredentials("DpLZEH9lDIuoYvs5L9YcDshSXW1rN9Rlw6OMj7zVQwR7wuBGt9vtyntEDNUfUb50", "xXhj8yvUrLgVxlO4BioadC4RQSoydDLR2UFIaMcqBCdX1WM2LjVsM3cxC1Y9lgVJ");
-                clientOption.AutoTimestamp = false;
-                clientOption.TradeRulesBehaviour = TradeRulesBehaviour.None;
-                socketOption.ApiCredentials = new ApiCredentials("DpLZEH9lDIuoYvs5L9YcDshSXW1rN9Rlw6OMj7zVQwR7wuBGt9vtyntEDNUfUb50", "xXhj8yvUrLgVxlO4BioadC4RQSoydDLR2UFIaMcqBCdX1WM2LjVsM3cxC1Y9lgVJ");
-                socketOption.AutoReconnect = true;
-                socketOption.ReconnectInterval = TimeSpan.FromMinutes(1);
-                //clientOption.LogVerbosity = LogVerbosity.Debug;
-                //clientOption.LogWriters = new List<TextWriter> { Console.Out };
-            }
-
-            client = new BinanceClient(clientOption);
-            socketClient = new BinanceSocketClient(socketOption);
-
-        }
-
         void SetComponents()
         {
             marketComboBox.SelectedItem = marketComboBox.Items[0];
@@ -151,7 +103,7 @@ namespace BinanceHand
             secChart.Location = new Point(0, 0);
             secChart.Size = new Size((int)(Screen.GetWorkingArea(this).Size.Width * 0.8), (int)(Screen.GetWorkingArea(this).Size.Height * 0.8));
 
-            secChart.Tag = 0.05;
+            secChart.Tag = 0.005;
             secChart.AxisViewChanged += (sender, e) => { AdjustChart(secChart); };
 
             var chartAreaMain = secChart.ChartAreas.Add("ChartAreaMain");
@@ -916,8 +868,8 @@ namespace BinanceHand
             nameColumn.FreeSpaceProportion = nameColumnSize;
             nameColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(nameColumn);
-            var flucColumnSize = 3;
-            var flucColumn = new OLVColumn("분봉", "RateBfor");
+            var flucColumnSize = 5;
+            var flucColumn = new OLVColumn("전분봉(거래수)", "RateBforAndCount");
             flucColumn.FreeSpaceProportion = flucColumnSize;
             flucColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(flucColumn);
@@ -972,59 +924,52 @@ namespace BinanceHand
             FUAggReqTextBox.Location = new Point(FUAggRcvTextBox.Location.X + FUAggRcvTextBox.Size.Width, FUAggRcvTextBox.Location.Y);
         }
 
-        void SetChartNowOrLoad(Chart chart)
+        #region SetClientAndKey vars
+        BinanceClient client;
+        BinanceSocketClient socketClient;
+        CancellationTokenSource tokenSource = new CancellationTokenSource();
+        bool testnet = false;
+        #endregion
+        void SetClientAndKey()
         {
-            chartNow = chart;
+            var clientOption = new BinanceClientOptions();
+            var socketOption = new BinanceSocketClientOptions();
 
-            secChart.Visible = false;
-            minChart.Visible = false;
-            hourChart.Visible = false;
-            dayChart.Visible = false;
-            secButton.BackColor = buttonColor;
-            minButton.BackColor = buttonColor;
-            hourButton.BackColor = buttonColor;
-            dayButton.BackColor = buttonColor;
-
-            chart.Visible = true;
-
-            gridItvTextBox.Text = ((double)chart.Tag * 100) + "%";
-
-            if (chart.TabIndex == minChart.TabIndex)
+            if (testnet)       //testnet
             {
-                if (itemDataShowing != null) 
-                {
-                    if (itemDataShowing.minStickList.Count <= baseChartViewSticksSize)
-                        LoadMore(chartNow, 300);
+                if (true)
+                {   /*future*/
+                    clientOption.BaseAddressUsdtFutures = "https://testnet.binancefuture.com";
+                    clientOption.BaseAddressCoinFutures = "https://testnet.binancefuture.com";
+                    clientOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
+                    socketOption.BaseAddressUsdtFutures = "wss://stream.binancefuture.com";
+                    socketOption.BaseAddressCoinFutures = "wss://stream.binancefuture.com";
+                    socketOption.BaseAddress = "wss://stream.binancefuture.com";
+                    socketOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
                 }
-
-                minButton.BackColor = buttonSelectedColor;
-            }
-            else if (chart.TabIndex == hourChart.TabIndex)
-            {
-                if (itemDataShowing != null)
-                {
-                    if (itemDataShowing.hourStickList.Count <= baseChartViewSticksSize)
-                        LoadMore(chartNow, 300);
-                    else if (DateTime.UtcNow.Subtract(itemDataShowing.hourStickList.Last().Time).TotalHours > 1)
-                        LoadMore(chartNow, 0);
+                else
+                {   /*spot 안됌
+                    clientOption.BaseAddress = "https://testnet.binance.vision/api";
+                    clientOption.ApiCredentials = new ApiCredentials("KMx8rvC0pd8yuR7yYKQYZSqteiuSQsfcID4WQ24bpv4Qm6M3OL66kntmLWDPmnIf", "64hzy1tONvRvlXBLmIkb609rTW2QbCEbAcACkqlJDTP7Ljk28QNpuBMi6sWE5ylj");
+                    socketOption.BaseAddress = "wss://testnet.binance.vision";
+                    socketOption.ApiCredentials = new ApiCredentials("KMx8rvC0pd8yuR7yYKQYZSqteiuSQsfcID4WQ24bpv4Qm6M3OL66kntmLWDPmnIf", "64hzy1tONvRvlXBLmIkb609rTW2QbCEbAcACkqlJDTP7Ljk28QNpuBMi6sWE5ylj");*/
                 }
-
-                hourButton.BackColor = buttonSelectedColor;
-            }
-            else if (chart.TabIndex == dayChart.TabIndex)
-            {
-                if (itemDataShowing != null)
-                {
-                    if (itemDataShowing.dayStickList.Count <= baseChartViewSticksSize)
-                        LoadMore(chartNow, 300);
-                    else if (DateTime.UtcNow.Subtract(itemDataShowing.hourStickList.Last().Time).TotalDays > 1)
-                        LoadMore(chartNow, 0);
-                }
-
-                dayButton.BackColor = buttonSelectedColor;
             }
             else
-                secButton.BackColor = buttonSelectedColor;
+            {   // 2 api: 1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD secret: F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX
+                // 1 api: DpLZEH9lDIuoYvs5L9YcDshSXW1rN9Rlw6OMj7zVQwR7wuBGt9vtyntEDNUfUb50 secret: xXhj8yvUrLgVxlO4BioadC4RQSoydDLR2UFIaMcqBCdX1WM2LjVsM3cxC1Y9lgVJ
+                clientOption.ApiCredentials = new ApiCredentials("1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD", "F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX");
+                clientOption.AutoTimestamp = false;
+                clientOption.TradeRulesBehaviour = TradeRulesBehaviour.None;
+                socketOption.ApiCredentials = new ApiCredentials("1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD", "F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX");
+                socketOption.AutoReconnect = true;
+                socketOption.ReconnectInterval = TimeSpan.FromMinutes(1);
+                //clientOption.LogVerbosity = LogVerbosity.Debug;
+                //clientOption.LogWriters = new List<TextWriter> { Console.Out };
+            }
+
+            client = new BinanceClient(clientOption);
+            socketClient = new BinanceSocketClient(socketOption);
         }
 
         #region LoadResultEffect vars
@@ -1134,7 +1079,6 @@ namespace BinanceHand
         {
             client.FuturesUsdt.Order.CancelOrder(itemData.Name, itemData.orderID, itemData.clientOrderID);
         }
-
         bool CheckAndSetOrderView()
         {
             if (!decimal.TryParse(orderPriceTextBox1.Text, out decimal price))
@@ -1159,6 +1103,47 @@ namespace BinanceHand
             }
 
             return true;
+        }
+        void UpdateAutoSize(int limitPercent)
+        {
+            if (itemDataShowing.position)
+                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
+            else
+            {
+                var stick = itemDataShowing.secStickList[itemDataShowing.secStickList.Count - 1];
+
+                var autoSize = (stick.Ms + stick.Md) / 2 / 10;
+
+                if (stick.Price[0] != stick.Price[1] && stick.Price[0] / stick.Price[1] > 1.001m)
+                    autoSize /= (stick.Price[0] / stick.Price[1] - 1) * 1000;
+
+                var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / ((stick.Price[0] + stick.Price[1]) / 2) / itemDataShowing.minSize) * itemDataShowing.minSize;
+
+                if (limitAmount < autoSize)
+                    autoSize = limitAmount;
+
+                orderSizeTextBox1.Text = autoSize.ToString();
+            }
+        }
+
+        void FirstSetOrderView()
+        {
+            leverageTextBox0.Text = itemDataShowing.Leverage.ToString();
+
+            TickAutoSizeButton(true);
+
+            if (itemDataShowing.position)
+            {
+                TickMinSizeButton(false);
+                marketRadioButton.Checked = true;
+            }
+            else
+            {
+                TickMinSizeButton(true);
+                GTCRadioButton.Checked = true;
+            }
+
+            orderPriceTextBox1.Text = "0.1";
         }
         void TickMinSizeButton(bool on)
         {
@@ -1189,46 +1174,6 @@ namespace BinanceHand
             else
                 orderSizeTextBox1.Enabled = true;
         }
-        void UpdateAutoSize(int limitPercent)
-        {
-            if (itemDataShowing.position)
-                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
-            else
-            {
-                var stick = itemDataShowing.secStickList[itemDataShowing.secStickList.Count - 1];
-
-                var autoSize = (stick.Ms + stick.Md) / 2  / 10;
-
-                if (stick.Price[0] != stick.Price[1] && stick.Price[0] / stick.Price[1] > 1.001m)
-                    autoSize /= (stick.Price[0] / stick.Price[1] - 1) * 1000 ;
-
-                var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / ((stick.Price[0] + stick.Price[1]) / 2) / itemDataShowing.minSize) * itemDataShowing.minSize;
-
-                if (limitAmount < autoSize)
-                    autoSize = limitAmount;
-
-                orderSizeTextBox1.Text = autoSize.ToString();
-            }
-        }
-        void FirstSetOrderView()
-        {
-            leverageTextBox0.Text = itemDataShowing.Leverage.ToString();
-
-            TickAutoSizeButton(true);
-
-            if (itemDataShowing.position)
-            {
-                TickMinSizeButton(false);
-                marketRadioButton.Checked = true;
-            }
-            else
-            {
-                TickMinSizeButton(true);
-                GTCRadioButton.Checked = true;
-            }
-
-            orderPriceTextBox1.Text = "0.1";
-        }
         
         void ShowChart(ItemData itemData)
         {
@@ -1245,45 +1190,43 @@ namespace BinanceHand
 
             nameTextBox.Text = itemData.Name;
 
-            foreach (var se in secChart.Series)
-                se.Points.Clear();
-            foreach (var se in minChart.Series)
-                se.Points.Clear();
-            foreach (var se in hourChart.Series)
-                se.Points.Clear();
-            foreach (var se in dayChart.Series)
-                se.Points.Clear();
-
-
-            for (int i = 0; i < itemData.minStickList.Count; i++)
-                AddFullChartPoint(minChart, itemData.minStickList[i]);
-            for (int i = 0; i < itemData.hourStickList.Count; i++)
-                AddFullChartPoint(hourChart, itemData.hourStickList[i]);
-            for (int i = 0; i < itemData.dayStickList.Count; i++)
-                AddFullChartPoint(dayChart, itemData.dayStickList[i]);
+            for (int i = 0; i < secChart.Series.Count; i++)
+            {
+                secChart.Series[i].Points.Clear();
+                minChart.Series[i].Points.Clear();
+                hourChart.Series[i].Points.Clear();
+                dayChart.Series[i].Points.Clear();
+            }
 
             if (itemData.isAggOn)
             {
                 for (int i = 0; i < itemData.secStickList.Count; i++)
                     AddFullChartPoint(secChart, itemData.secStickList[i]);
 
-                AddFullChartPoint(secChart, itemData.secStick);
+                if (itemData.secStick.Time != default)
+                    AddStartChartPoint(secChart, itemData.secStick);
 
-                secChart.ChartAreas[0].RecalculateAxesScale();
-                if (secChart.Series[0].Points.Count > baseChartViewSticksSize)
-                {
-                    secChart.ChartAreas[0].AxisX.ScaleView.Zoom(secChart.Series[0].Points.Count - baseChartViewSticksSize + 1, secChart.Series[0].Points.Count);
-                    secChart.ChartAreas[0].RecalculateAxesScale();
-                }
-                else
-                {
-                    secChart.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
-                    secChart.ChartAreas[0].RecalculateAxesScale();
-                }
-                AdjustChart(secChart);
+                FirstZoomIfNeeded(secChart);
             }
             else
                 SetAggOn(itemData, true);
+
+            for (int i = 0; i < itemData.minStickList.Count; i++)
+                AddFullChartPoint(minChart, itemData.minStickList[i]);
+            itemData.minStick = new Stick();
+            FirstZoomIfNeeded(minChart);
+
+            for (int i = 0; i < itemData.hourStickList.Count; i++)
+                AddFullChartPoint(hourChart, itemData.hourStickList[i]);
+            if (itemData.hourStickList.Count != 0 && itemData.hourStick.Time.AddHours(-1) == itemData.hourStickList.Last().Time)
+                AddFullChartPoint(hourChart, itemData.hourStick);
+            FirstZoomIfNeeded(hourChart);
+
+            for (int i = 0; i < itemData.dayStickList.Count; i++)
+                AddFullChartPoint(dayChart, itemData.dayStickList[i]);
+            if (itemData.dayStickList.Count != 0 && itemData.dayStick.Time.AddHours(-1) == itemData.dayStickList.Last().Time)
+                AddFullChartPoint(dayChart, itemData.dayStick);
+            FirstZoomIfNeeded(dayChart);
 
             if (itemData.Leverage == 0)
             {
@@ -1306,6 +1249,78 @@ namespace BinanceHand
             SetChartNowOrLoad(chartNow);
 
             FirstSetOrderView();
+        }
+        void FirstZoomIfNeeded(Chart chart)
+        {
+            chart.ChartAreas[0].RecalculateAxesScale();
+            if (chart.Series[0].Points.Count > baseChartViewSticksSize)
+            {
+                chart.ChartAreas[0].AxisX.ScaleView.Zoom(chart.Series[0].Points.Count - baseChartViewSticksSize + 1, chart.Series[0].Points.Count);
+                chart.ChartAreas[0].RecalculateAxesScale();
+            }
+            else
+            {
+                chart.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+                chart.ChartAreas[0].RecalculateAxesScale();
+            }
+            chart.ChartAreas[1].RecalculateAxesScale();
+            AdjustChart(chart);
+        }
+        void SetChartNowOrLoad(Chart chart)
+        {
+            chartNow = chart;
+
+            secChart.Visible = false;
+            minChart.Visible = false;
+            hourChart.Visible = false;
+            dayChart.Visible = false;
+            secButton.BackColor = buttonColor;
+            minButton.BackColor = buttonColor;
+            hourButton.BackColor = buttonColor;
+            dayButton.BackColor = buttonColor;
+
+            chart.Visible = true;
+
+            gridItvTextBox.Text = ((double)chart.Tag * 100) + "%";
+
+            if (chart.TabIndex == minChart.TabIndex)
+            {
+                if (itemDataShowing != null)
+                {
+                    if (itemDataShowing.minStickList.Count <= baseChartViewSticksSize)
+                        LoadMore(chartNow, 300);
+                }
+
+                minButton.BackColor = buttonSelectedColor;
+            }
+            else if (chart.TabIndex == hourChart.TabIndex)
+            {
+                if (itemDataShowing != null)
+                {
+                    if (itemDataShowing.hourStickList.Count <= baseChartViewSticksSize)
+                        LoadMore(chartNow, 300);
+                    else if (DateTime.UtcNow.Subtract(itemDataShowing.hourStickList.Last().Time).TotalHours > 1)
+                        LoadMore(chartNow, 0);
+                }
+
+                hourButton.BackColor = buttonSelectedColor;
+            }
+            else if (chart.TabIndex == dayChart.TabIndex)
+            {
+                if (itemDataShowing != null)
+                {
+                    if (itemDataShowing.dayStickList.Count <= baseChartViewSticksSize)
+                        LoadMore(chartNow, 300);
+                    else if (DateTime.UtcNow.Subtract(itemDataShowing.dayStickList.Last().Time).TotalDays > 1)
+                        LoadMore(chartNow, 0);
+                }
+
+                dayButton.BackColor = buttonSelectedColor;
+            }
+            else
+                secButton.BackColor = buttonSelectedColor;
+
+            AdjustChart(chart);
         }
         void LoadMore(Chart chart, int limit, DateTime now = default)
         {
@@ -1575,7 +1590,10 @@ namespace BinanceHand
                     listenKey = client.Spot.UserStream.StartUserStream().Data;
             }
             else
-                listenKey = client.Spot.UserStream.StartUserStream().Data;
+            {
+                var r = client.FuturesUsdt.UserStream.StartUserStream();
+                listenKey = r.Data;
+            }
 
             Task.Run(async () =>
             {
@@ -1589,7 +1607,7 @@ namespace BinanceHand
                             await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
                     }
                     else
-                        await client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey);
+                        await client.FuturesUsdt.UserStream.KeepAliveUserStreamAsync(listenKey);
 
                     await Task.Delay(TimeSpan.FromMinutes(30));
                 }
@@ -1614,7 +1632,16 @@ namespace BinanceHand
                     socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
             }
             else
-                socketClient.Spot.SubscribeToUserDataUpdates(listenKey, null, null, null, null);
+                socketClient.FuturesUsdt.SubscribeToUserDataUpdates(listenKey,
+                        null,
+                        data => {
+                            var a = data;
+                        },
+                        data => { BeginInvoke(accountUpdates, data); },
+                        data => { BeginInvoke(orderUpdates, data, FUItemDataList[data.UpdateData.Symbol]); },
+                        data => {
+                            var a = data;
+                        });
         }
         void GetAccountInfo()
         {
@@ -1733,6 +1760,8 @@ namespace BinanceHand
                 else
                     itemData.RateBfor = -Math.Round((data.Data.High / data.Data.Low - 1) * 100, 1);
 
+                itemData.RateBforAndCount = itemData.RateBfor + "(" + data.Data.TradeCount + ")";
+
                 if (Math.Abs(itemData.RateBfor) > 1)
                 {
                     if (!itemData.isAggReady && data.Data.TradeCount > 180)
@@ -1775,8 +1804,6 @@ namespace BinanceHand
 
                 if (itemData.isAggReady && !itemData.isAggOn && FUAggOnNow < 5)
                     SetAggOn(itemData, false);
-
-
 
                 itemData.minStick.Price[0] = data.Data.High;
                 itemData.minStick.Price[1] = data.Data.Low;
@@ -2052,7 +2079,6 @@ namespace BinanceHand
                 itemData.PNL = Math.Round((itemData.MarkPrice - itemData.EntryPrice) * itemData.Size, 2);
                 itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
 
-
                 for (int i = 0; i < itemData.brackets.Count; i++)
                 {
                     if (itemData.notianalValue > itemData.brackets[i].Floor && itemData.notianalValue <= itemData.brackets[i].Cap)
@@ -2164,6 +2190,12 @@ namespace BinanceHand
                 itemData.clientOrderID = data.UpdateData.ClientOrderId;
                 itemData.orderID = data.UpdateData.OrderId;
 
+                if (!itemData.position)
+                {
+                    FUAvailableBalance -= (itemData.OrderPrice * itemData.OrderAmount) / itemData.Leverage;
+                    FUAvailBalanceTextBox1.Text = Math.Round(FUAvailableBalance, 2).ToString();
+                }
+
                 FUOpenOrdersListView.AddObject(itemData);
                 FUOpenOrdersListView.RefreshObject(itemData);
                 FUOpenOrdersTab.Text = "Open Orders(" + FUOpenOrdersListView.Items.Count + ")";
@@ -2220,6 +2252,11 @@ namespace BinanceHand
                         resultListView.RefreshObject(resultData);
                     }
                 }
+                else
+                {
+                    FUAvailableBalance += (itemData.OrderPrice * itemData.OrderAmount) / itemData.Leverage;
+                    FUAvailBalanceTextBox1.Text = Math.Round(FUAvailableBalance, 2).ToString();
+                }
 
                 itemData.order = false;
 
@@ -2255,8 +2292,12 @@ namespace BinanceHand
 
             itemData.sub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
             if (addObject)
+            {
                 FUListView.AddObject(itemData);
+                FUListView.RefreshObject(itemData);
+            }
             FUListView.RemoveObject(itemData);
+            FUListView.RefreshObject(itemData);
             FUListView.InsertObjects(0, new List<ItemData> { itemData });
             FUListView.RefreshObject(itemData);
             FUAggOnNow++;
@@ -2402,56 +2443,83 @@ namespace BinanceHand
             switch (e.KeyCode)
             {
                 case Keys.Z:
-                    if (itemDataShowing != null)
+                    if (!nameTextBox.Focused && itemDataShowing != null)
+                    {
                         buyButton.PerformClick();
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
                 case Keys.C:
-                    if (itemDataShowing != null)
+                    if (!nameTextBox.Focused && itemDataShowing != null)
+                    {
                         sellButton.PerformClick();
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
                 case Keys.A:
-                    if (itemDataShowing != null)
+                    if (!nameTextBox.Focused && itemDataShowing != null)
+                    {
                         ChartScroll(chartNow, ScrollType.SmallDecrement);
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
                 case Keys.S:
-                    if (itemDataShowing != null)
+                    if (!nameTextBox.Focused && itemDataShowing != null)
+                    {
                         ChartScroll(chartNow, ScrollType.Last);
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
                 case Keys.D:
-                    if (itemDataShowing != null)
+                    if (!nameTextBox.Focused && itemDataShowing != null)
+                    {
                         ChartScroll(chartNow, ScrollType.SmallIncrement);
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
                 case Keys.Q:
                     if (!nameTextBox.Focused)
+                    {
                         SetChartNowOrLoad(secChart);
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
                 case Keys.W:
                     if (!nameTextBox.Focused)
+                    {
                         SetChartNowOrLoad(minChart);
-                    e.Handled = true;
+                        e.SuppressKeyPress = true;
+                    }
+                        e.Handled = true;
                     break;
 
                 case Keys.E:
                     if (!nameTextBox.Focused)
+                    {
                         SetChartNowOrLoad(hourChart);
-                    e.Handled = true;
+                        e.SuppressKeyPress = true;
+                    }
+                        e.Handled = true;
                     break;
 
                 case Keys.R:
                     if (!nameTextBox.Focused)
+                    {
                         SetChartNowOrLoad(dayChart);
+                        e.SuppressKeyPress = true;
+                    }
                     e.Handled = true;
                     break;
 
@@ -2459,7 +2527,9 @@ namespace BinanceHand
                     if (!nameTextBox.Focused)
                         nameTextBox.Focus();
                     else
-                        Focus();
+                    {
+                        orderGroupBox.Focus();
+                    }
 
                     e.Handled = true;
                     break;

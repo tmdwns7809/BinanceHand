@@ -14,6 +14,7 @@ namespace BinanceHand
 
         public string Name;
         public decimal RateBfor = 0m;
+        public string RateBforAndCount;
 
         public string date;
         public string newTime;

@@ -750,10 +750,10 @@ namespace BinanceHand
             // 
             this.gridItvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.gridItvTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.gridItvTextBox.Location = new System.Drawing.Point(632, 440);
+            this.gridItvTextBox.Location = new System.Drawing.Point(618, 440);
             this.gridItvTextBox.Name = "gridItvTextBox";
             this.gridItvTextBox.ReadOnly = true;
-            this.gridItvTextBox.Size = new System.Drawing.Size(32, 14);
+            this.gridItvTextBox.Size = new System.Drawing.Size(46, 14);
             this.gridItvTextBox.TabIndex = 6;
             this.gridItvTextBox.Text = "0.0%";
             // 
