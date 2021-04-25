@@ -59,6 +59,8 @@ namespace BinanceHand
         decimal FUAvailableBalance;
         decimal FUWalletBalance;
         string ForDecimalString = "0.#############################";
+
+        bool testnet = false;
         #endregion
 
         public Form1()
@@ -709,12 +711,16 @@ namespace BinanceHand
                     MessageBox.Show("change fail");
                     return;
                 }
+                else
+                    MessageBox.Show("success");
 
                 itemDataShowing.Leverage = data.Data.Leverage;
-                if (data.Data.MaxNotionalValue == "inf")
+                if (data.Data.MaxNotionalValue == "INF")
                     itemDataShowing.maxNotionalValue = decimal.MaxValue;
                 else
                     itemDataShowing.maxNotionalValue = decimal.Parse(data.Data.MaxNotionalValue);
+
+                mainTabControl.Focus();
             };
 
             leverageTextBox1.BackColor = BackColor;
@@ -778,7 +784,7 @@ namespace BinanceHand
 
             ROCheckBox.BackColor = BackColor;
             ROCheckBox.ForeColor = ForeColor;
-            ROCheckBox.Location = new Point(buyButton.Location.X + 3, buyButton.Location.Y - ROCheckBox.Size.Height - 3);
+            ROCheckBox.Location = new Point(sellButton.Location.X + sellButton.Size.Width - ROCheckBox.Size.Width, sellButton.Location.Y - ROCheckBox.Size.Height - 3);
 
             priceTextBox.BackColor = BackColor;
             priceTextBox.ForeColor = ForeColor;
@@ -830,11 +836,11 @@ namespace BinanceHand
             numberColumn.FreeSpaceProportion = 1;
             numberColumn.HeaderFormatStyle = headerstyle;
             resultListView.AllColumns.Add(numberColumn);
-            var entryColumn = new OLVColumn("Entry Gap(%)", "EntryGap");
+            var entryColumn = new OLVColumn("EG(%), TD", "EntryGapAndTime");
             entryColumn.FreeSpaceProportion = 3;
             entryColumn.HeaderFormatStyle = headerstyle;
             resultListView.AllColumns.Add(entryColumn);
-            var lastColumn = new OLVColumn("Last Gap(%)", "LastGap");
+            var lastColumn = new OLVColumn("LG(%), TD", "LastGapAndTime");
             lastColumn.FreeSpaceProportion = 3;
             lastColumn.HeaderFormatStyle = headerstyle;
             resultListView.AllColumns.Add(lastColumn);
@@ -864,27 +870,27 @@ namespace BinanceHand
             headerstyle.SetBackColor(BackColor);
             headerstyle.SetForeColor(ForeColor);
             var nameColumnSize = 7;
-            var nameColumn = new OLVColumn("이름", "Name");
+            var nameColumn = new OLVColumn("Name", "Name");
             nameColumn.FreeSpaceProportion = nameColumnSize;
             nameColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(nameColumn);
             var flucColumnSize = 5;
-            var flucColumn = new OLVColumn("전분봉(거래수)", "RateBforAndCount");
+            var flucColumn = new OLVColumn("B(C)", "RateBforAndCount");
             flucColumn.FreeSpaceProportion = flucColumnSize;
             flucColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(flucColumn);
             var durColumnSize = 3;
-            var durColumn = new OLVColumn("지속", "AggReadyRow");
+            var durColumn = new OLVColumn("Row", "AggReadyRow");
             durColumn.FreeSpaceProportion = durColumnSize;
             durColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(durColumn);
             var winColumnSize = 6;
-            var winColumn = new OLVColumn("승률(횟수)", "WinPrecantage");
+            var winColumn = new OLVColumn("WR(TC)", "WinPrecantage");
             winColumn.FreeSpaceProportion = winColumnSize;
             winColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(winColumn);
             var proColumnSize = 6;
-            var proColumn = new OLVColumn("산술(기하)", "ProfitRateSumAndMul");
+            var proColumn = new OLVColumn("AM(GM)", "AMandGM");
             proColumn.FreeSpaceProportion = proColumnSize;
             proColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(proColumn);
@@ -928,7 +934,6 @@ namespace BinanceHand
         BinanceClient client;
         BinanceSocketClient socketClient;
         CancellationTokenSource tokenSource = new CancellationTokenSource();
-        bool testnet = false;
         #endregion
         void SetClientAndKey()
         {
@@ -1074,6 +1079,27 @@ namespace BinanceHand
                 , timeInForce
                 , reduceOnly
                 , price);
+
+            if (itemDataShowing.position)
+            {
+                ResultData resultData;
+
+                if (resultListView.Items.Count == 0)
+                {
+                    resultData = new ResultData(1);
+                    resultListView.InsertObjects(0, new List<ResultData> { resultData });
+                }
+                else
+                    resultData = resultListView.GetModelObject(0) as ResultData;
+
+                resultData.LastTime = DateTime.UtcNow;
+            }
+            else
+            {
+                var resultData = new ResultData(resultListView.Items.Count + 1);
+                resultData.EntryTime = DateTime.UtcNow;
+                resultListView.InsertObjects(0, new List<ResultData> { resultData });
+            }
         }
         void CancelOrder(ItemData itemData)
         {
@@ -1576,6 +1602,10 @@ namespace BinanceHand
                 var itemData = new ItemData(s);
                 FUItemDataList.Add(itemData.Name, itemData);
                 FUSymbolList.Add(itemData.Name);
+
+                //var data = client.FuturesUsdt.ChangeInitialLeverage(itemData.Name, 1);
+                //if (!data.Success)
+                //    MessageBox.Show("fail");
             }
         }
         void SubscribeToUserStream(bool testnet, bool testnetFutures)
@@ -1948,7 +1978,7 @@ namespace BinanceHand
                         AdjustChart(secChart);
                 }
 
-                if (itemData.secStickList.Count > 900)
+                if (itemData.secStickList.Count > 1800)
                 {
                     itemData.secStickList.RemoveAt(0);
                     if (itemData.isChartShowing)
@@ -2036,7 +2066,7 @@ namespace BinanceHand
 
                         itemData.profitRateSum += itemData.profitRate;
                         itemData.profitRateMul *= itemData.profitRate;
-                        itemData.ProfitRateSumAndMul = Math.Round(((double)itemData.profitRateSum / itemData.winLoseTot - 1) * 100, 2) + "(" +
+                        itemData.AMandGM = Math.Round(((double)itemData.profitRateSum / itemData.winLoseTot - 1) * 100, 2) + "(" +
                             Math.Round((Math.Pow((double)itemData.profitRateMul, (double)1 / itemData.winLoseTot) - 1) * 100, 2) + ")";
 
                         FUListView.RefreshObject(itemData);
@@ -2218,7 +2248,7 @@ namespace BinanceHand
 
                         if (resultListView.Items.Count == 0)
                         {
-                            resultData = new ResultData(resultListView.Items.Count + 1);
+                            resultData = new ResultData(1);
                             resultListView.InsertObjects(0, new List<ResultData> { resultData });
                         }
                         else
@@ -2235,20 +2265,23 @@ namespace BinanceHand
                             resultData.Profit = Math.Round((itemData.EntryPrice / data.UpdateData.AveragePrice - 1) * 100, 2);
                         }
 
+                        resultData.LastGapAndTime = resultData.LastGap + "(" + Math.Round((data.UpdateData.CreateTime - resultData.LastTime).TotalSeconds, 1) + ")";
+
                         resultListView.RefreshObject(resultData);
 
                         LoadResultEffect(resultData.Profit);
                     }
                     else
                     {
-                        var resultData = new ResultData(resultListView.Items.Count + 1);
+                        var resultData = resultListView.GetModelObject(0) as ResultData;
 
                         if (data.UpdateData.Side == OrderSide.Buy)
                             resultData.EntryGap = Math.Round((data.UpdateData.AveragePrice / itemData.orderStartPrice - 1) * 100, 2);
                         else
                             resultData.EntryGap = Math.Round((itemData.orderStartPrice / data.UpdateData.AveragePrice - 1) * 100, 2);
 
-                        resultListView.InsertObjects(0, new List<ResultData> { resultData });
+                        resultData.EntryGapAndTime = resultData.EntryGap + "(" + Math.Round((data.UpdateData.CreateTime - resultData.EntryTime).TotalSeconds, 1) + ")";
+
                         resultListView.RefreshObject(resultData);
                     }
                 }
@@ -2285,7 +2318,7 @@ namespace BinanceHand
             itemData.WinPrecantage = "0.00(0)";
             itemData.profitRateSum = 0;
             itemData.profitRateMul = 1m;
-            itemData.ProfitRateSumAndMul = "0.00(0)";
+            itemData.AMandGM = "0.00(0)";
 
             itemData.secStickList.Clear();
             itemData.secStick = new Stick();
@@ -2544,9 +2577,9 @@ namespace BinanceHand
                         }
                         ShowChart(FUItemDataList[nameTextBox.Text.Trim().ToUpper()]);
                         mainTabControl.Focus();
+                        e.SuppressKeyPress = true;
+                        e.Handled = true;
                     }
-                    e.SuppressKeyPress = true;
-                    e.Handled = true;
                     break;
 
                 case Keys.Delete:
@@ -2588,7 +2621,11 @@ namespace BinanceHand
     {
         public int Number;
         public decimal EntryGap;
+        public DateTime EntryTime;
+        public string EntryGapAndTime;
         public decimal LastGap;
+        public DateTime LastTime;
+        public string LastGapAndTime;
         public decimal Profit;
 
         public ResultData(int n)

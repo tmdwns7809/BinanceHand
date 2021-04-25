@@ -82,7 +82,7 @@ namespace BinanceHand
         public decimal profitRate;
         public decimal profitRateSum;
         public decimal profitRateMul;
-        public string ProfitRateSumAndMul = "0.00(0.00)";
+        public string AMandGM = "0.00(0.00)";
 
         public bool order = false;
         public DateTime OrderTime;

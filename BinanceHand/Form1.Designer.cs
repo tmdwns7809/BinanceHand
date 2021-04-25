@@ -29,10 +29,10 @@ namespace BinanceHand
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend13 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend14 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend15 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend16 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.secChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUListView = new BrightIdeasSoftware.FastDataListView();
             this.mainTabControl = new System.Windows.Forms.TabControl();
@@ -112,9 +112,9 @@ namespace BinanceHand
             // secChart
             // 
             this.secChart.BackColor = System.Drawing.Color.Black;
-            legend1.Enabled = false;
-            legend1.Name = "Legend1";
-            this.secChart.Legends.Add(legend1);
+            legend13.Enabled = false;
+            legend13.Name = "Legend1";
+            this.secChart.Legends.Add(legend13);
             this.secChart.Location = new System.Drawing.Point(512, 109);
             this.secChart.Name = "secChart";
             this.secChart.Size = new System.Drawing.Size(224, 200);
@@ -422,9 +422,9 @@ namespace BinanceHand
             // 
             // minChart
             // 
-            legend2.Enabled = false;
-            legend2.Name = "Legend1";
-            this.minChart.Legends.Add(legend2);
+            legend14.Enabled = false;
+            legend14.Name = "Legend1";
+            this.minChart.Legends.Add(legend14);
             this.minChart.Location = new System.Drawing.Point(562, 126);
             this.minChart.Name = "minChart";
             this.minChart.Size = new System.Drawing.Size(214, 247);
@@ -478,7 +478,7 @@ namespace BinanceHand
             this.leverageTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.leverageTextBox0.Location = new System.Drawing.Point(263, 41);
             this.leverageTextBox0.Name = "leverageTextBox0";
-            this.leverageTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.leverageTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.leverageTextBox0.Size = new System.Drawing.Size(41, 21);
             this.leverageTextBox0.TabIndex = 9;
             // 
@@ -487,7 +487,7 @@ namespace BinanceHand
             this.orderPriceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.orderPriceTextBox1.Location = new System.Drawing.Point(65, 39);
             this.orderPriceTextBox1.Name = "orderPriceTextBox1";
-            this.orderPriceTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.orderPriceTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.orderPriceTextBox1.Size = new System.Drawing.Size(41, 21);
             this.orderPriceTextBox1.TabIndex = 9;
             // 
@@ -505,7 +505,7 @@ namespace BinanceHand
             // 
             this.autoSizeTextBox0.Location = new System.Drawing.Point(102, 97);
             this.autoSizeTextBox0.Name = "autoSizeTextBox0";
-            this.autoSizeTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.autoSizeTextBox0.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.autoSizeTextBox0.Size = new System.Drawing.Size(30, 21);
             this.autoSizeTextBox0.TabIndex = 8;
             this.autoSizeTextBox0.Text = "1";
@@ -515,7 +515,7 @@ namespace BinanceHand
             this.orderSizeTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.orderSizeTextBox1.Location = new System.Drawing.Point(65, 70);
             this.orderSizeTextBox1.Name = "orderSizeTextBox1";
-            this.orderSizeTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.orderSizeTextBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.orderSizeTextBox1.Size = new System.Drawing.Size(62, 21);
             this.orderSizeTextBox1.TabIndex = 7;
             // 
@@ -686,9 +686,9 @@ namespace BinanceHand
             // 
             // hourChart
             // 
-            legend3.Enabled = false;
-            legend3.Name = "Legend1";
-            this.hourChart.Legends.Add(legend3);
+            legend15.Enabled = false;
+            legend15.Name = "Legend1";
+            this.hourChart.Legends.Add(legend15);
             this.hourChart.Location = new System.Drawing.Point(659, 126);
             this.hourChart.Name = "hourChart";
             this.hourChart.Size = new System.Drawing.Size(214, 247);
@@ -697,9 +697,9 @@ namespace BinanceHand
             // 
             // dayChart
             // 
-            legend4.Enabled = false;
-            legend4.Name = "Legend1";
-            this.dayChart.Legends.Add(legend4);
+            legend16.Enabled = false;
+            legend16.Name = "Legend1";
+            this.dayChart.Legends.Add(legend16);
             this.dayChart.Location = new System.Drawing.Point(742, 126);
             this.dayChart.Name = "dayChart";
             this.dayChart.Size = new System.Drawing.Size(214, 247);
