@@ -1294,6 +1294,9 @@ namespace BinanceHand
         }
         void SetChartNowOrLoad(Chart chart)
         {
+            if (itemDataShowing == null)
+                return;
+
             chartNow = chart;
 
             secChart.Visible = false;
@@ -1311,35 +1314,26 @@ namespace BinanceHand
 
             if (chart.TabIndex == minChart.TabIndex)
             {
-                if (itemDataShowing != null)
-                {
-                    if (itemDataShowing.minStickList.Count <= baseChartViewSticksSize)
-                        LoadMore(chartNow, 300);
-                }
+                if (itemDataShowing.minStickList.Count <= baseChartViewSticksSize)
+                    LoadMore(chartNow, 300);
 
                 minButton.BackColor = buttonSelectedColor;
             }
             else if (chart.TabIndex == hourChart.TabIndex)
             {
-                if (itemDataShowing != null)
-                {
-                    if (itemDataShowing.hourStickList.Count <= baseChartViewSticksSize)
-                        LoadMore(chartNow, 300);
-                    else if (DateTime.UtcNow.Subtract(itemDataShowing.hourStickList.Last().Time).TotalHours > 1)
-                        LoadMore(chartNow, 0);
-                }
+                if (itemDataShowing.hourStickList.Count <= baseChartViewSticksSize)
+                    LoadMore(chartNow, 300);
+                else if (DateTime.UtcNow.Subtract(itemDataShowing.hourStickList.Last().Time).TotalHours > 1)
+                    LoadMore(chartNow, 0);
 
                 hourButton.BackColor = buttonSelectedColor;
             }
             else if (chart.TabIndex == dayChart.TabIndex)
             {
-                if (itemDataShowing != null)
-                {
-                    if (itemDataShowing.dayStickList.Count <= baseChartViewSticksSize)
-                        LoadMore(chartNow, 300);
-                    else if (DateTime.UtcNow.Subtract(itemDataShowing.dayStickList.Last().Time).TotalDays > 1)
-                        LoadMore(chartNow, 0);
-                }
+                if (itemDataShowing.dayStickList.Count <= baseChartViewSticksSize)
+                    LoadMore(chartNow, 300);
+                else if (DateTime.UtcNow.Subtract(itemDataShowing.dayStickList.Last().Time).TotalDays > 1)
+                    LoadMore(chartNow, 0);
 
                 dayButton.BackColor = buttonSelectedColor;
             }
@@ -1383,7 +1377,10 @@ namespace BinanceHand
             if (list.Count == 0)
                 endTime = DateTime.UtcNow;
             else
+            {
+                list.RemoveAt(0);
                 endTime = list[0].Time;
+            }
 
             IEnumerable<IBinanceKline> klines;
             List<Stick> newList = new List<Stick>();
@@ -1434,7 +1431,7 @@ namespace BinanceHand
             {
                 j++;
 
-                if (newList[newList.Count - 1].Time == kline.OpenTime)
+                if (newList.Count != 0 && newList[newList.Count - 1].Time == stick.Time)
                     continue;
 
                 stick = new Stick();
@@ -1904,7 +1901,6 @@ namespace BinanceHand
                 FUAggRcvTextBox.Text = FUAggRcv.ToString();
             }
 
-            itemData.date = data.TradeTime.ToString("yyyy-MM-dd");
             itemData.newTime = data.TradeTime.ToString(ItemData.secChartLabel);
 
             if (data.TradeTime.Second != itemData.secStick.Time.Second || data.TradeTime.Minute != itemData.secStick.Time.Minute || data.TradeTime.Hour != itemData.secStick.Time.Hour)
@@ -2337,6 +2333,7 @@ namespace BinanceHand
             FUAggReq++;
             FUAggReqTextBox.Text = "/" + FUAggReq + "(A)";
         }
+
         bool BuyConditionMs(ItemData itemData)
         {
             if (
@@ -2458,17 +2455,6 @@ namespace BinanceHand
                 return true;
             else
                 return false;
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-
-            if (tokenSource != null)
-                tokenSource.Cancel();
-
-            socketClient.UnsubscribeAll();
-            //dbHelper.Close();
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -2614,6 +2600,17 @@ namespace BinanceHand
                 chart.ChartAreas[0].AxisX.ScaleView.Scroll(scrollType);
                 AdjustChart(chart);
             }
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            base.OnClosed(e);
+
+            if (tokenSource != null)
+                tokenSource.Cancel();
+
+            socketClient.UnsubscribeAll();
+            //dbHelper.Close();
         }
     }
 

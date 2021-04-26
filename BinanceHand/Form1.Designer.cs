@@ -29,10 +29,10 @@ namespace BinanceHand
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Legend legend13 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend14 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend15 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend16 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.secChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUListView = new BrightIdeasSoftware.FastDataListView();
             this.mainTabControl = new System.Windows.Forms.TabControl();
@@ -112,9 +112,9 @@ namespace BinanceHand
             // secChart
             // 
             this.secChart.BackColor = System.Drawing.Color.Black;
-            legend13.Enabled = false;
-            legend13.Name = "Legend1";
-            this.secChart.Legends.Add(legend13);
+            legend1.Enabled = false;
+            legend1.Name = "Legend1";
+            this.secChart.Legends.Add(legend1);
             this.secChart.Location = new System.Drawing.Point(512, 109);
             this.secChart.Name = "secChart";
             this.secChart.Size = new System.Drawing.Size(224, 200);
@@ -422,9 +422,9 @@ namespace BinanceHand
             // 
             // minChart
             // 
-            legend14.Enabled = false;
-            legend14.Name = "Legend1";
-            this.minChart.Legends.Add(legend14);
+            legend2.Enabled = false;
+            legend2.Name = "Legend1";
+            this.minChart.Legends.Add(legend2);
             this.minChart.Location = new System.Drawing.Point(562, 126);
             this.minChart.Name = "minChart";
             this.minChart.Size = new System.Drawing.Size(214, 247);
@@ -686,9 +686,9 @@ namespace BinanceHand
             // 
             // hourChart
             // 
-            legend15.Enabled = false;
-            legend15.Name = "Legend1";
-            this.hourChart.Legends.Add(legend15);
+            legend3.Enabled = false;
+            legend3.Name = "Legend1";
+            this.hourChart.Legends.Add(legend3);
             this.hourChart.Location = new System.Drawing.Point(659, 126);
             this.hourChart.Name = "hourChart";
             this.hourChart.Size = new System.Drawing.Size(214, 247);
@@ -697,9 +697,9 @@ namespace BinanceHand
             // 
             // dayChart
             // 
-            legend16.Enabled = false;
-            legend16.Name = "Legend1";
-            this.dayChart.Legends.Add(legend16);
+            legend4.Enabled = false;
+            legend4.Name = "Legend1";
+            this.dayChart.Legends.Add(legend4);
             this.dayChart.Location = new System.Drawing.Point(742, 126);
             this.dayChart.Name = "dayChart";
             this.dayChart.Size = new System.Drawing.Size(214, 247);
@@ -785,6 +785,7 @@ namespace BinanceHand
             this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).EndInit();
