@@ -13,21 +13,21 @@ namespace BinanceHand
         public UpdateSubscription sub;
 
         public string Name;
-        public decimal RateBfor = 0m;
-        public string RateBforAndCount;
+        public decimal FlucBfor = 0m;
+        public int CountBfor = 0;
 
-        public string date;
         public string newTime;
 
         public bool hasAll = false;
         public bool buyOrder = false;
         public bool sellOrder = false;
 
-        public bool aggFirst = true;
+        public bool AggFirst = true;
         public bool klineFirst = true;
 
         public Stick secStick = new Stick();
         public List<Stick> secStickList = new List<Stick>();
+        public List<Stick> oldSecStickList = new List<Stick>();
         public static string secChartLabel = "HH:mm:ss";
 
         public Stick minStick = new Stick();
@@ -88,7 +88,7 @@ namespace BinanceHand
         public DateTime OrderTime;
         public OrderType OrderType;
         public OrderSide OrderSide;
-        public decimal orderStartPrice;
+        public decimal orderStartClosePrice;
         public decimal OrderPrice;
         public decimal OrderPriceFix;
         public decimal OrderAmount;

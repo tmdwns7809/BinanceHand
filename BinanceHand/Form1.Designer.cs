@@ -403,17 +403,17 @@ namespace BinanceHand
             // FUAggRcvTextBox
             // 
             this.FUAggRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUAggRcvTextBox.Location = new System.Drawing.Point(114, 75);
+            this.FUAggRcvTextBox.Location = new System.Drawing.Point(100, 75);
             this.FUAggRcvTextBox.Name = "FUAggRcvTextBox";
             this.FUAggRcvTextBox.ReadOnly = true;
-            this.FUAggRcvTextBox.Size = new System.Drawing.Size(10, 14);
+            this.FUAggRcvTextBox.Size = new System.Drawing.Size(26, 14);
             this.FUAggRcvTextBox.TabIndex = 6;
             this.FUAggRcvTextBox.Text = "0";
             // 
             // FUAggReqTextBox
             // 
             this.FUAggReqTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUAggReqTextBox.Location = new System.Drawing.Point(126, 75);
+            this.FUAggReqTextBox.Location = new System.Drawing.Point(132, 75);
             this.FUAggReqTextBox.Name = "FUAggReqTextBox";
             this.FUAggReqTextBox.ReadOnly = true;
             this.FUAggReqTextBox.Size = new System.Drawing.Size(47, 14);
