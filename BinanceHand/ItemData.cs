@@ -109,6 +109,7 @@ namespace BinanceHand
         public decimal InitialMargin;
         public decimal notianalValue;
         public decimal maxNotionalValue;
+        public decimal minNotionalValue;
         public decimal PNL;
         public decimal ROE;
 
@@ -122,6 +123,7 @@ namespace BinanceHand
             Name = fu.Name.Trim().ToUpper();
             minSize = fu.LotSizeFilter.MinQuantity;
             priceTickSize = fu.PriceFilter.TickSize;
+            minNotionalValue = fu.MinNotionalFilter.MinNotional;
 
             for (int i = 0; i < amt1; i++)
                 pureSecCountQ.Enqueue(0);

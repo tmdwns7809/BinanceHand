@@ -60,7 +60,7 @@ namespace BinanceHand
         decimal FUWalletBalance;
         string ForDecimalString = "0.#############################";
 
-        bool testnet = false;
+        bool testnet = true;
         bool onlyAgg = true;
         #endregion
 
@@ -1028,44 +1028,74 @@ namespace BinanceHand
 
         void PlaceOrder(OrderSide orderSide)
         {
-            if (!CheckAndSetOrderView())
+            if (!decimal.TryParse(orderPriceTextBox1.Text, out decimal priceRate) 
+                || !decimal.TryParse(orderSizeTextBox1.Text, out decimal size) || size <= 0 
+                || !int.TryParse(autoSizeTextBox0.Text, out int limitPercent) || limitPercent <= 0)
             {
-                MessageBox.Show("Input error");
+                MessageBox.Show("input error");
+                orderPriceTextBox1.Clear();
                 return;
             }
 
             var orderType = OrderType.Limit;
             TimeInForce? timeInForce = null;
-            decimal? price = (int)(itemDataShowing.secStick.Price[3] * (1 - decimal.Parse(orderPriceTextBox1.Text) / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
-            decimal quantity = decimal.Parse(orderSizeTextBox1.Text);
-            var reduceOnly = ROCheckBox.Checked;
+            decimal? price = null;
+            decimal quantity = 0;
 
-            itemDataShowing.orderStartClosePrice = itemDataShowing.secStick.Price[3];
+            if (!marketRadioButton.Checked)
+            {
+                if (orderSide == OrderSide.Buy)
+                    price = (int)(itemDataShowing.secStick.Price[3] * (1 + priceRate / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
+                else
+                    price = (int)(itemDataShowing.secStick.Price[3] * (1 - priceRate / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
 
-            if (testnet)
-                reduceOnly = false;
+                if (PORadioButton.Checked)
+                    timeInForce = TimeInForce.GoodTillCrossing;
+                else if (IOCRadioButton.Checked)
+                    timeInForce = TimeInForce.ImmediateOrCancel;
+                else
+                    timeInForce = TimeInForce.GoodTillCancel;
+            }
+            else
+                orderType = OrderType.Market;
 
-            if (orderSide == OrderSide.Buy)
-                price = (int)(itemDataShowing.secStick.Price[3] * (1 + decimal.Parse(orderPriceTextBox1.Text) / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
+            if (!miniSizeCheckBox.Checked && !autoSizeCheckBox.Checked)
+                quantity = (int)(size / itemDataShowing.minSize) * itemDataShowing.minSize;
+            else
+            {
+                if (itemDataShowing.position)
+                    quantity = Math.Abs(itemDataShowing.Size);
+                else if (miniSizeCheckBox.Checked)
+                    quantity = (int)(itemDataShowing.minNotionalValue / price / itemDataShowing.minSize + 1) * itemDataShowing.minSize;
+                else
+                {
+                    var stick = itemDataShowing.secStickList[itemDataShowing.secStickList.Count - 1];
+
+                    if (stick.Price[0] / stick.Price[1] > 1.001m)
+                        quantity = (int)((stick.Ms + stick.Md) / 2 / 10 / (stick.Price[0] / stick.Price[1] - 1) / 1000 / itemDataShowing.minSize) * itemDataShowing.minSize;
+                    else
+                        quantity = (int)((stick.Ms + stick.Md) / 2 / 10 / itemDataShowing.minSize) * itemDataShowing.minSize;
+
+                    var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / ((stick.Price[0] + stick.Price[1]) / 2) / itemDataShowing.minSize) * itemDataShowing.minSize;
+
+                    if (limitAmount < quantity)
+                        quantity = limitAmount;
+                }
+            }
 
             if (price * quantity > itemDataShowing.maxNotionalValue)
             {
                 MessageBox.Show("lower leverage");
                 return;
             }
-
-            if (PORadioButton.Checked)
-                timeInForce = TimeInForce.GoodTillCrossing;
-            else if (marketRadioButton.Checked)
+            if (price * quantity < itemDataShowing.minNotionalValue)
             {
-                orderType = OrderType.Market;
-                price = null;
+                MessageBox.Show("too small");
+                return;
             }
-            else if (IOCRadioButton.Checked)
-                timeInForce = TimeInForce.ImmediateOrCancel;
-            else
-                timeInForce = TimeInForce.GoodTillCancel;
 
+            orderSizeTextBox1.Text = quantity.ToString();
+            itemDataShowing.orderStartClosePrice = itemDataShowing.secStick.Price[3];
             var a = client.FuturesUsdt.Order.PlaceOrder(
                 itemDataShowing.Name
                 , orderSide
@@ -1073,8 +1103,14 @@ namespace BinanceHand
                 , quantity
                 , PositionSide.Both
                 , timeInForce
-                , reduceOnly
+                , ROCheckBox.Checked
                 , price);
+
+            if (!a.Success)
+            {
+                MessageBox.Show("order fail" + a.Error);
+                return;
+            }
 
             if (itemDataShowing.position)
             {
@@ -1101,54 +1137,6 @@ namespace BinanceHand
         {
             client.FuturesUsdt.Order.CancelOrder(itemData.Name, itemData.orderID, itemData.clientOrderID);
         }
-        bool CheckAndSetOrderView()
-        {
-            if (!decimal.TryParse(orderPriceTextBox1.Text, out decimal price))
-            {
-                orderPriceTextBox1.Clear();
-                return false;
-            }
-
-            if (miniSizeCheckBox.Checked && !itemDataShowing.position)
-                orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
-            else if (autoSizeCheckBox.Checked)
-            {
-                if (!int.TryParse(autoSizeTextBox0.Text, out int limitPercent) || limitPercent <= 0)
-                    return false;
-
-                UpdateAutoSize(limitPercent);
-            }
-            else if (!decimal.TryParse(orderSizeTextBox1.Text, out decimal result) || result <= 0)
-            {
-                orderSizeTextBox1.Clear();
-                return false;
-            }
-
-            return true;
-        }
-        void UpdateAutoSize(int limitPercent)
-        {
-            if (itemDataShowing.position)
-                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
-            else
-            {
-                var stick = itemDataShowing.secStickList[itemDataShowing.secStickList.Count - 1];
-
-                decimal autoSize = 0;
-
-                if (stick.Price[0] / stick.Price[1] > 1.001m)
-                    autoSize = (int)((stick.Ms + stick.Md) / 2 / 10 / (stick.Price[0] / stick.Price[1] - 1) / 1000 / itemDataShowing.minSize) * itemDataShowing.minSize;
-                else
-                    autoSize = (int)((stick.Ms + stick.Md) / 2 / 10 / itemDataShowing.minSize) * itemDataShowing.minSize;
-
-                var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / ((stick.Price[0] + stick.Price[1]) / 2) / itemDataShowing.minSize) * itemDataShowing.minSize;
-
-                if (limitAmount < autoSize)
-                    autoSize = limitAmount;
-
-                orderSizeTextBox1.Text = autoSize.ToString();
-            }
-        }
 
         void FirstSetOrderView()
         {
@@ -1160,11 +1148,13 @@ namespace BinanceHand
             {
                 TickMinSizeButton(false);
                 marketRadioButton.Checked = true;
+                ROCheckBox.Checked = true;
             }
             else
             {
                 TickMinSizeButton(true);
                 GTCRadioButton.Checked = true;
+                ROCheckBox.Checked = false;
             }
 
             orderPriceTextBox1.Text = "0.1";
@@ -1174,6 +1164,8 @@ namespace BinanceHand
             miniSizeCheckBox.Checked = on;
             if (itemDataShowing.position)
                 orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
+            else if (itemDataShowing.secStick.Price[3] != 0)
+                orderSizeTextBox1.Text = ((int)(itemDataShowing.minNotionalValue / itemDataShowing.secStick.Price[3] / itemDataShowing.minSize + 1) * itemDataShowing.minSize).ToString();
             else
                 orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
 
@@ -2031,7 +2023,7 @@ namespace BinanceHand
                         itemData.minStick.Price[0] = data.Price;
                         itemData.minStick.Price[1] = data.Price;
 
-                        itemData.minStick.Time = data.TradeTime;
+                        itemData.minStick.Time = DateTime.Parse(data.TradeTime.ToString("HH:mm"));
 
                         if (itemData.isChartShowing)
                         {
@@ -2048,8 +2040,6 @@ namespace BinanceHand
                                 AdjustChart(minChart);
                         }
                     }
-                    else if (itemData.isChartShowing)
-                        UpdateChartPoint(minChart, itemData.minStick);
                 }
             }
 
@@ -2095,6 +2085,7 @@ namespace BinanceHand
                 }
 
                 UpdateChartPoint(secChart, itemData.secStick);
+                UpdateChartPoint(minChart, itemData.minStick);
             }
         }
         void OnMarkPriceUpdates(BinanceFuturesUsdtStreamMarkPrice data, ItemData itemData)
@@ -2168,6 +2159,7 @@ namespace BinanceHand
 
                         if (FUPositionListView.Items.Count == 0)
                         {
+                            FUMarginRatioTextBox1.Text = "0";
                             FUMaintMargin = 0;
                             FUMaintMarginTextBox1.Text = "0";
                             FUMarginBalance = 0;
@@ -2185,6 +2177,7 @@ namespace BinanceHand
                     }
                     else
                     {
+
                         itemData.position = true;
                         itemData.EntryPrice = Math.Round(position.EntryPrice, 2);
                         itemData.Size = position.PositionAmount;
@@ -2277,6 +2270,8 @@ namespace BinanceHand
                             resultData.EntryGap = Math.Round((data.UpdateData.AveragePrice / itemData.orderStartClosePrice - 1) * 100, 2);
                         else
                             resultData.EntryGap = Math.Round((itemData.orderStartClosePrice / data.UpdateData.AveragePrice - 1) * 100, 2);
+
+                        itemData.EntryPrice = data.UpdateData.AveragePrice;
 
                         resultData.EntryGapAndTime = resultData.EntryGap + "(" + Math.Round((data.UpdateData.CreateTime - resultData.EntryTime).TotalSeconds, 1) + ")";
 

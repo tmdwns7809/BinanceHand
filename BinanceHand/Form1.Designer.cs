@@ -583,8 +583,6 @@ namespace BinanceHand
             // ROCheckBox
             // 
             this.ROCheckBox.AutoSize = true;
-            this.ROCheckBox.Checked = true;
-            this.ROCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ROCheckBox.Location = new System.Drawing.Point(21, 132);
             this.ROCheckBox.Name = "ROCheckBox";
             this.ROCheckBox.Size = new System.Drawing.Size(97, 16);
