@@ -91,6 +91,7 @@ namespace BinanceHand
             this.hourButton = new System.Windows.Forms.Button();
             this.dayButton = new System.Windows.Forms.Button();
             this.gridItvTextBox = new System.Windows.Forms.TextBox();
+            this.autoTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             this.mainTabControl.SuspendLayout();
@@ -660,8 +661,7 @@ namespace BinanceHand
             // 
             // pictureBox
             // 
-            this.pictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pictureBox.Location = new System.Drawing.Point(1274, 528);
+            this.pictureBox.Location = new System.Drawing.Point(1159, 486);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(172, 142);
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -673,10 +673,10 @@ namespace BinanceHand
             this.resultListView.CellEditUseWholeCell = false;
             this.resultListView.DataSource = null;
             this.resultListView.HideSelection = false;
-            this.resultListView.Location = new System.Drawing.Point(1139, 539);
+            this.resultListView.Location = new System.Drawing.Point(1131, 464);
             this.resultListView.Name = "resultListView";
             this.resultListView.ShowGroups = false;
-            this.resultListView.Size = new System.Drawing.Size(121, 97);
+            this.resultListView.Size = new System.Drawing.Size(216, 189);
             this.resultListView.TabIndex = 11;
             this.resultListView.UseCompatibleStateImageBehavior = false;
             this.resultListView.View = System.Windows.Forms.View.Details;
@@ -755,12 +755,25 @@ namespace BinanceHand
             this.gridItvTextBox.TabIndex = 6;
             this.gridItvTextBox.Text = "0.0%";
             // 
+            // autoTextBox
+            // 
+            this.autoTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.autoTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.autoTextBox.Location = new System.Drawing.Point(536, 440);
+            this.autoTextBox.Name = "autoTextBox";
+            this.autoTextBox.ReadOnly = true;
+            this.autoTextBox.Size = new System.Drawing.Size(72, 14);
+            this.autoTextBox.TabIndex = 6;
+            this.autoTextBox.Text = "1000";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
+            this.Controls.Add(this.pictureBox);
+            this.Controls.Add(this.resultListView);
             this.Controls.Add(this.dayButton);
             this.Controls.Add(this.hourButton);
             this.Controls.Add(this.minButton);
@@ -769,11 +782,10 @@ namespace BinanceHand
             this.Controls.Add(this.hourChart);
             this.Controls.Add(this.minChart);
             this.Controls.Add(this.secChart);
-            this.Controls.Add(this.resultListView);
-            this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.orderGroupBox);
             this.Controls.Add(this.FUGroupBox);
             this.Controls.Add(this.marketComboBox);
+            this.Controls.Add(this.autoTextBox);
             this.Controls.Add(this.gridItvTextBox);
             this.Controls.Add(this.amtTextBox);
             this.Controls.Add(this.nameTextBox);
@@ -870,6 +882,7 @@ namespace BinanceHand
         private System.Windows.Forms.Button hourButton;
         private System.Windows.Forms.Button dayButton;
         private System.Windows.Forms.TextBox gridItvTextBox;
+        private System.Windows.Forms.TextBox autoTextBox;
     }
 }
 
