@@ -981,6 +981,11 @@ namespace BinanceHand
             nameColumn.FreeSpaceProportion = nameColumnSize;
             nameColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(nameColumn);
+            var impColumnSize = 2;
+            var impColumn = new OLVColumn("★", "Importance");
+            impColumn.FreeSpaceProportion = impColumnSize;
+            impColumn.HeaderFormatStyle = headerstyle;
+            FUListView.AllColumns.Add(impColumn);
             var flucColumnSize = 3;
             var flucColumn = new OLVColumn("Fluc", "FlucBfor");
             flucColumn.FreeSpaceProportion = flucColumnSize;
@@ -996,7 +1001,7 @@ namespace BinanceHand
             durColumn.FreeSpaceProportion = durColumnSize;
             durColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(durColumn);
-            FUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, flucColumn, countColumn, durColumn });
+            FUListView.Columns.AddRange(new ColumnHeader[] { nameColumn, impColumn, flucColumn, countColumn, durColumn });
             FUListView.SelectionChanged += (sender, e) => { if (FUListView.SelectedIndices.Count == 1) ShowChart(FUListView.SelectedObject as ItemData); };
             FUListView.FormatRow += (sender, e) =>
             {
@@ -1238,6 +1243,11 @@ namespace BinanceHand
             }
             else
             {
+                if (orderSide == OrderSide.Buy)
+                    itemDataShowing.LorS = true;
+                else
+                    itemDataShowing.LorS = false;
+
                 var resultData = new ResultData(resultListView.Items.Count + 1);
                 resultData.EntryTime = DateTime.UtcNow;
                 resultListView.InsertObjects(0, new List<ResultData> { resultData });
@@ -1539,10 +1549,14 @@ namespace BinanceHand
                 endTime = DateTime.UtcNow;
             else if (chart.TabIndex != secChart.TabIndex)
             {
-                endTime = list[0].Time;
-                list.RemoveAt(0);
-                foreach (var se in chart.Series)
-                    se.Points.RemoveAt(0);
+                if (limit > 0)
+                {
+                    endTime = list[0].Time;
+                    list.RemoveAt(0);
+                    foreach (var se in chart.Series)
+                        se.Points.RemoveAt(0);
+
+                }
                 addAll = true;
             }
 
@@ -1810,6 +1824,9 @@ namespace BinanceHand
             var exchangeInfo2 = client.FuturesUsdt.System.GetExchangeInfo();
             foreach (var s in exchangeInfo2.Data.Symbols)
             {
+                if (s.Name == "BTCSTUSDT")
+                    continue;
+
                 var itemData = new ItemData(s);
                 FUItemDataList.Add(itemData.Name, itemData);
                 FUSymbolList.Add(itemData.Name);
@@ -2518,9 +2535,6 @@ namespace BinanceHand
             itemData.lose = 0;
             itemData.winLoseTot = 0;
             itemData.WinPrecantage = "0.00(0)";
-            itemData.profitRateSum = 0;
-            itemData.profitRateMul = 1m;
-            itemData.AMandGM = "0.00(0)";
 
             itemData.secStickList.Clear();
             itemData.secStick = new Stick();
@@ -2834,6 +2848,25 @@ namespace BinanceHand
                 case Keys.D0:
                     if (FUPositionListView.Items.Count != 0)
                         FUPositionListView.SelectedIndex = 0;
+                    break;
+
+                case Keys.Oem1:
+                    var itemData = (ItemData)FUListView.SelectedObject;
+                    if (itemData.Importance != 0)
+                    {
+                        itemData.Importance--;
+                        FUListView.RefreshObject(itemData);
+                    }
+                    e.SuppressKeyPress = true;
+                    e.Handled = true;
+                    break;
+
+                case Keys.Oem7:
+                    var itemData1 = (ItemData)FUListView.SelectedObject;
+                    itemData1.Importance++;
+                    FUListView.RefreshObject(itemData1);
+                    e.SuppressKeyPress = true;
+                    e.Handled = true;
                     break;
 
                 default:

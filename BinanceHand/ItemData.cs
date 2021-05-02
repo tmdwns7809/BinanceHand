@@ -16,6 +16,8 @@ namespace BinanceHand
         public decimal FlucBfor = 0m;
         public int CountBfor = 0;
 
+        public short Importance = 0;
+
         public string newTime;
 
         public bool hasAll = false;
@@ -75,14 +77,6 @@ namespace BinanceHand
 
         public bool tooManyAmt;
         public string tooManyAmtTime;
-
-        public string bhtTime;
-        public decimal bhtPrc;
-
-        public decimal profitRate;
-        public decimal profitRateSum;
-        public decimal profitRateMul;
-        public string AMandGM = "0.00(0.00)";
 
         public bool order = false;
         public DateTime OrderTime;
