@@ -92,6 +92,8 @@ namespace BinanceHand
             this.dayButton = new System.Windows.Forms.Button();
             this.gridItvTextBox = new System.Windows.Forms.TextBox();
             this.autoTextBox = new System.Windows.Forms.TextBox();
+            this.realButton = new System.Windows.Forms.Button();
+            this.targetListView = new BrightIdeasSoftware.FastDataListView();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             this.mainTabControl.SuspendLayout();
@@ -108,6 +110,7 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.targetListView)).BeginInit();
             this.SuspendLayout();
             // 
             // secChart
@@ -766,17 +769,43 @@ namespace BinanceHand
             this.autoTextBox.TabIndex = 6;
             this.autoTextBox.Text = "1000";
             // 
+            // realButton
+            // 
+            this.realButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.realButton.Location = new System.Drawing.Point(242, 146);
+            this.realButton.Name = "realButton";
+            this.realButton.Size = new System.Drawing.Size(43, 20);
+            this.realButton.TabIndex = 12;
+            this.realButton.Text = "Real";
+            this.realButton.UseVisualStyleBackColor = true;
+            // 
+            // targetListView
+            // 
+            this.targetListView.CellEditUseWholeCell = false;
+            this.targetListView.DataSource = null;
+            this.targetListView.HideSelection = false;
+            this.targetListView.Location = new System.Drawing.Point(1205, 201);
+            this.targetListView.Name = "targetListView";
+            this.targetListView.ShowGroups = false;
+            this.targetListView.Size = new System.Drawing.Size(121, 49);
+            this.targetListView.TabIndex = 4;
+            this.targetListView.UseCompatibleStateImageBehavior = false;
+            this.targetListView.View = System.Windows.Forms.View.Details;
+            this.targetListView.VirtualMode = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
+            this.Controls.Add(this.targetListView);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.resultListView);
             this.Controls.Add(this.dayButton);
             this.Controls.Add(this.hourButton);
             this.Controls.Add(this.minButton);
+            this.Controls.Add(this.realButton);
             this.Controls.Add(this.secButton);
             this.Controls.Add(this.dayChart);
             this.Controls.Add(this.hourChart);
@@ -817,6 +846,7 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.targetListView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -883,6 +913,8 @@ namespace BinanceHand
         private System.Windows.Forms.Button dayButton;
         private System.Windows.Forms.TextBox gridItvTextBox;
         private System.Windows.Forms.TextBox autoTextBox;
+        private System.Windows.Forms.Button realButton;
+        private BrightIdeasSoftware.FastDataListView targetListView;
     }
 }
 

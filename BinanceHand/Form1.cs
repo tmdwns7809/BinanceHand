@@ -69,6 +69,9 @@ namespace BinanceHand
         bool onlyAgg = true;
 
         int maxSecListCount = 600;
+
+        bool realAll = false;
+        UpdateSubscription allAgg;
         #endregion
 
         public Form1()
@@ -475,10 +478,27 @@ namespace BinanceHand
             seriesMsOrMdAmt.YAxisType = secChart.Series["매수or매도량"].YAxisType;
             seriesMsOrMdAmt.ChartArea = chartAreaMsMd.Name;
 
-            secButton.Click += (sebder, e) => { if (!secChart.Visible) SetChartNowOrLoad(secChart); };
-            minButton.Click += (sebder, e) => { if (!minChart.Visible) SetChartNowOrLoad(minChart); };
-            hourButton.Click += (sebder, e) => { if (!hourChart.Visible) SetChartNowOrLoad(hourChart); };
-            dayButton.Click += (sebder, e) => { if (!dayChart.Visible) SetChartNowOrLoad(dayChart); };
+            realButton.BackColor = buttonColor;
+            realButton.ForeColor = ForeColor;
+            realButton.Location = new Point(secChart.Location.X + 100, secChart.Location.Y);
+            realButton.Click += (sebder, e) => {
+                if (realAll)
+                {
+                    realAll = false;
+                    socketClient.Unsubscribe(allAgg);
+                    realButton.BackColor = buttonColor;
+                    FUAggRcvTextBox.Text = "0";
+                    foreach (var i in FUItemDataList)
+                        i.Value.AggFirst = true;
+                }
+                else
+                {
+                    realAll = true;
+                    allAgg = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(FUSymbolList, data => { BeginInvoke(aggUpdates, data, FUItemDataList[data.Symbol]); }).Data;
+                    realButton.BackColor = buttonSelectedColor;
+                    FUAggRcvTextBox.Text = "0";
+                }
+            };
         }
         void OnChartAxisViewChanged(object sender, ViewEventArgs e)
         {
@@ -689,19 +709,22 @@ namespace BinanceHand
             dayButton.BackColor = buttonColor;
             dayButton.ForeColor = ForeColor;
             dayButton.Location = new Point(marketComboBox.Location.X - 10 - dayButton.Size.Width, marketComboBox.Location.Y);
+            dayButton.Click += (sebder, e) => { if (!dayChart.Visible) SetChartNowOrLoad(dayChart); };
 
             hourButton.BackColor = buttonColor;
             hourButton.ForeColor = ForeColor;
             hourButton.Location = new Point(dayButton.Location.X - 1 - dayButton.Size.Width, marketComboBox.Location.Y);
+            hourButton.Click += (sebder, e) => { if (!hourChart.Visible) SetChartNowOrLoad(hourChart); };
 
             minButton.BackColor = buttonSelectedColor;
             minButton.ForeColor = ForeColor;
             minButton.Location = new Point(hourButton.Location.X - 1 - dayButton.Size.Width, marketComboBox.Location.Y);
+            minButton.Click += (sebder, e) => { if (!minChart.Visible) SetChartNowOrLoad(minChart); };
 
             secButton.BackColor = buttonColor;
             secButton.ForeColor = ForeColor;
             secButton.Location = new Point(minButton.Location.X - 1 - dayButton.Size.Width, marketComboBox.Location.Y);
-
+            secButton.Click += (sebder, e) => { if (!secChart.Visible) SetChartNowOrLoad(secChart); };
 
             FUMarginRatioTextBox0.BackColor = FUTab.BackColor;
             FUMarginRatioTextBox0.ForeColor = ForeColor;
@@ -909,10 +932,46 @@ namespace BinanceHand
         }
         void SetResultView()
         {
+            targetListView.BackColor = controlBackColor;
+            targetListView.ForeColor = ForeColor;
+            targetListView.Size = new Size(100, mainTabControl.Size.Height);
+            targetListView.Location = new Point(Screen.GetWorkingArea(this).Size.Width - targetListView.Size.Width - 10, mainTabControl.Location.Y);
+            targetListView.HeaderStyle = ColumnHeaderStyle.None;
+            var column0 = new OLVColumn("Name", "Name");
+            column0.FreeSpaceProportion = 1;
+            targetListView.AllColumns.Add(column0);
+            targetListView.Columns.AddRange(new ColumnHeader[] { column0 });
+            targetListView.SelectionChanged += (sender, e) => { if (targetListView.SelectedIndices.Count == 1) ShowChart(targetListView.SelectedObject as ItemData); };
+
             resultListView.BackColor = controlBackColor;
             resultListView.ForeColor = ForeColor;
-            resultListView.Size = new Size(Screen.GetWorkingArea(this).Size.Width - orderGroupBox.Location.X - orderGroupBox.Size.Width - 20, mainTabControl.Size.Height);
+            resultListView.Size = new Size(Screen.GetWorkingArea(this).Size.Width - orderGroupBox.Location.X - orderGroupBox.Size.Width - targetListView.Size.Width - 30, mainTabControl.Size.Height);
             resultListView.Location = new Point(orderGroupBox.Location.X + orderGroupBox.Size.Width + 10, mainTabControl.Location.Y);
+            var headerstyle = new HeaderFormatStyle();
+            headerstyle.SetBackColor(BackColor);
+            headerstyle.SetForeColor(ForeColor);
+            column0 = new OLVColumn("No.", "Number");
+            column0.FreeSpaceProportion = 1;
+            column0.HeaderFormatStyle = headerstyle;
+            resultListView.AllColumns.Add(column0);
+            var entryColumn = new OLVColumn("EG(%), TD(s)", "EntryGapAndTime");
+            entryColumn.FreeSpaceProportion = 3;
+            entryColumn.HeaderFormatStyle = headerstyle;
+            resultListView.AllColumns.Add(entryColumn);
+            var lastColumn = new OLVColumn("LG(%), TD(s)", "LastGapAndTime");
+            lastColumn.FreeSpaceProportion = 3;
+            lastColumn.HeaderFormatStyle = headerstyle;
+            resultListView.AllColumns.Add(lastColumn);
+            var profitColumn = new OLVColumn("PR(%), RP($)", "ProfitRateAndValue");
+            profitColumn.FreeSpaceProportion = 3;
+            profitColumn.HeaderFormatStyle = headerstyle;
+            resultListView.AllColumns.Add(profitColumn);
+            resultListView.Columns.AddRange(new ColumnHeader[] { column0, entryColumn, lastColumn, profitColumn });
+            resultListView.FormatRow += (sender, e) =>
+            {
+                if (((ResultData)e.Model).Profit > 0.1m)
+                    e.Item.ForeColor = Color.Gold;
+            };
 
             pictureBox.BackColor = Color.Transparent;
             if (resultListView.Size.Width / 4 * 3 > resultListView.Size.Height)
@@ -935,32 +994,6 @@ namespace BinanceHand
                     pictureBox.Enabled = false;
                 }
             };
-
-            var headerstyle = new HeaderFormatStyle();
-            headerstyle.SetBackColor(BackColor);
-            headerstyle.SetForeColor(ForeColor);
-            var numberColumn = new OLVColumn("No.", "Number");
-            numberColumn.FreeSpaceProportion = 1;
-            numberColumn.HeaderFormatStyle = headerstyle;
-            resultListView.AllColumns.Add(numberColumn);
-            var entryColumn = new OLVColumn("EG(%), TD(s)", "EntryGapAndTime");
-            entryColumn.FreeSpaceProportion = 3;
-            entryColumn.HeaderFormatStyle = headerstyle;
-            resultListView.AllColumns.Add(entryColumn);
-            var lastColumn = new OLVColumn("LG(%), TD(s)", "LastGapAndTime");
-            lastColumn.FreeSpaceProportion = 3;
-            lastColumn.HeaderFormatStyle = headerstyle;
-            resultListView.AllColumns.Add(lastColumn);
-            var profitColumn = new OLVColumn("PR(%), RP($)", "ProfitRateAndValue");
-            profitColumn.FreeSpaceProportion = 3;
-            profitColumn.HeaderFormatStyle = headerstyle;
-            resultListView.AllColumns.Add(profitColumn);
-            resultListView.Columns.AddRange(new ColumnHeader[] { numberColumn, entryColumn, lastColumn, profitColumn });
-            resultListView.FormatRow += (sender, e) =>
-            {
-                if (((ResultData)e.Model).Profit > 0.1m)
-                    e.Item.ForeColor = Color.Gold;
-            };
         }
         void SetSymbolsListView()
         {
@@ -976,28 +1009,28 @@ namespace BinanceHand
             var headerstyle = new HeaderFormatStyle();
             headerstyle.SetBackColor(BackColor);
             headerstyle.SetForeColor(ForeColor);
-            var nameColumnSize = 7;
+            var nameColumnSize = 6;
             var nameColumn = new OLVColumn("Name", "Name");
             nameColumn.FreeSpaceProportion = nameColumnSize;
             nameColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(nameColumn);
-            var impColumnSize = 2;
+            var impColumnSize = 1;
             var impColumn = new OLVColumn("★", "Importance");
             impColumn.FreeSpaceProportion = impColumnSize;
             impColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(impColumn);
             var flucColumnSize = 3;
-            var flucColumn = new OLVColumn("Fluc", "FlucBfor");
+            var flucColumn = new OLVColumn("SDPrice", "minLowestSDevRatioPrice");
             flucColumn.FreeSpaceProportion = flucColumnSize;
             flucColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(flucColumn);
             var countColumnSize = 3;
-            var countColumn = new OLVColumn("Count", "CountBfor");
+            var countColumn = new OLVColumn("MsSD", "minMsLowestSDevRatio");
             countColumn.FreeSpaceProportion = countColumnSize;
             countColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(countColumn);
             var durColumnSize = 2;
-            var durColumn = new OLVColumn("D", "AggReadyRow");
+            var durColumn = new OLVColumn("MdSD", "minMdLowestSDevRatio");
             durColumn.FreeSpaceProportion = durColumnSize;
             durColumn.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(durColumn);
@@ -1094,7 +1127,7 @@ namespace BinanceHand
         Image win3 = Image.FromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win3\win3.gif");
 
         static ISoundEngine soundEngine = new ISoundEngine() { SoundVolume = 0.2f };
-        ISound currentlyPlayingSound;
+        static ISoundEngine targetSoundEngine = new ISoundEngine() { SoundVolume = 0.8f };
         ISoundSource failSound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\fail0\fail0.ogg");
         ISoundSource win0Sound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win0\win0.ogg");
         ISoundSource win1Sound = soundEngine.AddSoundSourceFromFile(@"C:\Users\tmdwn\source\repos\BinanceHand\rsc\win1\win1.ogg");
@@ -1106,27 +1139,27 @@ namespace BinanceHand
             if (profit <= 0.1m)
             {
                 pictureBox.Image = fail;
-                currentlyPlayingSound = soundEngine.Play2D(failSound, false, false, false);
+                soundEngine.Play2D(failSound, false, false, false);
             }
             else if (profit <= 0.4m)
             {
                 pictureBox.Image = win0;
-                currentlyPlayingSound = soundEngine.Play2D(win0Sound, false, false, false);
+                soundEngine.Play2D(win0Sound, false, false, false);
             }
             else if (profit <= 0.7m)
             {
                 pictureBox.Image = win1;
-                currentlyPlayingSound = soundEngine.Play2D(win1Sound, false, false, false);
+                soundEngine.Play2D(win1Sound, false, false, false);
             }
             else if (profit <= 1.0m)
             {
                 pictureBox.Image = win2;
-                currentlyPlayingSound = soundEngine.Play2D(win2Sound, false, false, false);
+                soundEngine.Play2D(win2Sound, false, false, false);
             }
             else
             {
                 pictureBox.Image = win3;
-                currentlyPlayingSound = soundEngine.Play2D(win3Sound, false, false, false);
+                soundEngine.Play2D(win3Sound, false, false, false);
             }
 
             var dimension = new FrameDimension(pictureBox.Image.FrameDimensionsList[0]);
@@ -1811,7 +1844,10 @@ namespace BinanceHand
             }
             else
             {
-                socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(FUSymbolList, data => { BeginInvoke(aggUpdates, data, FUItemDataList[data.Symbol]); });
+                if (realAll)
+                    allAgg = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(FUSymbolList, data => { BeginInvoke(aggUpdates, data, FUItemDataList[data.Symbol]); }).Data;
+                else
+                    FUAggRcvTextBox.Text = "0";
                 //socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(FUSymbolList.GetRange(50, FUSymbolList.Count - 50), data => { BeginInvoke(aggUpdates, data, FUItemDataList[data.Symbol]); });
                 FUAggReqTextBox.Text = "/" + FUSymbolList.Count + "(A)";
             }
@@ -2138,7 +2174,68 @@ namespace BinanceHand
             if (data.TradeTime.Second != itemData.secStick.Time.Second || data.TradeTime.Minute != itemData.secStick.Time.Minute || data.TradeTime.Hour != itemData.secStick.Time.Hour)
             {
                 if (itemData.secStick.Price[1] != decimal.Zero)
+                {
                     itemData.secStickList.Add(itemData.secStick);
+
+                    if (!itemData.target)
+                    {
+                        itemData.secLastIndex = itemData.secStickList.Count - 1;
+
+                        if (itemData.secLastIndex > 9)
+                        {
+                            itemData.price10secHighest = itemData.secStickList[itemData.secLastIndex].Price[0];
+                            itemData.price10secLowest = itemData.secStickList[itemData.secLastIndex].Price[1];
+
+                            itemData.ms10secTot = itemData.ms10secTot + (double)(itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 10].Ms);
+                            itemData.md10secTot = itemData.md10secTot + (double)(itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 10].Md);
+
+                            itemData.ms10secAvg = itemData.ms10secTot / 10;
+                            itemData.md10secAvg = itemData.md10secTot / 10;
+
+                            itemData.ms10secDev = Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Ms, 2);
+                            itemData.md10secDev = Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Md, 2);
+
+                            for (itemData.index = itemData.secLastIndex - 9; itemData.index < itemData.secLastIndex; itemData.index++)
+                            {
+                                if (itemData.secStickList[itemData.index].Price[0] > itemData.price10secHighest)
+                                    itemData.price10secHighest = itemData.secStickList[itemData.index].Price[0];
+                                if (itemData.secStickList[itemData.index].Price[1] < itemData.price10secLowest)
+                                    itemData.price10secLowest = itemData.secStickList[itemData.index].Price[1];
+
+                                itemData.ms10secDev += Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.index].Ms, 2);
+                                itemData.md10secDev += Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.index].Md, 2);
+                            }
+
+                            itemData.ms10secSDev = Math.Pow(itemData.ms10secDev, 0.5);
+                            itemData.md10secSDev = Math.Pow(itemData.md10secDev, 0.5);
+
+                            itemData.SDevRatioPrice = itemData.price10secHighest / itemData.price10secLowest;
+                            itemData.msSDevRatio = itemData.ms10secSDev / itemData.ms10secAvg;
+                            itemData.mdSDevRatio = itemData.md10secSDev / itemData.md10secAvg;
+
+                            if (itemData.SDevRatioPrice > 1.005m
+                                && (itemData.msSDevRatio < 0.55 || itemData.mdSDevRatio < 0.55))
+                            {
+                                itemData.target = true;
+                                targetListView.AddObject(itemData);
+                                targetListView.RefreshObject(itemData);
+                                targetSoundEngine.Play2D(win3Sound, false, false, false);
+                            }
+
+                            if (itemData.msSDevRatio < itemData.msLowestSDevRatio || itemData.mdSDevRatio < itemData.mdLowestSDevRatio)
+                            {
+                                itemData.lowestSDevRatioPrice = itemData.SDevRatioPrice;
+                                itemData.msLowestSDevRatio = itemData.msSDevRatio;
+                                itemData.mdLowestSDevRatio = itemData.mdSDevRatio;
+                            }
+                        }
+                        else
+                        {
+                            itemData.ms10secTot += (double)itemData.secStickList[itemData.secLastIndex].Ms;
+                            itemData.md10secTot += (double)itemData.secStickList[itemData.secLastIndex].Md;
+                        }
+                    }
+                }
 
                 itemData.secStick = new Stick();
 
@@ -2203,8 +2300,6 @@ namespace BinanceHand
                                 itemData.AggReadyRow++;
                             }
 
-                            FUListView.RefreshObject(itemData);
-
                             if (itemData.isChartShowing && itemData.minStick.Price[0] != itemData.minStick.Price[1])
                                 autoTextBox.Text = 
                                     Math.Round(
@@ -2212,6 +2307,15 @@ namespace BinanceHand
                                         / ((itemData.minStick.Price[2] + 2 * (itemData.minStick.Price[0] - itemData.minStick.Price[1]) - itemData.minStick.Price[3]) 
                                             / itemData.minStick.Price[3] * 1000) * itemData.minStick.Price[3]
                                         , 0).ToString();
+
+                            itemData.minLowestSDevRatioPrice = Math.Round((itemData.lowestSDevRatioPrice - 1) * 100, 2);
+                            itemData.minMsLowestSDevRatio = Math.Round(itemData.msLowestSDevRatio, 2);
+                            itemData.minMdLowestSDevRatio = Math.Round(itemData.mdLowestSDevRatio, 2);
+                            itemData.lowestSDevRatioPrice = itemData.SDevRatioPrice;
+                            itemData.msLowestSDevRatio = itemData.msSDevRatio;
+                            itemData.mdLowestSDevRatio = itemData.mdSDevRatio;
+
+                            FUListView.RefreshObject(itemData);
                         }
 
                         itemData.minStick = new Stick();
@@ -2283,32 +2387,32 @@ namespace BinanceHand
                 {
                     if (data.Price > itemData.EntryPrice)
                     {
-                        chartNow.ChartAreas[0].AxisY2.StripLines[0].StripWidth = (double)(data.Price - itemData.EntryPrice);
-                        chartNow.ChartAreas[0].AxisY2.StripLines[0].IntervalOffset = (double)itemData.EntryPrice - chartNow.ChartAreas[0].AxisY2.ScaleView.ViewMinimum;
+                        secChart.ChartAreas[0].AxisY2.StripLines[0].StripWidth = (double)(data.Price - itemData.EntryPrice);
+                        secChart.ChartAreas[0].AxisY2.StripLines[0].IntervalOffset = (double)itemData.EntryPrice - secChart.ChartAreas[0].AxisY2.ScaleView.ViewMinimum;
                         if (itemData.LorS)
                         {
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].BackColor = earningColor;
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((data.Price / itemData.EntryPrice - 1) * 100, 2).ToString();
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].BackColor = earningColor;
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((data.Price / itemData.EntryPrice - 1) * 100, 2).ToString();
                         }    
                         else
                         {
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].BackColor = losingColor;
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((itemData.EntryPrice / data.Price - 1) * 100, 2).ToString();
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].BackColor = losingColor;
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((itemData.EntryPrice / data.Price - 1) * 100, 2).ToString();
                         }
                     }
                     else
                     {
-                        chartNow.ChartAreas[0].AxisY2.StripLines[0].StripWidth = (double)(itemData.EntryPrice - data.Price);
-                        chartNow.ChartAreas[0].AxisY2.StripLines[0].IntervalOffset = (double)data.Price - chartNow.ChartAreas[0].AxisY2.ScaleView.ViewMinimum;
+                        secChart.ChartAreas[0].AxisY2.StripLines[0].StripWidth = (double)(itemData.EntryPrice - data.Price);
+                        secChart.ChartAreas[0].AxisY2.StripLines[0].IntervalOffset = (double)data.Price - secChart.ChartAreas[0].AxisY2.ScaleView.ViewMinimum;
                         if (itemData.LorS)
                         {
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].BackColor = losingColor;
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((data.Price / itemData.EntryPrice - 1) * 100, 2).ToString();
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].BackColor = losingColor;
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((data.Price / itemData.EntryPrice - 1) * 100, 2).ToString();
                         }
                         else
                         {
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].BackColor = earningColor;
-                            chartNow.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((itemData.EntryPrice / data.Price - 1) * 100, 2).ToString();
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].BackColor = earningColor;
+                            secChart.ChartAreas[0].AxisY2.StripLines[0].Text = Math.Round((itemData.EntryPrice / data.Price - 1) * 100, 2).ToString();
                         }
                     }
                 }

@@ -31,6 +31,28 @@ namespace BinanceHand
         public List<Stick> secStickList = new List<Stick>();
         public List<Stick> oldSecStickList = new List<Stick>();
         public static string secChartLabel = "HH:mm:ss";
+        public int secLastIndex;
+        public double ms10secTot = 0;
+        public double ms10secAvg;
+        public double md10secTot = 0;
+        public double md10secAvg;
+        public double ms10secDev;
+        public double ms10secSDev;
+        public double md10secDev;
+        public double md10secSDev;
+        public double msSDevRatio;
+        public double mdSDevRatio;
+        public decimal SDevRatioPrice;
+        public decimal lowestSDevRatioPrice = 1;
+        public decimal minLowestSDevRatioPrice = 0m;
+        public double msLowestSDevRatio = double.MaxValue;
+        public double mdLowestSDevRatio = double.MaxValue;
+        public double minMsLowestSDevRatio = 0.0;
+        public double minMdLowestSDevRatio = 0.0;
+        public decimal price10secHighest;
+        public decimal price10secLowest;
+        public int index;
+        public bool target = false;
 
         public Stick minStick = new Stick();
         public List<Stick> minStickList = new List<Stick>();
@@ -111,6 +133,8 @@ namespace BinanceHand
 
         public decimal minSize;
         public decimal priceTickSize;
+
+
 
         public ItemData(BinanceFuturesUsdtSymbol fu)
         {
