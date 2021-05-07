@@ -89,6 +89,8 @@ namespace BinanceHand
             this.gridItvTextBox = new System.Windows.Forms.TextBox();
             this.autoTextBox = new System.Windows.Forms.TextBox();
             this.timeDiffTextBox = new System.Windows.Forms.TextBox();
+            this.todayWinRateTextBox = new System.Windows.Forms.TextBox();
+            this.totalWinRateTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             this.mainTabControl.SuspendLayout();
@@ -730,6 +732,28 @@ namespace BinanceHand
             this.timeDiffTextBox.TabIndex = 6;
             this.timeDiffTextBox.Text = "0.5";
             // 
+            // todayWinRateTextBox
+            // 
+            this.todayWinRateTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.todayWinRateTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.todayWinRateTextBox.Location = new System.Drawing.Point(1213, 440);
+            this.todayWinRateTextBox.Name = "todayWinRateTextBox";
+            this.todayWinRateTextBox.ReadOnly = true;
+            this.todayWinRateTextBox.Size = new System.Drawing.Size(77, 14);
+            this.todayWinRateTextBox.TabIndex = 6;
+            this.todayWinRateTextBox.Text = "0.50(123)";
+            // 
+            // totalWinRateTextBox
+            // 
+            this.totalWinRateTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.totalWinRateTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.totalWinRateTextBox.Location = new System.Drawing.Point(1131, 440);
+            this.totalWinRateTextBox.Name = "totalWinRateTextBox";
+            this.totalWinRateTextBox.ReadOnly = true;
+            this.totalWinRateTextBox.Size = new System.Drawing.Size(72, 14);
+            this.totalWinRateTextBox.TabIndex = 6;
+            this.totalWinRateTextBox.Text = "0.50(1231)";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -748,6 +772,8 @@ namespace BinanceHand
             this.Controls.Add(this.secChart);
             this.Controls.Add(this.orderGroupBox);
             this.Controls.Add(this.FUGroupBox);
+            this.Controls.Add(this.totalWinRateTextBox);
+            this.Controls.Add(this.todayWinRateTextBox);
             this.Controls.Add(this.autoTextBox);
             this.Controls.Add(this.gridItvTextBox);
             this.Controls.Add(this.timeDiffTextBox);
@@ -840,6 +866,8 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox autoTextBox;
         private System.Windows.Forms.Button realButton;
         private System.Windows.Forms.TextBox timeDiffTextBox;
+        private System.Windows.Forms.TextBox todayWinRateTextBox;
+        private System.Windows.Forms.TextBox totalWinRateTextBox;
     }
 }
 

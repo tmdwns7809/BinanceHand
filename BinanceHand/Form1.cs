@@ -25,6 +25,7 @@ using Binance.Net.Objects.Futures.UserStream;
 using System.Drawing.Imaging;
 using IrrKlang;
 using System.Drawing.Drawing2D;
+using System.Data.SQLite;
 
 namespace BinanceHand
 {
@@ -32,6 +33,8 @@ namespace BinanceHand
     {
         #region Global vars
         string startTime;
+
+        DBHelper dbHelper;
 
         Dictionary<string, ItemData> FUItemDataList = new Dictionary<string, ItemData>();
 
@@ -1826,6 +1829,76 @@ namespace BinanceHand
                     FUPositionListView.RefreshObject(itemData);
                 }
             }
+
+            #region GetIncomeHistoryAndSetWinRate
+            var conn = new SQLiteConnection(DBHelper.incomeHistoryPath);
+            conn.Open();
+
+            var command = new SQLiteCommand("Begin", conn);
+            command.ExecuteNonQuery();
+
+            command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS 'Income_History' " +
+                "('Time' TEXT, 'Type' TEXT, 'Amount' TEXT, 'Asset' TEXT, 'Symbol' TEXT)", conn);
+            command.ExecuteNonQuery();
+            
+            command = new SQLiteCommand("SELECT * FROM 'Income_History'", conn);
+            var reader = command.ExecuteReader();
+            
+            List<IncomeHistory> incomeHistories = new List<IncomeHistory>();
+            
+            while (reader.Read())
+                incomeHistories.Add(new IncomeHistory
+                {
+                    Time = DateTime.Parse(reader["Time"].ToString()),
+                    Type = (IncomeType)Enum.Parse(typeof(IncomeType), reader["Type"].ToString()),
+                    Amount = decimal.Parse(reader["Amount"].ToString()),
+                    Asset = reader["Asset"].ToString(),
+                    Symbol = reader["Symbol"].ToString()
+                });
+
+            var startTime = DateTime.MinValue;
+            if (incomeHistories.Count != 0)
+                startTime = incomeHistories.Last().Time;
+            
+            while (true)
+            {
+                var gi = client.FuturesUsdt.GetIncomeHistory(null, null, startTime, null, 1000);
+                var first = true;
+                foreach (var s in gi.Data)
+                {
+                    if (first)
+                    {
+                        first = false;
+                        continue;
+                    }
+
+                    incomeHistories.Add(new IncomeHistory
+                    {
+                        Time = s.Time,
+                        Type = s.IncomeType,
+                        Amount = s.Income,
+                        Asset = s.Asset,
+                        Symbol = s.Symbol
+                    });
+
+                    command = new SQLiteCommand("INSERT INTO 'Income_History' ('Time', 'Type', 'Amount', 'Asset', 'Symbol') values " +
+                        "('" + s.Time.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + s.IncomeType + "', '" + s.Income + "', '" + s.Asset + "', '" + s.Symbol + "')", conn);
+                    command.ExecuteNonQuery();
+
+                    startTime = s.Time;
+                }
+
+                if (gi.Data.Count() != 1000)
+                    break;
+            }
+
+            command = new SQLiteCommand("Commit", conn);
+            command.ExecuteNonQuery();
+
+            conn.Close();
+            #endregion
+
+            dbHelper = new DBHelper();
         }
 
         void OnKlineUpdates(IBinanceStreamKlineData data, ItemData itemData)
@@ -2507,5 +2580,14 @@ namespace BinanceHand
         {
             Number = n;
         }
+    }
+
+    class IncomeHistory
+    {
+        public DateTime Time;
+        public IncomeType? Type;
+        public decimal Amount;
+        public string Asset;
+        public string Symbol;
     }
 }

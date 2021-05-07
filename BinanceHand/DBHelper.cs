@@ -12,9 +12,11 @@ namespace BinanceHand
     {
         private static DBHelper dbHelper;
 
-        private static string path = @"C:\Users\tmdwn\source\repos\BinanceHand\";
+        public static string path = @"C:\Users\tmdwn\source\repos\BinanceHand\";
+        public static string incomeHistoryPath = @"Data Source=C:\Users\tmdwn\source\repos\BinanceHand\DB\Income_History.db";
 
-        SQLiteConnection conn;
+        SQLiteConnection conn0;
+        SQLiteConnection conn1;
 
         string date;
 
@@ -27,8 +29,10 @@ namespace BinanceHand
             {
                 date = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-                conn = new SQLiteConnection("Data Source=" + path + @"DB\" + date + ".db");
-                conn.Open();
+                conn0 = new SQLiteConnection("Data Source=" + path + @"DB\days\" + date + ".db");
+                conn0.Open();
+                conn1 = new SQLiteConnection(incomeHistoryPath);
+                conn1.Open();
 
                 taskWorker = new Thread(delegate ()
                 {
@@ -54,11 +58,11 @@ namespace BinanceHand
 
             requestDBTaskQueue.Enqueue(new Task(() =>
             {
-                var command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS '" + tableName + "' ('" + column1Name + "' TEXT, '" + column2Name + "' TEXT, '" + column3Name + "' TEXT)", conn);
+                var command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS '" + tableName + "' ('" + column1Name + "' TEXT, '" + column2Name + "' TEXT, '" + column3Name + "' TEXT)", conn0);
                 command.ExecuteNonQuery();
 
                 command = new SQLiteCommand(
-                    "INSERT INTO '" + tableName + "' ('" + column1Name + "', '" + column2Name + "', '" + column3Name + "') values ('" + column1 + "','" + column2 + "','" + column3 + "')", conn);
+                    "INSERT INTO '" + tableName + "' ('" + column1Name + "', '" + column2Name + "', '" + column3Name + "') values ('" + column1 + "','" + column2 + "','" + column3 + "')", conn0);
                 command.ExecuteNonQuery();
             }));
         }
@@ -76,8 +80,8 @@ namespace BinanceHand
             if (d != date)
             {
                 date = d;
-                conn = new SQLiteConnection("Data Source=" + path + @"DB\" + date + ".db");
-                conn.Open();
+                conn0 = new SQLiteConnection("Data Source=" + path + @"DB\" + date + ".db");
+                conn0.Open();
             }
         }
 
