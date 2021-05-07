@@ -110,6 +110,13 @@ namespace BinanceHand
 
         bool positionExitPriceMarket = true;
         bool miniSizeDefault = true;
+
+        int totalTrades = 0;
+        int totalWin = 0;
+        int thisTrades = 0;
+        int thisWin = 0;
+
+        decimal commisionRate = 0.1m;
         #endregion
 
         public Form1()
@@ -895,7 +902,7 @@ namespace BinanceHand
             resultListView.Columns.AddRange(new ColumnHeader[] { column0, entryColumn, lastColumn, profitColumn });
             resultListView.FormatRow += (sender, e) =>
             {
-                if (((ResultData)e.Model).Profit > 0.1m)
+                if (((ResultData)e.Model).ProfitRate > 0.1m)
                     e.Item.ForeColor = Color.Gold;
             };
 
@@ -1040,7 +1047,7 @@ namespace BinanceHand
 
         void LoadResultEffect(decimal profit)
         {
-            if (profit <= 0.1m)
+            if (profit <= commisionRate)
             {
                 pictureBox.Image = fail;
                 soundEngine.Play2D(failSound, false, false, false);
@@ -1171,7 +1178,7 @@ namespace BinanceHand
 
                 if (resultListView.Items.Count == 0)
                 {
-                    resultData = new ResultData(1);
+                    resultData = new ResultData { Number = 1 };
                     resultListView.InsertObjects(0, new List<ResultData> { resultData });
                 }
                 else
@@ -1188,7 +1195,7 @@ namespace BinanceHand
                 else
                     itemDataShowing.LorS = false;
 
-                var resultData = new ResultData(resultListView.Items.Count + 1);
+                var resultData = new ResultData { Number = resultListView.Items.Count + 1 };
                 resultData.EntryTime = DateTime.UtcNow;
                 resultListView.InsertObjects(0, new List<ResultData> { resultData });
 
@@ -1830,70 +1837,25 @@ namespace BinanceHand
                 }
             }
 
-            #region GetIncomeHistoryAndSetWinRate
-            var conn = new SQLiteConnection(DBHelper.incomeHistoryPath);
+            #region GetTradeHistory
+            var conn = new SQLiteConnection(DBHelper.tradeHistoryPath);
             conn.Open();
 
-            var command = new SQLiteCommand("Begin", conn);
-            command.ExecuteNonQuery();
-
-            command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS 'Income_History' " +
-                "('Time' TEXT, 'Type' TEXT, 'Amount' TEXT, 'Asset' TEXT, 'Symbol' TEXT)", conn);
+            var command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS 'Trade_History' " +
+                "('Symbol' TEXT, 'EntryTime' TEXT, 'LastTime' TEXT, 'ProfitRate' TEXT)", conn);
             command.ExecuteNonQuery();
             
-            command = new SQLiteCommand("SELECT * FROM 'Income_History'", conn);
+            command = new SQLiteCommand("SELECT * FROM 'Trade_History'", conn);
             var reader = command.ExecuteReader();
             
-            List<IncomeHistory> incomeHistories = new List<IncomeHistory>();
-            
             while (reader.Read())
-                incomeHistories.Add(new IncomeHistory
-                {
-                    Time = DateTime.Parse(reader["Time"].ToString()),
-                    Type = (IncomeType)Enum.Parse(typeof(IncomeType), reader["Type"].ToString()),
-                    Amount = decimal.Parse(reader["Amount"].ToString()),
-                    Asset = reader["Asset"].ToString(),
-                    Symbol = reader["Symbol"].ToString()
-                });
-
-            var startTime = DateTime.MinValue;
-            if (incomeHistories.Count != 0)
-                startTime = incomeHistories.Last().Time;
-            
-            while (true)
             {
-                var gi = client.FuturesUsdt.GetIncomeHistory(null, null, startTime, null, 1000);
-                var first = true;
-                foreach (var s in gi.Data)
-                {
-                    if (first)
-                    {
-                        first = false;
-                        continue;
-                    }
-
-                    incomeHistories.Add(new IncomeHistory
-                    {
-                        Time = s.Time,
-                        Type = s.IncomeType,
-                        Amount = s.Income,
-                        Asset = s.Asset,
-                        Symbol = s.Symbol
-                    });
-
-                    command = new SQLiteCommand("INSERT INTO 'Income_History' ('Time', 'Type', 'Amount', 'Asset', 'Symbol') values " +
-                        "('" + s.Time.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + s.IncomeType + "', '" + s.Income + "', '" + s.Asset + "', '" + s.Symbol + "')", conn);
-                    command.ExecuteNonQuery();
-
-                    startTime = s.Time;
-                }
-
-                if (gi.Data.Count() != 1000)
-                    break;
+                totalTrades++;
+                if (decimal.Parse(reader["ProfitRate"].ToString()) > commisionRate)
+                    totalWin++;
             }
 
-            command = new SQLiteCommand("Commit", conn);
-            command.ExecuteNonQuery();
+            totalWinRateTextBox.Text = Math.Round((double)totalWin / totalTrades, 2) + "(" + totalTrades + ")";
 
             conn.Close();
             #endregion
@@ -2329,7 +2291,7 @@ namespace BinanceHand
                     ResultData resultData;
                     if (resultListView.Items.Count == 0)
                     {
-                        resultData = new ResultData(1);
+                        resultData = new ResultData { Number = 1 };
                         resultListView.InsertObjects(0, new List<ResultData> { resultData });
                     }
                     else
@@ -2337,19 +2299,32 @@ namespace BinanceHand
                     if (data.UpdateData.Side == OrderSide.Sell)
                     {
                         resultData.LastGap = Math.Round((itemData.orderStartClosePrice / data.UpdateData.AveragePrice - 1) * 100, 2);
-                        resultData.Profit = Math.Round((data.UpdateData.AveragePrice / itemData.EntryPrice - 1) * 100, 2);
+                        resultData.ProfitRate = Math.Round((data.UpdateData.AveragePrice / itemData.EntryPrice - 1) * 100, 2);
                     }
                     else
                     {
                         resultData.LastGap = Math.Round((data.UpdateData.AveragePrice / itemData.orderStartClosePrice - 1) * 100, 2);
-                        resultData.Profit = Math.Round((itemData.EntryPrice / data.UpdateData.AveragePrice - 1) * 100, 2);
+                        resultData.ProfitRate = Math.Round((itemData.EntryPrice / data.UpdateData.AveragePrice - 1) * 100, 2);
                     }
-                    resultData.ProfitRateAndValue = resultData.Profit + ", " + data.UpdateData.RealizedProfit.ToString(ForDecimalString);
+                    resultData.ProfitRateAndValue = resultData.ProfitRate + ", " + data.UpdateData.RealizedProfit.ToString(ForDecimalString);
                     resultData.LastGapAndTimeAndSuccessAmount = resultData.LastGap + ", " + Math.Round((data.UpdateData.CreateTime - resultData.LastTime).TotalSeconds, 1)
                         + ", " + resultData.LastGapAndTimeAndSuccessAmount;
+
+                    totalTrades++;
+                    thisTrades++;
+                    if (resultData.ProfitRate > commisionRate)
+                    {
+                        totalWin++;
+                        thisWin++;
+                    }
+                    totalWinRateTextBox.Text = Math.Round((double)totalWin / totalTrades, 2) + "(" + totalTrades + ")";
+                    todayWinRateTextBox.Text = Math.Round((double)thisWin / thisTrades, 2) + "(" + thisTrades + ")";
+
+                    dbHelper.SaveTradeData(resultData);
+
                     resultListView.RefreshObject(resultData);
 
-                    LoadResultEffect(resultData.Profit);
+                    LoadResultEffect(resultData.ProfitRate);
                 }
                 else if ((data.UpdateData.Status == OrderStatus.Filled && itemData.position) || data.UpdateData.Status == OrderStatus.Canceled)
                 {
@@ -2573,21 +2548,9 @@ namespace BinanceHand
         public decimal LastGap;
         public DateTime LastTime;
         public string LastGapAndTimeAndSuccessAmount;
-        public decimal Profit;
+        public decimal ProfitRate;
+        public decimal RealizedProfit = 0;
         public string ProfitRateAndValue;
-
-        public ResultData(int n)
-        {
-            Number = n;
-        }
-    }
-
-    class IncomeHistory
-    {
-        public DateTime Time;
-        public IncomeType? Type;
-        public decimal Amount;
-        public string Asset;
         public string Symbol;
     }
 }

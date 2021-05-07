@@ -13,7 +13,7 @@ namespace BinanceHand
         private static DBHelper dbHelper;
 
         public static string path = @"C:\Users\tmdwn\source\repos\BinanceHand\";
-        public static string incomeHistoryPath = @"Data Source=C:\Users\tmdwn\source\repos\BinanceHand\DB\Income_History.db";
+        public static string tradeHistoryPath = @"Data Source=C:\Users\tmdwn\source\repos\BinanceHand\DB\Trade_History.db";
 
         SQLiteConnection conn0;
         SQLiteConnection conn1;
@@ -31,7 +31,7 @@ namespace BinanceHand
 
                 conn0 = new SQLiteConnection("Data Source=" + path + @"DB\days\" + date + ".db");
                 conn0.Open();
-                conn1 = new SQLiteConnection(incomeHistoryPath);
+                conn1 = new SQLiteConnection(tradeHistoryPath);
                 conn1.Open();
 
                 taskWorker = new Thread(delegate ()
@@ -63,6 +63,16 @@ namespace BinanceHand
 
                 command = new SQLiteCommand(
                     "INSERT INTO '" + tableName + "' ('" + column1Name + "', '" + column2Name + "', '" + column3Name + "') values ('" + column1 + "','" + column2 + "','" + column3 + "')", conn0);
+                command.ExecuteNonQuery();
+            }));
+        }
+
+        public void SaveTradeData(ResultData d)
+        {
+            requestDBTaskQueue.Enqueue(new Task(() =>
+            {
+                var command = new SQLiteCommand(
+                    "INSERT INTO 'Trade_History' ('Symbol', 'EntryTime', 'LastTime', 'ProfitRate') values ('" + d.Symbol + "','" + d.EntryTime + "','" + d.LastTime + "','" + d.ProfitRate + "')", conn1);
                 command.ExecuteNonQuery();
             }));
         }
