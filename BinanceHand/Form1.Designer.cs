@@ -52,17 +52,13 @@ namespace BinanceHand
             this.FUPositionListView = new BrightIdeasSoftware.FastDataListView();
             this.FUOpenOrdersTab = new System.Windows.Forms.TabPage();
             this.FUOpenOrdersListView = new BrightIdeasSoftware.FastDataListView();
-            this.nameTextBox = new System.Windows.Forms.TextBox();
-            this.timeDiffTextBox = new System.Windows.Forms.TextBox();
-            this.priceTextBox = new System.Windows.Forms.TextBox();
-            this.amtTextBox = new System.Windows.Forms.TextBox();
-            this.marketComboBox = new System.Windows.Forms.ComboBox();
             this.FUKlineRcvTextBox = new System.Windows.Forms.TextBox();
             this.FUKlineReqTextBox = new System.Windows.Forms.TextBox();
             this.FUAggRcvTextBox = new System.Windows.Forms.TextBox();
             this.FUAggReqTextBox = new System.Windows.Forms.TextBox();
             this.minChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUGroupBox = new System.Windows.Forms.GroupBox();
+            this.realButton = new System.Windows.Forms.Button();
             this.orderGroupBox = new System.Windows.Forms.GroupBox();
             this.leverageTextBox0 = new System.Windows.Forms.TextBox();
             this.orderPriceTextBox1 = new System.Windows.Forms.TextBox();
@@ -92,8 +88,7 @@ namespace BinanceHand
             this.dayButton = new System.Windows.Forms.Button();
             this.gridItvTextBox = new System.Windows.Forms.TextBox();
             this.autoTextBox = new System.Windows.Forms.TextBox();
-            this.realButton = new System.Windows.Forms.Button();
-            this.targetListView = new BrightIdeasSoftware.FastDataListView();
+            this.timeDiffTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             this.mainTabControl.SuspendLayout();
@@ -110,7 +105,6 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.targetListView)).BeginInit();
             this.SuspendLayout();
             // 
             // secChart
@@ -330,60 +324,6 @@ namespace BinanceHand
             this.FUOpenOrdersListView.View = System.Windows.Forms.View.Details;
             this.FUOpenOrdersListView.VirtualMode = true;
             // 
-            // nameTextBox
-            // 
-            this.nameTextBox.BackColor = System.Drawing.Color.White;
-            this.nameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.nameTextBox.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.nameTextBox.Location = new System.Drawing.Point(86, 12);
-            this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(90, 21);
-            this.nameTextBox.TabIndex = 6;
-            // 
-            // timeDiffTextBox
-            // 
-            this.timeDiffTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.timeDiffTextBox.Location = new System.Drawing.Point(814, 440);
-            this.timeDiffTextBox.Name = "timeDiffTextBox";
-            this.timeDiffTextBox.ReadOnly = true;
-            this.timeDiffTextBox.Size = new System.Drawing.Size(38, 14);
-            this.timeDiffTextBox.TabIndex = 6;
-            this.timeDiffTextBox.Text = "-10.5";
-            // 
-            // priceTextBox
-            // 
-            this.priceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.priceTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.priceTextBox.Location = new System.Drawing.Point(677, 440);
-            this.priceTextBox.Name = "priceTextBox";
-            this.priceTextBox.ReadOnly = true;
-            this.priceTextBox.Size = new System.Drawing.Size(63, 14);
-            this.priceTextBox.TabIndex = 6;
-            this.priceTextBox.Text = "0.0000000";
-            // 
-            // amtTextBox
-            // 
-            this.amtTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.amtTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.amtTextBox.Location = new System.Drawing.Point(742, 440);
-            this.amtTextBox.Name = "amtTextBox";
-            this.amtTextBox.ReadOnly = true;
-            this.amtTextBox.Size = new System.Drawing.Size(63, 14);
-            this.amtTextBox.TabIndex = 6;
-            this.amtTextBox.Text = "0.0000000";
-            // 
-            // marketComboBox
-            // 
-            this.marketComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.marketComboBox.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.marketComboBox.FormattingEnabled = true;
-            this.marketComboBox.Items.AddRange(new object[] {
-            "F_U"});
-            this.marketComboBox.Location = new System.Drawing.Point(35, 12);
-            this.marketComboBox.Name = "marketComboBox";
-            this.marketComboBox.Size = new System.Drawing.Size(50, 20);
-            this.marketComboBox.TabIndex = 7;
-            // 
             // FUKlineRcvTextBox
             // 
             this.FUKlineRcvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -442,6 +382,7 @@ namespace BinanceHand
             this.FUGroupBox.Controls.Add(this.FUKlineReqTextBox);
             this.FUGroupBox.Controls.Add(this.FUAggRcvTextBox);
             this.FUGroupBox.Controls.Add(this.FUAggReqTextBox);
+            this.FUGroupBox.Controls.Add(this.realButton);
             this.FUGroupBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FUGroupBox.Location = new System.Drawing.Point(1205, 97);
             this.FUGroupBox.Name = "FUGroupBox";
@@ -449,6 +390,16 @@ namespace BinanceHand
             this.FUGroupBox.TabIndex = 9;
             this.FUGroupBox.TabStop = false;
             this.FUGroupBox.Text = "Futures-USD";
+            // 
+            // realButton
+            // 
+            this.realButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.realButton.Location = new System.Drawing.Point(147, 29);
+            this.realButton.Name = "realButton";
+            this.realButton.Size = new System.Drawing.Size(43, 20);
+            this.realButton.TabIndex = 12;
+            this.realButton.Text = "Real";
+            this.realButton.UseVisualStyleBackColor = true;
             // 
             // orderGroupBox
             // 
@@ -769,29 +720,15 @@ namespace BinanceHand
             this.autoTextBox.TabIndex = 6;
             this.autoTextBox.Text = "1000";
             // 
-            // realButton
+            // timeDiffTextBox
             // 
-            this.realButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.realButton.Location = new System.Drawing.Point(242, 146);
-            this.realButton.Name = "realButton";
-            this.realButton.Size = new System.Drawing.Size(43, 20);
-            this.realButton.TabIndex = 12;
-            this.realButton.Text = "Real";
-            this.realButton.UseVisualStyleBackColor = true;
-            // 
-            // targetListView
-            // 
-            this.targetListView.CellEditUseWholeCell = false;
-            this.targetListView.DataSource = null;
-            this.targetListView.HideSelection = false;
-            this.targetListView.Location = new System.Drawing.Point(1205, 201);
-            this.targetListView.Name = "targetListView";
-            this.targetListView.ShowGroups = false;
-            this.targetListView.Size = new System.Drawing.Size(121, 49);
-            this.targetListView.TabIndex = 4;
-            this.targetListView.UseCompatibleStateImageBehavior = false;
-            this.targetListView.View = System.Windows.Forms.View.Details;
-            this.targetListView.VirtualMode = true;
+            this.timeDiffTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.timeDiffTextBox.Location = new System.Drawing.Point(814, 440);
+            this.timeDiffTextBox.Name = "timeDiffTextBox";
+            this.timeDiffTextBox.ReadOnly = true;
+            this.timeDiffTextBox.Size = new System.Drawing.Size(52, 14);
+            this.timeDiffTextBox.TabIndex = 6;
+            this.timeDiffTextBox.Text = "0.5";
             // 
             // Form1
             // 
@@ -799,13 +736,11 @@ namespace BinanceHand
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
-            this.Controls.Add(this.targetListView);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.resultListView);
             this.Controls.Add(this.dayButton);
             this.Controls.Add(this.hourButton);
             this.Controls.Add(this.minButton);
-            this.Controls.Add(this.realButton);
             this.Controls.Add(this.secButton);
             this.Controls.Add(this.dayChart);
             this.Controls.Add(this.hourChart);
@@ -813,13 +748,9 @@ namespace BinanceHand
             this.Controls.Add(this.secChart);
             this.Controls.Add(this.orderGroupBox);
             this.Controls.Add(this.FUGroupBox);
-            this.Controls.Add(this.marketComboBox);
             this.Controls.Add(this.autoTextBox);
             this.Controls.Add(this.gridItvTextBox);
-            this.Controls.Add(this.amtTextBox);
-            this.Controls.Add(this.nameTextBox);
             this.Controls.Add(this.timeDiffTextBox);
-            this.Controls.Add(this.priceTextBox);
             this.Controls.Add(this.mainTabControl);
             this.KeyPreview = true;
             this.Name = "Form1";
@@ -846,7 +777,6 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.targetListView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -857,11 +787,6 @@ namespace BinanceHand
         private System.Windows.Forms.DataVisualization.Charting.Chart secChart;
         private BrightIdeasSoftware.FastDataListView FUListView;
         private System.Windows.Forms.TabControl mainTabControl;
-        private System.Windows.Forms.TextBox nameTextBox;
-        private System.Windows.Forms.TextBox timeDiffTextBox;
-        private System.Windows.Forms.TextBox priceTextBox;
-        private System.Windows.Forms.TextBox amtTextBox;
-        private System.Windows.Forms.ComboBox marketComboBox;
         private System.Windows.Forms.TextBox FUKlineRcvTextBox;
         private System.Windows.Forms.TextBox FUKlineReqTextBox;
         private System.Windows.Forms.TextBox FUAggRcvTextBox;
@@ -914,7 +839,7 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox gridItvTextBox;
         private System.Windows.Forms.TextBox autoTextBox;
         private System.Windows.Forms.Button realButton;
-        private BrightIdeasSoftware.FastDataListView targetListView;
+        private System.Windows.Forms.TextBox timeDiffTextBox;
     }
 }
 

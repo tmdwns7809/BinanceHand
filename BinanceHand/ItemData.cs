@@ -13,16 +13,8 @@ namespace BinanceHand
         public UpdateSubscription sub;
 
         public string Name;
-        public decimal FlucBfor = 0m;
-        public int CountBfor = 0;
 
-        public short Importance = 0;
-
-        public string newTime;
-
-        public bool hasAll = false;
-        public bool buyOrder = false;
-        public bool sellOrder = false;
+        public short Real = 0;
 
         public bool AggFirst = true;
         public bool klineFirst = true;
@@ -32,6 +24,7 @@ namespace BinanceHand
         public List<Stick> oldSecStickList = new List<Stick>();
         public static string secChartLabel = "HH:mm:ss";
         public int secLastIndex;
+        public int count10sec;
         public double ms10secTot = 0;
         public double ms10secAvg;
         public double md10secTot = 0;
@@ -43,16 +36,15 @@ namespace BinanceHand
         public double msSDevRatio;
         public double mdSDevRatio;
         public decimal SDevRatioPrice;
-        public decimal lowestSDevRatioPrice = 1;
+        public decimal lowestSDevRatioPrice;
         public decimal minLowestSDevRatioPrice = 0m;
-        public double msLowestSDevRatio = double.MaxValue;
-        public double mdLowestSDevRatio = double.MaxValue;
-        public double minMsLowestSDevRatio = 0.0;
-        public double minMdLowestSDevRatio = 0.0;
+        public double lowestSDevRatio = double.MaxValue;
+        public double minLowestSDevRatio = 0.0;
+        public int lowestSDevCount10sec;
+        public int minLowestSDevCount10sec;
         public decimal price10secHighest;
         public decimal price10secLowest;
         public int index;
-        public bool target = false;
 
         public Stick minStick = new Stick();
         public List<Stick> minStickList = new List<Stick>();
@@ -67,38 +59,8 @@ namespace BinanceHand
         public static string dayChartLabel = "yyyy-MM-dd";
 
         public bool isChartShowing = false;
-        public bool isAggReady = false;
-        public bool isAggOn = false;
         public short FlatMinRow;
-        public short AggReadyRow = 0;
         public bool LorS = true;
-
-        public short win;
-        public short lose;
-        public short winLoseTot;
-        public string WinPrecantage = "0.00(0)";
-
-        public decimal secMsList0Tot = 0;
-        public decimal secMsList0Avg = 0;
-        public decimal secMdList0Tot = 0;
-        public decimal secMdList0Avg = 0;
-
-        public decimal secMsList1Tot = 0;
-        public decimal secMsList1Avg = 0;
-        public decimal secMdList1Tot = 0;
-        public decimal secMdList1Avg = 0;
-
-        public Queue<decimal> pureSecCountQ = new Queue<decimal>();
-        public decimal pureSecCountQTot = 0;
-        public decimal pureSecCountQAvg = 0;
-
-        public static short amt0 = 5;
-        public static short amt1 = 20;
-
-        public bool chuQReady = false;
-
-        public bool tooManyAmt;
-        public string tooManyAmtTime;
 
         public bool order = false;
         public DateTime OrderTime;
@@ -106,7 +68,6 @@ namespace BinanceHand
         public OrderSide OrderSide;
         public decimal orderStartClosePrice;
         public decimal OrderPrice;
-        public decimal OrderPriceFix;
         public decimal OrderAmount;
         public decimal OrderFilled;
         public bool ReduceOnly;
@@ -114,6 +75,7 @@ namespace BinanceHand
         public string clientOrderID;
         public long orderID;
 
+        public bool positionWhenOrder = false;
         public bool position = false;
         public UpdateSubscription markSub;
         public int Leverage;
@@ -134,17 +96,12 @@ namespace BinanceHand
         public decimal minSize;
         public decimal priceTickSize;
 
-
-
         public ItemData(BinanceFuturesUsdtSymbol fu)
         {
             Name = fu.Name.Trim().ToUpper();
             minSize = fu.LotSizeFilter.MinQuantity;
             priceTickSize = fu.PriceFilter.TickSize;
             minNotionalValue = fu.MinNotionalFilter.MinNotional;
-
-            for (int i = 0; i < amt1; i++)
-                pureSecCountQ.Enqueue(0);
         }
     }
 
