@@ -59,7 +59,8 @@ namespace BinanceHand
         public static string dayChartLabel = "yyyy-MM-dd";
 
         public bool isChartShowing = false;
-        public short FlatMinRow;
+        public short Real1Condition;
+        public short Real2Condition;
         public bool LorS = true;
 
         public bool order = false;

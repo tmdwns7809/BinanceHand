@@ -117,10 +117,15 @@ namespace BinanceHand
         int thisWin = 0;
 
         decimal commisionRate = 0.1m;
+
+        string secTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        string minTimeFormat = "yyyy-MM-dd HH:mm";
         #endregion
 
         public Form1()
         {
+            soundEngine.Play2D(win3Sound, false, false, false);
+
             InitializeComponent();
 
             SetComponents();
@@ -342,7 +347,7 @@ namespace BinanceHand
             hourChart.Size = secChart.Size;
 
             hourChart.Tag = 0.05;
-            hourChart.AxisViewChanged += (sender, e) => { AdjustChart(minChart); };
+            hourChart.AxisViewChanged += (sender, e) => { AdjustChart(hourChart); };
             hourChart.AxisScrollBarClicked += OnChartAxisScrollBarClicked;
             hourChart.MouseWheel += OnChartMouseWheel;
 
@@ -434,7 +439,7 @@ namespace BinanceHand
             dayChart.Size = secChart.Size;
 
             dayChart.Tag = 0.1;
-            dayChart.AxisViewChanged += (sender, e) => { AdjustChart(minChart); };
+            dayChart.AxisViewChanged += (sender, e) => { AdjustChart(dayChart); };
             dayChart.AxisScrollBarClicked += OnChartAxisScrollBarClicked;
             dayChart.MouseWheel += OnChartMouseWheel;
 
@@ -547,6 +552,8 @@ namespace BinanceHand
         }
         void SetMainTab()
         {
+            mainTabControl.BackColor = controlBackColor;
+            mainTabControl.ForeColor = ForeColor;
             mainTabControl.Location = new Point(secChart.Location.X + 10, secChart.Location.Y + secChart.Size.Height + 10);
             mainTabControl.Size = new Size((int)(secChart.Size.Width * 0.5) - 10, Screen.GetWorkingArea(this).Size.Height - secChart.Size.Height - 50);
             mainTabControl.SelectedTab = FUTab;
@@ -902,7 +909,7 @@ namespace BinanceHand
             resultListView.Columns.AddRange(new ColumnHeader[] { column0, entryColumn, lastColumn, profitColumn });
             resultListView.FormatRow += (sender, e) =>
             {
-                if (((ResultData)e.Model).ProfitRate > 0.1m)
+                if (((ResultData)e.Model).ProfitRate > commisionRate)
                     e.Item.ForeColor = Color.Gold;
             };
 
@@ -927,6 +934,16 @@ namespace BinanceHand
                     pictureBox.Enabled = false;
                 }
             };
+
+            totalWinRateTextBox.BackColor = BackColor;
+            totalWinRateTextBox.ForeColor = ForeColor;
+            totalWinRateTextBox.Location = new Point(resultListView.Location.X + 10, resultListView.Location.Y - totalWinRateTextBox.Height - 10);
+            totalWinRateTextBox.BringToFront();
+
+            todayWinRateTextBox.BackColor = BackColor;
+            todayWinRateTextBox.ForeColor = ForeColor;
+            todayWinRateTextBox.Location = new Point(totalWinRateTextBox.Location.X + totalWinRateTextBox.Width + 10, totalWinRateTextBox.Location.Y);
+            todayWinRateTextBox.BringToFront();
         }
         void SetSymbolsListView()
         {
@@ -1128,7 +1145,10 @@ namespace BinanceHand
                 {
                     quantity = (int)((decimal)(itemDataShowing.ms10secAvg + itemDataShowing.md10secAvg) / 2 / 100 / itemDataShowing.minSize) * itemDataShowing.minSize;
 
-                    var limitAmount = (int)(FUAvailableBalance * limitPercent / 100 / price / itemDataShowing.minSize) * itemDataShowing.minSize;
+                    var budget = FUAvailableBalance * limitPercent / 100;
+                    if (budget < itemDataShowing.minNotionalValue)
+                        budget = itemDataShowing.minNotionalValue;
+                    var limitAmount = (int)(budget / price / itemDataShowing.minSize + 1) * itemDataShowing.minSize;
 
                     if (limitAmount < quantity)
                         quantity = limitAmount;
@@ -1178,7 +1198,7 @@ namespace BinanceHand
 
                 if (resultListView.Items.Count == 0)
                 {
-                    resultData = new ResultData { Number = 1 };
+                    resultData = new ResultData { Number = 1, Symbol = itemDataShowing.Name };
                     resultListView.InsertObjects(0, new List<ResultData> { resultData });
                 }
                 else
@@ -1195,7 +1215,7 @@ namespace BinanceHand
                 else
                     itemDataShowing.LorS = false;
 
-                var resultData = new ResultData { Number = resultListView.Items.Count + 1 };
+                var resultData = new ResultData { Number = resultListView.Items.Count + 1, Symbol = itemDataShowing.Name };
                 resultData.EntryTime = DateTime.UtcNow;
                 resultListView.InsertObjects(0, new List<ResultData> { resultData });
 
@@ -1838,11 +1858,11 @@ namespace BinanceHand
             }
 
             #region GetTradeHistory
-            var conn = new SQLiteConnection(DBHelper.tradeHistoryPath);
+            var conn = new SQLiteConnection(DBHelper.DBHistoryPath);
             conn.Open();
 
             var command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS 'Trade_History' " +
-                "('Symbol' TEXT, 'EntryTime' TEXT, 'LastTime' TEXT, 'ProfitRate' TEXT)", conn);
+                "('Time' TEXT, 'Symbol' TEXT, 'Profit' TEXT)", conn);
             command.ExecuteNonQuery();
             
             command = new SQLiteCommand("SELECT * FROM 'Trade_History'", conn);
@@ -1851,11 +1871,12 @@ namespace BinanceHand
             while (reader.Read())
             {
                 totalTrades++;
-                if (decimal.Parse(reader["ProfitRate"].ToString()) > commisionRate)
+                if (decimal.Parse(reader["Profit"].ToString()) > commisionRate)
                     totalWin++;
             }
 
-            totalWinRateTextBox.Text = Math.Round((double)totalWin / totalTrades, 2) + "(" + totalTrades + ")";
+            if (totalTrades != 0)
+                totalWinRateTextBox.Text = Math.Round((double)totalWin / totalTrades, 2) + "(" + totalTrades + ")";
 
             conn.Close();
             #endregion
@@ -1878,14 +1899,38 @@ namespace BinanceHand
                 if (data.Data.High / data.Data.Low > 1.02m)
                 {
                     if (itemData.Real == 0)
+                    {
                         SetAgg(itemData, true);
+                        dbHelper.SaveData1("Detect_History", "Time", DateTime.UtcNow.ToString(secTimeFormat), "Symbol", itemData.Name, "Data", "Real 1 in : 전분폭 > 2%");
+                    }
 
-                    itemData.FlatMinRow = 0;
+                    itemData.Real1Condition = 0;
                 }
-                else if (itemData.FlatMinRow < 15)
-                    itemData.FlatMinRow++;
-                else if (itemData.Real >= 1 && !itemData.isChartShowing)
+                else if (itemData.Real1Condition < 15)
+                    itemData.Real1Condition++;
+                else if (itemData.Real == 1 && !itemData.isChartShowing)
+                {
                     SetAgg(itemData, false);
+                    dbHelper.SaveData1("Detect_History", "Time", DateTime.UtcNow.ToString(secTimeFormat), "Symbol", itemData.Name, "Data", "Real out : 15연속 전분폭 < 2%");
+                }
+
+                if (itemData.Real == 2)
+                {
+                    if (itemData.Real2Condition > 5)
+                    {
+                        itemData.Real = 1;
+                        FUListView.RefreshObject(itemData);
+                        dbHelper.SaveData1("Detect_History", "Time", DateTime.UtcNow.ToString(secTimeFormat), "Symbol", itemData.Name
+                            , "Data", "Real 2 out : 5분연속 기준 미달");
+
+                        List<Stick> secList = new List<Stick>();
+                        secList.AddRange(itemData.oldSecStickList);
+                        secList.AddRange(itemData.secStickList);
+                        dbHelper.SaveSticksCSVData(itemData.Name + "_" + DateTime.UtcNow.ToString(secTimeFormat), secList);
+                    }
+                    else
+                        itemData.Real2Condition++;
+                }
 
                 if (itemData.isChartShowing && itemData.Real == 0 && chartNow.TabIndex == minChart.TabIndex)
                 {
@@ -1939,7 +1984,7 @@ namespace BinanceHand
 
             if (data.TradeTime.Subtract(itemData.secStick.Time).TotalSeconds >= 1)
             {
-                if (itemData.secStick.Price[1] != decimal.Zero)
+                if (itemData.secStick.Time != default)
                 {
                     itemData.secStickList.Add(itemData.secStick);
 
@@ -1981,12 +2026,34 @@ namespace BinanceHand
                         itemData.msSDevRatio = itemData.ms10secSDev / itemData.ms10secAvg;
                         itemData.mdSDevRatio = itemData.md10secSDev / itemData.md10secAvg;
 
-                        if (itemData.Real != 2 && itemData.SDevRatioPrice > 1.005m
+                        if (itemData.SDevRatioPrice > 1.005m
                             && (itemData.msSDevRatio < 1.5 || itemData.mdSDevRatio < 1.5))
                         {
-                            itemData.Real = 2;
-                            soundEngine.Play2D(win3Sound, false, false, false);
-                            FUListView.RefreshObject(itemData);
+                            if (itemData.Real != 2)
+                            {
+                                itemData.Real = 2;
+                                Task.Run(() =>
+                                {
+                                    var ok = false;
+                                    Task.Run(() =>
+                                    {
+                                        MessageBox.Show("Real 2 감지", "Real", MessageBoxButtons.OK);
+                                        ok = true;
+                                        return;
+                                    });
+                                    while (true)
+                                    {
+                                        if (ok)
+                                            return;
+                                        soundEngine.Play2D(failSound, false, false, false);
+                                        Thread.Sleep(100);
+                                    }
+                                });
+                                FUListView.RefreshObject(itemData);
+                                dbHelper.SaveData1("Detect_History", "Time", itemData.secStick.Time.ToString(secTimeFormat), "Symbol", itemData.Name
+                                    , "Data", "Real 2 in : 전10초폭: " + itemData.SDevRatioPrice + " 표준편차비: 매수" + itemData.msSDevRatio + "매도" + itemData.mdSDevRatio);
+                            }
+                            itemData.Real2Condition = 0;
                         }
 
                         if (itemData.msSDevRatio < itemData.lowestSDevRatio || itemData.mdSDevRatio < itemData.lowestSDevRatio)
@@ -2019,7 +2086,7 @@ namespace BinanceHand
                 itemData.secStick.Price[1] = data.Price;
                 itemData.secStick.Price[3] = data.Price;
 
-                itemData.secStick.Time = DateTime.Parse(data.TradeTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                itemData.secStick.Time = DateTime.Parse(data.TradeTime.ToString(secTimeFormat));
 
                 if (itemData.isChartShowing)
                     AddStartChartPoint(secChart, itemData.secStick);
@@ -2038,7 +2105,7 @@ namespace BinanceHand
 
                 if (data.TradeTime.Subtract(itemData.minStick.Time).TotalMinutes >= 1)
                 {
-                    if (itemData.minStick.Price[1] != decimal.Zero)
+                    if (itemData.minStick.Time != default)
                     {
                         itemData.minStickList.Add(itemData.minStick);
 
@@ -2061,7 +2128,7 @@ namespace BinanceHand
                     itemData.minStick.Price[1] = data.Price;
                     itemData.minStick.Price[3] = data.Price;
 
-                    itemData.minStick.Time = DateTime.Parse(data.TradeTime.ToString("yyyy-MM-dd HH:mm"));
+                    itemData.minStick.Time = DateTime.Parse(data.TradeTime.ToString(minTimeFormat));
 
                     if (itemData.isChartShowing && chartNow.TabIndex == minChart.TabIndex)
                         AddStartChartPoint(minChart, itemData.minStick);
@@ -2291,7 +2358,7 @@ namespace BinanceHand
                     ResultData resultData;
                     if (resultListView.Items.Count == 0)
                     {
-                        resultData = new ResultData { Number = 1 };
+                        resultData = new ResultData { Number = 1, Symbol = itemData.Name };
                         resultListView.InsertObjects(0, new List<ResultData> { resultData });
                     }
                     else
@@ -2320,7 +2387,7 @@ namespace BinanceHand
                     totalWinRateTextBox.Text = Math.Round((double)totalWin / totalTrades, 2) + "(" + totalTrades + ")";
                     todayWinRateTextBox.Text = Math.Round((double)thisWin / thisTrades, 2) + "(" + thisTrades + ")";
 
-                    dbHelper.SaveTradeData(resultData);
+                    dbHelper.SaveData1("Trade_History", "Time", resultData.EntryTime.ToString(secTimeFormat) + ", " + resultData.LastTime.ToString(secTimeFormat), "Symbol", resultData.Symbol, "Profit", resultData.ProfitRate.ToString());
 
                     resultListView.RefreshObject(resultData);
 
@@ -2462,9 +2529,12 @@ namespace BinanceHand
                     break;
 
                 case Keys.E:
-                    if (itemDataShowing != null && chartNow.ChartAreas[0].AxisX.ScaleView.IsZoomed)
+                    if (itemDataShowing != null)
                     {
-                        chartNow.ChartAreas[0].AxisX.ScaleView.Zoom(chartNow.ChartAreas[0].AxisX.ScaleView.ViewMinimum + 11, chartNow.ChartAreas[0].AxisX.ScaleView.ViewMaximum - 1);
+                        if (chartNow.ChartAreas[0].AxisX.ScaleView.IsZoomed)
+                            chartNow.ChartAreas[0].AxisX.ScaleView.Zoom(chartNow.ChartAreas[0].AxisX.ScaleView.ViewMinimum + 11, chartNow.ChartAreas[0].AxisX.ScaleView.ViewMaximum - 1);
+                        else
+                            chartNow.ChartAreas[0].AxisX.ScaleView.Zoom(0, chartNow.Series[0].Points.Count);
                         AdjustChart(chartNow);
                         e.SuppressKeyPress = true;
                     }
@@ -2535,7 +2605,7 @@ namespace BinanceHand
                 tokenSource.Cancel();
 
             socketClient.UnsubscribeAll();
-            //dbHelper.Close();
+            dbHelper.Close();
         }
     }
 

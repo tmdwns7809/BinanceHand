@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace BinanceHand
 {
@@ -13,7 +14,8 @@ namespace BinanceHand
         private static DBHelper dbHelper;
 
         public static string path = @"C:\Users\tmdwn\source\repos\BinanceHand\";
-        public static string tradeHistoryPath = @"Data Source=C:\Users\tmdwn\source\repos\BinanceHand\DB\Trade_History.db";
+        public static string DBHistoryPath = @"Data Source=" + path + @"DB\History.db";
+        public static string CSVPath = path + @"CSV\";
 
         SQLiteConnection conn0;
         SQLiteConnection conn1;
@@ -31,7 +33,7 @@ namespace BinanceHand
 
                 conn0 = new SQLiteConnection("Data Source=" + path + @"DB\days\" + date + ".db");
                 conn0.Open();
-                conn1 = new SQLiteConnection(tradeHistoryPath);
+                conn1 = new SQLiteConnection(DBHistoryPath);
                 conn1.Open();
 
                 taskWorker = new Thread(delegate ()
@@ -52,7 +54,7 @@ namespace BinanceHand
             }
         }
 
-        public void SaveData(string d, string tableName, string column1Name, string column1, string column2Name, string column2, string column3Name, string column3)
+        public void SaveData0(string d, string tableName, string column1Name, string column1, string column2Name, string column2, string column3Name, string column3)
         {
             CheckDate(d);
 
@@ -67,12 +69,15 @@ namespace BinanceHand
             }));
         }
 
-        public void SaveTradeData(ResultData d)
+        public void SaveData1(string tableName, string column1Name, string column1, string column2Name, string column2, string column3Name, string column3)
         {
             requestDBTaskQueue.Enqueue(new Task(() =>
             {
-                var command = new SQLiteCommand(
-                    "INSERT INTO 'Trade_History' ('Symbol', 'EntryTime', 'LastTime', 'ProfitRate') values ('" + d.Symbol + "','" + d.EntryTime + "','" + d.LastTime + "','" + d.ProfitRate + "')", conn1);
+                var command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS '" + tableName + "' ('" + column1Name + "' TEXT, '" + column2Name + "' TEXT, '" + column3Name + "' TEXT)", conn1);
+                command.ExecuteNonQuery();
+
+                command = new SQLiteCommand(
+                    "INSERT INTO '" + tableName + "' ('" + column1Name + "', '" + column2Name + "', '" + column3Name + "') values ('" + column1 + "','" + column2 + "','" + column3 + "')", conn1);
                 command.ExecuteNonQuery();
             }));
         }
@@ -81,7 +86,18 @@ namespace BinanceHand
         {
             requestDBTaskQueue.Enqueue(new Task(() =>
             {
-                System.IO.File.AppendAllText(path + dir + @"\" + name + ".csv", data + "\n");
+                File.AppendAllText(path + dir + @"\" + name + ".csv", data + "\n");
+            }));
+        }
+
+        public void SaveSticksCSVData(string name, List<Stick> data)
+        {
+            requestDBTaskQueue.Enqueue(new Task(() =>
+            {
+                string[] lines = new string[data.Count];
+                for (int i = 0; i < data.Count; i++)
+                    lines[i] = data[i].Time + "," + data[i].Price[0] + "," + data[i].Price[1] + "," + data[i].Price[2] + "," + data[i].Price[3] + "," + data[i].Ms + "," + data[i].Md + "," + data[i].TCount;
+                File.WriteAllLines(CSVPath + name + ".csv", lines);
             }));
         }
 
