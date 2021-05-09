@@ -16,6 +16,9 @@ namespace BinanceHand
 
         public short Real = 0;
 
+        public double timeDiff;
+        public double timeDiffMax = double.MinValue;
+
         public bool AggFirst = true;
         public bool klineFirst = true;
 

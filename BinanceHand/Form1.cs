@@ -124,8 +124,6 @@ namespace BinanceHand
 
         public Form1()
         {
-            soundEngine.Play2D(win3Sound, false, false, false);
-
             InitializeComponent();
 
             SetComponents();
@@ -189,7 +187,7 @@ namespace BinanceHand
             chartAreaMain.AxisY2.MajorTickMark.Enabled = false;
             chartAreaMain.AxisY2.IsStartedFromZero = false;
             chartAreaMain.AxisY2.LabelStyle.ForeColor = ForeColor;
-            chartAreaMain.AxisY2.IntervalAutoMode = IntervalAutoMode.VariableCount;
+            chartAreaMain.AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
             chartAreaMain.AxisY2.LineColor = gridColor;
 
             chartAreaMain.Position = new ElementPosition(0, 0, 100, 60);
@@ -937,7 +935,7 @@ namespace BinanceHand
 
             totalWinRateTextBox.BackColor = BackColor;
             totalWinRateTextBox.ForeColor = ForeColor;
-            totalWinRateTextBox.Location = new Point(resultListView.Location.X + 10, resultListView.Location.Y - totalWinRateTextBox.Height - 10);
+            totalWinRateTextBox.Location = new Point(resultListView.Location.X + 10, resultListView.Location.Y - totalWinRateTextBox.Height - 2);
             totalWinRateTextBox.BringToFront();
 
             todayWinRateTextBox.BackColor = BackColor;
@@ -1009,7 +1007,7 @@ namespace BinanceHand
 
             realButton.BackColor = buttonColor;
             realButton.ForeColor = ForeColor;
-            realButton.Location = new Point(FUAggReqTextBox.Location.X + FUAggReqTextBox.Width, FUAggReqTextBox.Location.Y);
+            realButton.Location = new Point(FUAggReqTextBox.Location.X + FUAggReqTextBox.Width, FUAggReqTextBox.Location.Y + 2);
             realButton.Click += (sebder, e) => {
                 var itemData = FUListView.SelectedObject as ItemData;
 
@@ -1986,6 +1984,9 @@ namespace BinanceHand
             {
                 if (itemData.secStick.Time != default)
                 {
+                    timeDiffTextBox.Text = Math.Round(itemData.timeDiffMax, 1).ToString();
+                    itemData.timeDiffMax = double.MinValue;
+
                     itemData.secStickList.Add(itemData.secStick);
 
                     itemData.secLastIndex = itemData.secStickList.Count - 1;
@@ -2046,7 +2047,7 @@ namespace BinanceHand
                                         if (ok)
                                             return;
                                         soundEngine.Play2D(failSound, false, false, false);
-                                        Thread.Sleep(100);
+                                        Thread.Sleep((int)failSound.PlayLength + 500);
                                     }
                                 });
                                 FUListView.RefreshObject(itemData);
@@ -2162,7 +2163,9 @@ namespace BinanceHand
 
             if (itemData.isChartShowing)
             {
-                timeDiffTextBox.Text = Math.Round((DateTime.UtcNow - data.TradeTime).TotalSeconds, 1).ToString();
+                itemData.timeDiff = (DateTime.UtcNow - data.TradeTime).TotalSeconds;
+                if (itemData.timeDiff > itemData.timeDiffMax)
+                    itemData.timeDiffMax = itemData.timeDiff;
 
                 UpdateChartPoint(secChart, itemData.secStick);
                 if (chartNow.TabIndex == minChart.TabIndex)

@@ -82,11 +82,11 @@ namespace BinanceHand
             }));
         }
 
-        public void SaveCSVData(string dir, string name, string data)
+        public void SaveCSVData(string name, string data)
         {
             requestDBTaskQueue.Enqueue(new Task(() =>
             {
-                File.AppendAllText(path + dir + @"\" + name + ".csv", data + "\n");
+                File.AppendAllText(CSVPath + name + ".csv", data + "\n");
             }));
         }
 
