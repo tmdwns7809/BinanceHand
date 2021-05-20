@@ -33,25 +33,9 @@ namespace BinanceHand
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.secChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUListView = new BrightIdeasSoftware.FastDataListView();
-            this.mainTabControl = new System.Windows.Forms.TabControl();
-            this.FUTab = new System.Windows.Forms.TabPage();
-            this.FUWalletBalanceTextBox1 = new System.Windows.Forms.TextBox();
-            this.FUAvailBalanceTextBox1 = new System.Windows.Forms.TextBox();
-            this.FUWalletBalanceTextBox0 = new System.Windows.Forms.TextBox();
-            this.FUAvailBalanceTextBox0 = new System.Windows.Forms.TextBox();
-            this.FUMarginRatioTextBox1 = new System.Windows.Forms.TextBox();
-            this.FUMaintMarginTextBox1 = new System.Windows.Forms.TextBox();
-            this.FUMarginBalanceTextBox1 = new System.Windows.Forms.TextBox();
-            this.FUMarginRatioTextBox0 = new System.Windows.Forms.TextBox();
-            this.FUMaintMarginTextBox0 = new System.Windows.Forms.TextBox();
-            this.FUMarginBalanceTextBox0 = new System.Windows.Forms.TextBox();
-            this.FUTabControl = new System.Windows.Forms.TabControl();
-            this.FUPositionTab = new System.Windows.Forms.TabPage();
-            this.FUPositionListView = new BrightIdeasSoftware.FastDataListView();
-            this.FUOpenOrdersTab = new System.Windows.Forms.TabPage();
-            this.FUOpenOrdersListView = new BrightIdeasSoftware.FastDataListView();
             this.FUKlineRcvTextBox = new System.Windows.Forms.TextBox();
             this.FUKlineReqTextBox = new System.Windows.Forms.TextBox();
             this.FUAggRcvTextBox = new System.Windows.Forms.TextBox();
@@ -91,15 +75,14 @@ namespace BinanceHand
             this.timeDiffTextBox = new System.Windows.Forms.TextBox();
             this.todayWinRateTextBox = new System.Windows.Forms.TextBox();
             this.totalWinRateTextBox = new System.Windows.Forms.TextBox();
+            this.simulTodayWinRateTextBox = new System.Windows.Forms.TextBox();
+            this.simulTotalWinRateTextBox = new System.Windows.Forms.TextBox();
+            this.simulResultListView = new BrightIdeasSoftware.FastDataListView();
+            this.assetsListView = new BrightIdeasSoftware.FastDataListView();
+            this.mainResultGroupBox = new System.Windows.Forms.GroupBox();
+            this.simulResultGroupBox = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
-            this.mainTabControl.SuspendLayout();
-            this.FUTab.SuspendLayout();
-            this.FUTabControl.SuspendLayout();
-            this.FUPositionTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).BeginInit();
-            this.FUOpenOrdersTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minChart)).BeginInit();
             this.FUGroupBox.SuspendLayout();
             this.orderGroupBox.SuspendLayout();
@@ -107,6 +90,10 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.simulResultListView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.assetsListView)).BeginInit();
+            this.mainResultGroupBox.SuspendLayout();
+            this.simulResultGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // secChart
@@ -115,7 +102,7 @@ namespace BinanceHand
             legend1.Enabled = false;
             legend1.Name = "Legend1";
             this.secChart.Legends.Add(legend1);
-            this.secChart.Location = new System.Drawing.Point(512, 109);
+            this.secChart.Location = new System.Drawing.Point(75, 43);
             this.secChart.Name = "secChart";
             this.secChart.Size = new System.Drawing.Size(224, 200);
             this.secChart.TabIndex = 0;
@@ -134,197 +121,6 @@ namespace BinanceHand
             this.FUListView.UseCompatibleStateImageBehavior = false;
             this.FUListView.View = System.Windows.Forms.View.Details;
             this.FUListView.VirtualMode = true;
-            // 
-            // mainTabControl
-            // 
-            this.mainTabControl.Controls.Add(this.FUTab);
-            this.mainTabControl.Location = new System.Drawing.Point(12, 474);
-            this.mainTabControl.Name = "mainTabControl";
-            this.mainTabControl.SelectedIndex = 0;
-            this.mainTabControl.Size = new System.Drawing.Size(728, 188);
-            this.mainTabControl.TabIndex = 5;
-            // 
-            // FUTab
-            // 
-            this.FUTab.Controls.Add(this.FUWalletBalanceTextBox1);
-            this.FUTab.Controls.Add(this.FUAvailBalanceTextBox1);
-            this.FUTab.Controls.Add(this.FUWalletBalanceTextBox0);
-            this.FUTab.Controls.Add(this.FUAvailBalanceTextBox0);
-            this.FUTab.Controls.Add(this.FUMarginRatioTextBox1);
-            this.FUTab.Controls.Add(this.FUMaintMarginTextBox1);
-            this.FUTab.Controls.Add(this.FUMarginBalanceTextBox1);
-            this.FUTab.Controls.Add(this.FUMarginRatioTextBox0);
-            this.FUTab.Controls.Add(this.FUMaintMarginTextBox0);
-            this.FUTab.Controls.Add(this.FUMarginBalanceTextBox0);
-            this.FUTab.Controls.Add(this.FUTabControl);
-            this.FUTab.Location = new System.Drawing.Point(4, 22);
-            this.FUTab.Name = "FUTab";
-            this.FUTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUTab.Size = new System.Drawing.Size(720, 162);
-            this.FUTab.TabIndex = 2;
-            this.FUTab.Text = "Futures-USD";
-            this.FUTab.UseVisualStyleBackColor = true;
-            // 
-            // FUWalletBalanceTextBox1
-            // 
-            this.FUWalletBalanceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUWalletBalanceTextBox1.Location = new System.Drawing.Point(654, 138);
-            this.FUWalletBalanceTextBox1.Name = "FUWalletBalanceTextBox1";
-            this.FUWalletBalanceTextBox1.ReadOnly = true;
-            this.FUWalletBalanceTextBox1.Size = new System.Drawing.Size(70, 14);
-            this.FUWalletBalanceTextBox1.TabIndex = 1;
-            this.FUWalletBalanceTextBox1.Text = "0000.00000";
-            // 
-            // FUAvailBalanceTextBox1
-            // 
-            this.FUAvailBalanceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUAvailBalanceTextBox1.Location = new System.Drawing.Point(654, 118);
-            this.FUAvailBalanceTextBox1.Name = "FUAvailBalanceTextBox1";
-            this.FUAvailBalanceTextBox1.ReadOnly = true;
-            this.FUAvailBalanceTextBox1.Size = new System.Drawing.Size(70, 14);
-            this.FUAvailBalanceTextBox1.TabIndex = 1;
-            this.FUAvailBalanceTextBox1.Text = "0000.00000";
-            // 
-            // FUWalletBalanceTextBox0
-            // 
-            this.FUWalletBalanceTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUWalletBalanceTextBox0.Location = new System.Drawing.Point(620, 133);
-            this.FUWalletBalanceTextBox0.Name = "FUWalletBalanceTextBox0";
-            this.FUWalletBalanceTextBox0.ReadOnly = true;
-            this.FUWalletBalanceTextBox0.Size = new System.Drawing.Size(30, 14);
-            this.FUWalletBalanceTextBox0.TabIndex = 1;
-            this.FUWalletBalanceTextBox0.Text = "WB :";
-            // 
-            // FUAvailBalanceTextBox0
-            // 
-            this.FUAvailBalanceTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUAvailBalanceTextBox0.Location = new System.Drawing.Point(620, 118);
-            this.FUAvailBalanceTextBox0.Name = "FUAvailBalanceTextBox0";
-            this.FUAvailBalanceTextBox0.ReadOnly = true;
-            this.FUAvailBalanceTextBox0.Size = new System.Drawing.Size(30, 14);
-            this.FUAvailBalanceTextBox0.TabIndex = 1;
-            this.FUAvailBalanceTextBox0.Text = "AB :";
-            // 
-            // FUMarginRatioTextBox1
-            // 
-            this.FUMarginRatioTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMarginRatioTextBox1.Location = new System.Drawing.Point(654, 58);
-            this.FUMarginRatioTextBox1.Name = "FUMarginRatioTextBox1";
-            this.FUMarginRatioTextBox1.ReadOnly = true;
-            this.FUMarginRatioTextBox1.Size = new System.Drawing.Size(50, 14);
-            this.FUMarginRatioTextBox1.TabIndex = 1;
-            this.FUMarginRatioTextBox1.Text = "00.00";
-            // 
-            // FUMaintMarginTextBox1
-            // 
-            this.FUMaintMarginTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMaintMarginTextBox1.Location = new System.Drawing.Point(654, 78);
-            this.FUMaintMarginTextBox1.Name = "FUMaintMarginTextBox1";
-            this.FUMaintMarginTextBox1.ReadOnly = true;
-            this.FUMaintMarginTextBox1.Size = new System.Drawing.Size(50, 14);
-            this.FUMaintMarginTextBox1.TabIndex = 1;
-            this.FUMaintMarginTextBox1.Text = "0000.00";
-            // 
-            // FUMarginBalanceTextBox1
-            // 
-            this.FUMarginBalanceTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMarginBalanceTextBox1.Location = new System.Drawing.Point(654, 98);
-            this.FUMarginBalanceTextBox1.Name = "FUMarginBalanceTextBox1";
-            this.FUMarginBalanceTextBox1.ReadOnly = true;
-            this.FUMarginBalanceTextBox1.Size = new System.Drawing.Size(70, 14);
-            this.FUMarginBalanceTextBox1.TabIndex = 1;
-            this.FUMarginBalanceTextBox1.Text = "0000.00000";
-            // 
-            // FUMarginRatioTextBox0
-            // 
-            this.FUMarginRatioTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMarginRatioTextBox0.Location = new System.Drawing.Point(618, 58);
-            this.FUMarginRatioTextBox0.Name = "FUMarginRatioTextBox0";
-            this.FUMarginRatioTextBox0.ReadOnly = true;
-            this.FUMarginRatioTextBox0.Size = new System.Drawing.Size(30, 14);
-            this.FUMarginRatioTextBox0.TabIndex = 1;
-            this.FUMarginRatioTextBox0.Text = "MR :";
-            // 
-            // FUMaintMarginTextBox0
-            // 
-            this.FUMaintMarginTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMaintMarginTextBox0.Location = new System.Drawing.Point(618, 78);
-            this.FUMaintMarginTextBox0.Name = "FUMaintMarginTextBox0";
-            this.FUMaintMarginTextBox0.ReadOnly = true;
-            this.FUMaintMarginTextBox0.Size = new System.Drawing.Size(30, 14);
-            this.FUMaintMarginTextBox0.TabIndex = 1;
-            this.FUMaintMarginTextBox0.Text = "MM :";
-            // 
-            // FUMarginBalanceTextBox0
-            // 
-            this.FUMarginBalanceTextBox0.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.FUMarginBalanceTextBox0.Location = new System.Drawing.Point(618, 98);
-            this.FUMarginBalanceTextBox0.Name = "FUMarginBalanceTextBox0";
-            this.FUMarginBalanceTextBox0.ReadOnly = true;
-            this.FUMarginBalanceTextBox0.Size = new System.Drawing.Size(30, 14);
-            this.FUMarginBalanceTextBox0.TabIndex = 1;
-            this.FUMarginBalanceTextBox0.Text = "MB :";
-            // 
-            // FUTabControl
-            // 
-            this.FUTabControl.Controls.Add(this.FUPositionTab);
-            this.FUTabControl.Controls.Add(this.FUOpenOrdersTab);
-            this.FUTabControl.Location = new System.Drawing.Point(3, 3);
-            this.FUTabControl.Name = "FUTabControl";
-            this.FUTabControl.SelectedIndex = 0;
-            this.FUTabControl.Size = new System.Drawing.Size(604, 154);
-            this.FUTabControl.TabIndex = 1;
-            // 
-            // FUPositionTab
-            // 
-            this.FUPositionTab.Controls.Add(this.FUPositionListView);
-            this.FUPositionTab.Location = new System.Drawing.Point(4, 22);
-            this.FUPositionTab.Name = "FUPositionTab";
-            this.FUPositionTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUPositionTab.Size = new System.Drawing.Size(596, 128);
-            this.FUPositionTab.TabIndex = 0;
-            this.FUPositionTab.Text = "Position(0)";
-            this.FUPositionTab.UseVisualStyleBackColor = true;
-            // 
-            // FUPositionListView
-            // 
-            this.FUPositionListView.CellEditUseWholeCell = false;
-            this.FUPositionListView.Cursor = System.Windows.Forms.Cursors.Default;
-            this.FUPositionListView.DataSource = null;
-            this.FUPositionListView.HideSelection = false;
-            this.FUPositionListView.Location = new System.Drawing.Point(93, 12);
-            this.FUPositionListView.Name = "FUPositionListView";
-            this.FUPositionListView.ShowGroups = false;
-            this.FUPositionListView.Size = new System.Drawing.Size(121, 97);
-            this.FUPositionListView.TabIndex = 0;
-            this.FUPositionListView.UseCompatibleStateImageBehavior = false;
-            this.FUPositionListView.View = System.Windows.Forms.View.Details;
-            this.FUPositionListView.VirtualMode = true;
-            // 
-            // FUOpenOrdersTab
-            // 
-            this.FUOpenOrdersTab.Controls.Add(this.FUOpenOrdersListView);
-            this.FUOpenOrdersTab.Location = new System.Drawing.Point(4, 22);
-            this.FUOpenOrdersTab.Name = "FUOpenOrdersTab";
-            this.FUOpenOrdersTab.Padding = new System.Windows.Forms.Padding(3);
-            this.FUOpenOrdersTab.Size = new System.Drawing.Size(596, 128);
-            this.FUOpenOrdersTab.TabIndex = 1;
-            this.FUOpenOrdersTab.Text = "Open Orders(0)";
-            this.FUOpenOrdersTab.UseVisualStyleBackColor = true;
-            // 
-            // FUOpenOrdersListView
-            // 
-            this.FUOpenOrdersListView.CellEditUseWholeCell = false;
-            this.FUOpenOrdersListView.DataSource = null;
-            this.FUOpenOrdersListView.HideSelection = false;
-            this.FUOpenOrdersListView.Location = new System.Drawing.Point(304, 16);
-            this.FUOpenOrdersListView.Name = "FUOpenOrdersListView";
-            this.FUOpenOrdersListView.ShowGroups = false;
-            this.FUOpenOrdersListView.Size = new System.Drawing.Size(121, 97);
-            this.FUOpenOrdersListView.TabIndex = 1;
-            this.FUOpenOrdersListView.UseCompatibleStateImageBehavior = false;
-            this.FUOpenOrdersListView.View = System.Windows.Forms.View.Details;
-            this.FUOpenOrdersListView.VirtualMode = true;
             // 
             // FUKlineRcvTextBox
             // 
@@ -368,10 +164,11 @@ namespace BinanceHand
             // 
             // minChart
             // 
+            this.minChart.BackColor = System.Drawing.Color.DimGray;
             legend2.Enabled = false;
             legend2.Name = "Legend1";
             this.minChart.Legends.Add(legend2);
-            this.minChart.Location = new System.Drawing.Point(562, 126);
+            this.minChart.Location = new System.Drawing.Point(125, 60);
             this.minChart.Name = "minChart";
             this.minChart.Size = new System.Drawing.Size(214, 247);
             this.minChart.TabIndex = 1;
@@ -386,7 +183,7 @@ namespace BinanceHand
             this.FUGroupBox.Controls.Add(this.FUAggReqTextBox);
             this.FUGroupBox.Controls.Add(this.realButton);
             this.FUGroupBox.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.FUGroupBox.Location = new System.Drawing.Point(1205, 97);
+            this.FUGroupBox.Location = new System.Drawing.Point(658, 60);
             this.FUGroupBox.Name = "FUGroupBox";
             this.FUGroupBox.Size = new System.Drawing.Size(209, 98);
             this.FUGroupBox.TabIndex = 9;
@@ -423,7 +220,7 @@ namespace BinanceHand
             this.orderGroupBox.Controls.Add(this.GTCRadioButton);
             this.orderGroupBox.Controls.Add(this.sellButton);
             this.orderGroupBox.Controls.Add(this.buyButton);
-            this.orderGroupBox.Location = new System.Drawing.Point(746, 469);
+            this.orderGroupBox.Location = new System.Drawing.Point(305, 458);
             this.orderGroupBox.Name = "orderGroupBox";
             this.orderGroupBox.Size = new System.Drawing.Size(351, 189);
             this.orderGroupBox.TabIndex = 9;
@@ -617,7 +414,7 @@ namespace BinanceHand
             // 
             // pictureBox
             // 
-            this.pictureBox.Location = new System.Drawing.Point(1159, 486);
+            this.pictureBox.Location = new System.Drawing.Point(68, 66);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(172, 142);
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -629,7 +426,7 @@ namespace BinanceHand
             this.resultListView.CellEditUseWholeCell = false;
             this.resultListView.DataSource = null;
             this.resultListView.HideSelection = false;
-            this.resultListView.Location = new System.Drawing.Point(1131, 464);
+            this.resultListView.Location = new System.Drawing.Point(40, 44);
             this.resultListView.Name = "resultListView";
             this.resultListView.ShowGroups = false;
             this.resultListView.Size = new System.Drawing.Size(216, 189);
@@ -640,10 +437,11 @@ namespace BinanceHand
             // 
             // hourChart
             // 
+            this.hourChart.BackColor = System.Drawing.Color.Gray;
             legend3.Enabled = false;
             legend3.Name = "Legend1";
             this.hourChart.Legends.Add(legend3);
-            this.hourChart.Location = new System.Drawing.Point(659, 126);
+            this.hourChart.Location = new System.Drawing.Point(178, 76);
             this.hourChart.Name = "hourChart";
             this.hourChart.Size = new System.Drawing.Size(214, 247);
             this.hourChart.TabIndex = 2;
@@ -651,10 +449,11 @@ namespace BinanceHand
             // 
             // dayChart
             // 
+            this.dayChart.BackColor = System.Drawing.Color.Silver;
             legend4.Enabled = false;
             legend4.Name = "Legend1";
             this.dayChart.Legends.Add(legend4);
-            this.dayChart.Location = new System.Drawing.Point(742, 126);
+            this.dayChart.Location = new System.Drawing.Point(305, 76);
             this.dayChart.Name = "dayChart";
             this.dayChart.Size = new System.Drawing.Size(214, 247);
             this.dayChart.TabIndex = 3;
@@ -663,7 +462,7 @@ namespace BinanceHand
             // secButton
             // 
             this.secButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.secButton.Location = new System.Drawing.Point(323, 66);
+            this.secButton.Location = new System.Drawing.Point(32, 12);
             this.secButton.Name = "secButton";
             this.secButton.Size = new System.Drawing.Size(20, 20);
             this.secButton.TabIndex = 12;
@@ -673,7 +472,7 @@ namespace BinanceHand
             // minButton
             // 
             this.minButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.minButton.Location = new System.Drawing.Point(349, 66);
+            this.minButton.Location = new System.Drawing.Point(58, 12);
             this.minButton.Name = "minButton";
             this.minButton.Size = new System.Drawing.Size(20, 20);
             this.minButton.TabIndex = 12;
@@ -683,7 +482,7 @@ namespace BinanceHand
             // hourButton
             // 
             this.hourButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.hourButton.Location = new System.Drawing.Point(375, 66);
+            this.hourButton.Location = new System.Drawing.Point(84, 12);
             this.hourButton.Name = "hourButton";
             this.hourButton.Size = new System.Drawing.Size(20, 20);
             this.hourButton.TabIndex = 12;
@@ -693,7 +492,7 @@ namespace BinanceHand
             // dayButton
             // 
             this.dayButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.dayButton.Location = new System.Drawing.Point(401, 66);
+            this.dayButton.Location = new System.Drawing.Point(110, 12);
             this.dayButton.Name = "dayButton";
             this.dayButton.Size = new System.Drawing.Size(20, 20);
             this.dayButton.TabIndex = 12;
@@ -704,7 +503,7 @@ namespace BinanceHand
             // 
             this.gridItvTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.gridItvTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.gridItvTextBox.Location = new System.Drawing.Point(618, 440);
+            this.gridItvTextBox.Location = new System.Drawing.Point(438, 423);
             this.gridItvTextBox.Name = "gridItvTextBox";
             this.gridItvTextBox.ReadOnly = true;
             this.gridItvTextBox.Size = new System.Drawing.Size(46, 14);
@@ -715,44 +514,119 @@ namespace BinanceHand
             // 
             this.autoTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.autoTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.autoTextBox.Location = new System.Drawing.Point(536, 440);
+            this.autoTextBox.Location = new System.Drawing.Point(512, 423);
             this.autoTextBox.Name = "autoTextBox";
             this.autoTextBox.ReadOnly = true;
-            this.autoTextBox.Size = new System.Drawing.Size(72, 14);
+            this.autoTextBox.Size = new System.Drawing.Size(56, 14);
             this.autoTextBox.TabIndex = 6;
-            this.autoTextBox.Text = "1000";
+            this.autoTextBox.Text = "0000";
             // 
             // timeDiffTextBox
             // 
             this.timeDiffTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.timeDiffTextBox.Location = new System.Drawing.Point(814, 440);
+            this.timeDiffTextBox.Location = new System.Drawing.Point(339, 423);
             this.timeDiffTextBox.Name = "timeDiffTextBox";
             this.timeDiffTextBox.ReadOnly = true;
             this.timeDiffTextBox.Size = new System.Drawing.Size(52, 14);
             this.timeDiffTextBox.TabIndex = 6;
-            this.timeDiffTextBox.Text = "0.5";
+            this.timeDiffTextBox.Text = "0.0";
             // 
             // todayWinRateTextBox
             // 
             this.todayWinRateTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.todayWinRateTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.todayWinRateTextBox.Location = new System.Drawing.Point(1213, 440);
+            this.todayWinRateTextBox.Location = new System.Drawing.Point(135, 20);
             this.todayWinRateTextBox.Name = "todayWinRateTextBox";
             this.todayWinRateTextBox.ReadOnly = true;
-            this.todayWinRateTextBox.Size = new System.Drawing.Size(77, 14);
+            this.todayWinRateTextBox.Size = new System.Drawing.Size(89, 14);
             this.todayWinRateTextBox.TabIndex = 6;
-            this.todayWinRateTextBox.Text = "0.50(123)";
+            this.todayWinRateTextBox.Text = "0.00(000) 0.00";
             // 
             // totalWinRateTextBox
             // 
             this.totalWinRateTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.totalWinRateTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.totalWinRateTextBox.Location = new System.Drawing.Point(1131, 440);
+            this.totalWinRateTextBox.Location = new System.Drawing.Point(40, 20);
             this.totalWinRateTextBox.Name = "totalWinRateTextBox";
             this.totalWinRateTextBox.ReadOnly = true;
-            this.totalWinRateTextBox.Size = new System.Drawing.Size(72, 14);
+            this.totalWinRateTextBox.Size = new System.Drawing.Size(89, 14);
             this.totalWinRateTextBox.TabIndex = 6;
-            this.totalWinRateTextBox.Text = "0.50(1231)";
+            this.totalWinRateTextBox.Text = "0.00(000) 0.00";
+            // 
+            // simulTodayWinRateTextBox
+            // 
+            this.simulTodayWinRateTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.simulTodayWinRateTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.simulTodayWinRateTextBox.Location = new System.Drawing.Point(154, 47);
+            this.simulTodayWinRateTextBox.Name = "simulTodayWinRateTextBox";
+            this.simulTodayWinRateTextBox.ReadOnly = true;
+            this.simulTodayWinRateTextBox.Size = new System.Drawing.Size(87, 14);
+            this.simulTodayWinRateTextBox.TabIndex = 6;
+            this.simulTodayWinRateTextBox.Text = "0.00(000) 0.00";
+            // 
+            // simulTotalWinRateTextBox
+            // 
+            this.simulTotalWinRateTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.simulTotalWinRateTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.simulTotalWinRateTextBox.Location = new System.Drawing.Point(60, 47);
+            this.simulTotalWinRateTextBox.Name = "simulTotalWinRateTextBox";
+            this.simulTotalWinRateTextBox.ReadOnly = true;
+            this.simulTotalWinRateTextBox.Size = new System.Drawing.Size(88, 14);
+            this.simulTotalWinRateTextBox.TabIndex = 6;
+            this.simulTotalWinRateTextBox.Text = "0.00(000) 0.00";
+            // 
+            // simulResultListView
+            // 
+            this.simulResultListView.CellEditUseWholeCell = false;
+            this.simulResultListView.DataSource = null;
+            this.simulResultListView.HideSelection = false;
+            this.simulResultListView.Location = new System.Drawing.Point(25, 62);
+            this.simulResultListView.Name = "simulResultListView";
+            this.simulResultListView.ShowGroups = false;
+            this.simulResultListView.Size = new System.Drawing.Size(216, 189);
+            this.simulResultListView.TabIndex = 11;
+            this.simulResultListView.UseCompatibleStateImageBehavior = false;
+            this.simulResultListView.View = System.Windows.Forms.View.Details;
+            this.simulResultListView.VirtualMode = true;
+            // 
+            // assetsListView
+            // 
+            this.assetsListView.CellEditUseWholeCell = false;
+            this.assetsListView.DataSource = null;
+            this.assetsListView.HideSelection = false;
+            this.assetsListView.Location = new System.Drawing.Point(51, 458);
+            this.assetsListView.Name = "assetsListView";
+            this.assetsListView.ShowGroups = false;
+            this.assetsListView.Size = new System.Drawing.Size(216, 189);
+            this.assetsListView.TabIndex = 11;
+            this.assetsListView.UseCompatibleStateImageBehavior = false;
+            this.assetsListView.View = System.Windows.Forms.View.Details;
+            this.assetsListView.VirtualMode = true;
+            // 
+            // mainResultGroupBox
+            // 
+            this.mainResultGroupBox.Controls.Add(this.totalWinRateTextBox);
+            this.mainResultGroupBox.Controls.Add(this.todayWinRateTextBox);
+            this.mainResultGroupBox.Controls.Add(this.pictureBox);
+            this.mainResultGroupBox.Controls.Add(this.resultListView);
+            this.mainResultGroupBox.Location = new System.Drawing.Point(685, 409);
+            this.mainResultGroupBox.Name = "mainResultGroupBox";
+            this.mainResultGroupBox.Size = new System.Drawing.Size(302, 261);
+            this.mainResultGroupBox.TabIndex = 13;
+            this.mainResultGroupBox.TabStop = false;
+            this.mainResultGroupBox.Text = "Main";
+            // 
+            // simulResultGroupBox
+            // 
+            this.simulResultGroupBox.Controls.Add(this.simulResultListView);
+            this.simulResultGroupBox.Controls.Add(this.simulTodayWinRateTextBox);
+            this.simulResultGroupBox.Controls.Add(this.simulTotalWinRateTextBox);
+            this.simulResultGroupBox.Location = new System.Drawing.Point(1022, 367);
+            this.simulResultGroupBox.Name = "simulResultGroupBox";
+            this.simulResultGroupBox.Size = new System.Drawing.Size(306, 280);
+            this.simulResultGroupBox.TabIndex = 13;
+            this.simulResultGroupBox.TabStop = false;
+            this.simulResultGroupBox.Text = "Simulation";
             // 
             // Form1
             // 
@@ -760,8 +634,9 @@ namespace BinanceHand
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
-            this.Controls.Add(this.pictureBox);
-            this.Controls.Add(this.resultListView);
+            this.Controls.Add(this.simulResultGroupBox);
+            this.Controls.Add(this.mainResultGroupBox);
+            this.Controls.Add(this.assetsListView);
             this.Controls.Add(this.dayButton);
             this.Controls.Add(this.hourButton);
             this.Controls.Add(this.minButton);
@@ -772,12 +647,10 @@ namespace BinanceHand
             this.Controls.Add(this.secChart);
             this.Controls.Add(this.orderGroupBox);
             this.Controls.Add(this.FUGroupBox);
-            this.Controls.Add(this.totalWinRateTextBox);
-            this.Controls.Add(this.todayWinRateTextBox);
             this.Controls.Add(this.autoTextBox);
             this.Controls.Add(this.gridItvTextBox);
             this.Controls.Add(this.timeDiffTextBox);
-            this.Controls.Add(this.mainTabControl);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "Form1";
@@ -786,14 +659,6 @@ namespace BinanceHand
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).EndInit();
-            this.mainTabControl.ResumeLayout(false);
-            this.FUTab.ResumeLayout(false);
-            this.FUTab.PerformLayout();
-            this.FUTabControl.ResumeLayout(false);
-            this.FUPositionTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FUPositionListView)).EndInit();
-            this.FUOpenOrdersTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FUOpenOrdersListView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.minChart)).EndInit();
             this.FUGroupBox.ResumeLayout(false);
             this.FUGroupBox.PerformLayout();
@@ -803,6 +668,12 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.resultListView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.hourChart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dayChart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.simulResultListView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.assetsListView)).EndInit();
+            this.mainResultGroupBox.ResumeLayout(false);
+            this.mainResultGroupBox.PerformLayout();
+            this.simulResultGroupBox.ResumeLayout(false);
+            this.simulResultGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -812,28 +683,11 @@ namespace BinanceHand
 
         private System.Windows.Forms.DataVisualization.Charting.Chart secChart;
         private BrightIdeasSoftware.FastDataListView FUListView;
-        private System.Windows.Forms.TabControl mainTabControl;
         private System.Windows.Forms.TextBox FUKlineRcvTextBox;
         private System.Windows.Forms.TextBox FUKlineReqTextBox;
         private System.Windows.Forms.TextBox FUAggRcvTextBox;
         private System.Windows.Forms.TextBox FUAggReqTextBox;
         private System.Windows.Forms.DataVisualization.Charting.Chart minChart;
-        private System.Windows.Forms.TabPage FUTab;
-        private System.Windows.Forms.TabControl FUTabControl;
-        private System.Windows.Forms.TabPage FUPositionTab;
-        private System.Windows.Forms.TabPage FUOpenOrdersTab;
-        private BrightIdeasSoftware.FastDataListView FUPositionListView;
-        private BrightIdeasSoftware.FastDataListView FUOpenOrdersListView;
-        private System.Windows.Forms.TextBox FUAvailBalanceTextBox1;
-        private System.Windows.Forms.TextBox FUAvailBalanceTextBox0;
-        private System.Windows.Forms.TextBox FUMarginBalanceTextBox1;
-        private System.Windows.Forms.TextBox FUMarginBalanceTextBox0;
-        private System.Windows.Forms.TextBox FUWalletBalanceTextBox1;
-        private System.Windows.Forms.TextBox FUWalletBalanceTextBox0;
-        private System.Windows.Forms.TextBox FUMaintMarginTextBox1;
-        private System.Windows.Forms.TextBox FUMaintMarginTextBox0;
-        private System.Windows.Forms.TextBox FUMarginRatioTextBox1;
-        private System.Windows.Forms.TextBox FUMarginRatioTextBox0;
         private System.Windows.Forms.GroupBox FUGroupBox;
         private System.Windows.Forms.GroupBox orderGroupBox;
         private System.Windows.Forms.Button sellButton;
@@ -868,6 +722,12 @@ namespace BinanceHand
         private System.Windows.Forms.TextBox timeDiffTextBox;
         private System.Windows.Forms.TextBox todayWinRateTextBox;
         private System.Windows.Forms.TextBox totalWinRateTextBox;
+        private System.Windows.Forms.TextBox simulTodayWinRateTextBox;
+        private System.Windows.Forms.TextBox simulTotalWinRateTextBox;
+        private BrightIdeasSoftware.FastDataListView simulResultListView;
+        private BrightIdeasSoftware.FastDataListView assetsListView;
+        private System.Windows.Forms.GroupBox mainResultGroupBox;
+        private System.Windows.Forms.GroupBox simulResultGroupBox;
     }
 }
 

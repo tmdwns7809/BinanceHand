@@ -30,8 +30,12 @@ namespace BinanceHand
         public int count10sec;
         public double ms10secTot = 0;
         public double ms10secAvg;
+        public double real2Ms10secAvg;
         public double md10secTot = 0;
         public double md10secAvg;
+        public double real2Md10secAvg;
+        public double real2BigAmt10secAvg;
+        public double real2SmallAmt10secAvg;
         public double ms10secDev;
         public double ms10secSDev;
         public double md10secDev;
@@ -66,7 +70,6 @@ namespace BinanceHand
         public short Real2Condition;
         public bool LorS = true;
 
-        public bool order = false;
         public DateTime OrderTime;
         public OrderType OrderType;
         public OrderSide OrderSide;
@@ -100,12 +103,44 @@ namespace BinanceHand
         public decimal minSize;
         public decimal priceTickSize;
 
+
+
+        public bool simulEnterOrder = false;
+
+        public decimal simulBhtPrc;
+        public DateTime simulBhtTime;
+
+        public decimal simulProfitRate;
+
+        public bool simulLorS;
+
+        public decimal ms5secTot = 0;
+        public decimal ms5secAvg;
+        public decimal md5secTot = 0;
+        public decimal md5secAvg;
+
+        public decimal ms20secTot = 0;
+        public decimal ms20secAvg;
+        public decimal md20secTot = 0;
+        public decimal md20secAvg;
+
+        public Queue<decimal> pureSecCountQ = new Queue<decimal>();
+        public decimal pureSecCountQTot = 0;
+        public decimal pureSecCountQAvg;
+
+        public bool tooManyAmt;
+        public DateTime tooManyAmtTime;
+
+
         public ItemData(BinanceFuturesUsdtSymbol fu)
         {
             Name = fu.Name.Trim().ToUpper();
             minSize = fu.LotSizeFilter.MinQuantity;
             priceTickSize = fu.PriceFilter.TickSize;
             minNotionalValue = fu.MinNotionalFilter.MinNotional;
+
+            for (int i = 0; i < 10; i++)
+                pureSecCountQ.Enqueue(0);
         }
     }
 
