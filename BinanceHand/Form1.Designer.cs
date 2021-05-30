@@ -33,6 +33,7 @@ namespace BinanceHand
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.secChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUListView = new BrightIdeasSoftware.FastDataListView();
@@ -81,6 +82,8 @@ namespace BinanceHand
             this.assetsListView = new BrightIdeasSoftware.FastDataListView();
             this.mainResultGroupBox = new System.Windows.Forms.GroupBox();
             this.simulResultGroupBox = new System.Windows.Forms.GroupBox();
+            this.hoChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.hoHighPriceTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minChart)).BeginInit();
@@ -94,6 +97,7 @@ namespace BinanceHand
             ((System.ComponentModel.ISupportInitialize)(this.assetsListView)).BeginInit();
             this.mainResultGroupBox.SuspendLayout();
             this.simulResultGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.hoChart)).BeginInit();
             this.SuspendLayout();
             // 
             // secChart
@@ -628,6 +632,28 @@ namespace BinanceHand
             this.simulResultGroupBox.TabStop = false;
             this.simulResultGroupBox.Text = "Simulation";
             // 
+            // hoChart
+            // 
+            this.hoChart.BackColor = System.Drawing.Color.Gainsboro;
+            legend5.Enabled = false;
+            legend5.Name = "Legend1";
+            this.hoChart.Legends.Add(legend5);
+            this.hoChart.Location = new System.Drawing.Point(653, 190);
+            this.hoChart.Name = "hoChart";
+            this.hoChart.Size = new System.Drawing.Size(214, 182);
+            this.hoChart.TabIndex = 3;
+            this.hoChart.Text = "chart3";
+            // 
+            // hoHighPriceTextBox
+            // 
+            this.hoHighPriceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.hoHighPriceTextBox.Location = new System.Drawing.Point(725, 358);
+            this.hoHighPriceTextBox.Name = "hoHighPriceTextBox";
+            this.hoHighPriceTextBox.ReadOnly = true;
+            this.hoHighPriceTextBox.Size = new System.Drawing.Size(34, 14);
+            this.hoHighPriceTextBox.TabIndex = 6;
+            this.hoHighPriceTextBox.Text = "000";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -635,12 +661,14 @@ namespace BinanceHand
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1458, 682);
             this.Controls.Add(this.simulResultGroupBox);
+            this.Controls.Add(this.hoHighPriceTextBox);
             this.Controls.Add(this.mainResultGroupBox);
             this.Controls.Add(this.assetsListView);
             this.Controls.Add(this.dayButton);
             this.Controls.Add(this.hourButton);
             this.Controls.Add(this.minButton);
             this.Controls.Add(this.secButton);
+            this.Controls.Add(this.hoChart);
             this.Controls.Add(this.dayChart);
             this.Controls.Add(this.hourChart);
             this.Controls.Add(this.minChart);
@@ -674,6 +702,7 @@ namespace BinanceHand
             this.mainResultGroupBox.PerformLayout();
             this.simulResultGroupBox.ResumeLayout(false);
             this.simulResultGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.hoChart)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -728,6 +757,8 @@ namespace BinanceHand
         private BrightIdeasSoftware.FastDataListView assetsListView;
         private System.Windows.Forms.GroupBox mainResultGroupBox;
         private System.Windows.Forms.GroupBox simulResultGroupBox;
+        private System.Windows.Forms.DataVisualization.Charting.Chart hoChart;
+        private System.Windows.Forms.TextBox hoHighPriceTextBox;
     }
 }
 

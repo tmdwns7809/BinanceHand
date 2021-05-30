@@ -10,7 +10,16 @@ namespace BinanceHand
 {
     class ItemData
     {
-        public UpdateSubscription sub;
+        public UpdateSubscription aggSub;
+        public UpdateSubscription hoSub;
+        public int hoIndex;
+        public decimal hoHighQuan;
+        public decimal hoPrice;
+        public decimal hoLog;
+        public decimal hoPosition;
+        public int hoInt;
+        public decimal hoDecimal;
+
 
         public string Name;
 

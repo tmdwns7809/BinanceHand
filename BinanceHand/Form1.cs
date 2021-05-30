@@ -105,6 +105,8 @@ namespace BinanceHand
         AggUpdates aggUpdates;
         delegate void KlineUpdates(IBinanceStreamKlineData data, ItemData itemData);
         KlineUpdates klineUpdates;
+        delegate void HoUpdates(IBinanceFuturesEventOrderBook data, ItemData itemData);
+        HoUpdates hoUpdates;
 
         List<string> FUSymbolList = new List<string>();
 
@@ -609,6 +611,58 @@ namespace BinanceHand
             dayButton.Location = new Point(hourButton.Location.X + hourButton.Size.Width + 1, hourButton.Location.Y);
             dayButton.Click += (sebder, e) => { if (!dayChart.Visible) SetChartNowOrLoad(dayChart); };
             dayButton.BringToFront();
+
+            hoChart.BackColor = BackColor;
+            hoChart.ForeColor = ForeColor;
+            hoChart.Location = new Point(secChart.Location.X + secChart.Size.Width, secChart.Location.Y + secChart.Size.Height - 3 * secChart.Size.Height / 4);
+            hoChart.Size = new Size(Screen.GetWorkingArea(this).Size.Width - secChart.Width - 10, 3 * secChart.Size.Height / 4);
+            hoChart.Tag = 20;
+
+            chartArea0 = hoChart.ChartAreas.Add(secChart.ChartAreas[0].Name);
+            chartArea0.AxisX.MajorGrid.Enabled = false;
+            chartArea0.AxisX.MajorTickMark.Enabled = false;
+            chartArea0.AxisX.LabelStyle.Enabled = true;
+            chartArea0.AxisX.LabelStyle.ForeColor = ForeColor;
+            chartArea0.AxisX.LabelStyle.Interval = 1;
+            chartArea0.AxisX.IntervalAutoMode = IntervalAutoMode.FixedCount;
+            chartArea0.AxisX.LineColor = secChart.ChartAreas[0].AxisX.LineColor;
+
+            chartArea0.AxisY.MajorGrid.Enabled = false;
+            chartArea0.AxisY.MajorTickMark.Enabled = false;
+            chartArea0.AxisY.LabelStyle.Enabled = false;
+            //chartArea0.AxisY.LabelStyle.Format = "{0:0,}K";
+            //chartArea0.AxisY.LabelStyle.ForeColor = ForeColor;
+            chartArea0.AxisY.ScaleView.Position = 0;
+            chartArea0.AxisY.LineColor = secChart.ChartAreas[0].AxisY2.LineColor;
+
+            chartArea0.Position = new ElementPosition(0, 0, 100, 100);
+            chartArea0.BackColor = secChart.ChartAreas[0].BackColor;
+            chartArea0.BorderColor = secChart.ChartAreas[0].BorderColor;
+
+            series0 = hoChart.Series.Add(secChart.Series[0].Name);
+            series0.ChartType = SeriesChartType.StackedBar;
+            series0.Color = msAmtColor;
+            series0.ChartArea = chartArea0.Name;
+            series0.YAxisType = AxisType.Primary;
+            //series0.Label = "#VALY";
+            //series0.LabelForeColor = ForeColor;
+            //series0["LabelStyle"] = "Bottom";
+
+            series1 = hoChart.Series.Add(secChart.Series[1].Name);
+            series1.ChartType = SeriesChartType.StackedBar;
+            series1.Color = mdAmtColor;
+            series1.ChartArea = chartArea0.Name;
+            series1.YAxisType = AxisType.Primary;
+
+            for (int i = 0; i < (int)hoChart.Tag * 2; i++)
+            {
+                series0.Points.AddXY(0, 0);
+                series1.Points.AddXY(0, 0);
+            }
+
+            hoHighPriceTextBox.BackColor = BackColor;
+            hoHighPriceTextBox.ForeColor = ForeColor;
+            hoHighPriceTextBox.Location = new Point(hoChart.Location.X + hoChart.Size.Width / 2 - hoHighPriceTextBox.Width / 2, hoChart.Location.Y + hoChart.Size.Height - hoHighPriceTextBox.Height);
         }
         void OnChartAxisScrollBarClicked(object sender, ScrollBarEventArgs e)
         {
@@ -893,7 +947,7 @@ namespace BinanceHand
             FUGroupBox.BackColor = BackColor;
             FUGroupBox.ForeColor = ForeColor;
             FUGroupBox.Location = new Point(secChart.Location.X + secChart.Size.Width, secChart.Location.Y + 10);
-            FUGroupBox.Size = new Size(Screen.GetWorkingArea(this).Size.Width - secChart.Width - 10, secChart.Size.Height - 20);
+            FUGroupBox.Size = new Size(hoChart.Width, secChart.Size.Height - hoChart.Height - 20);
 
             FUListView.BackColor = controlBackColor;
             FUListView.ForeColor = ForeColor;
@@ -1231,7 +1285,10 @@ namespace BinanceHand
                 return;
 
             if (itemDataShowing != null && itemDataShowing.isChartShowing)
+            {
                 itemDataShowing.isChartShowing = false;
+                socketClient.Unsubscribe(itemData.hoSub);
+            }
             itemDataShowing = itemData;
 
             Text = itemData.Name + "-Future(Usdt)      Binance       UTC-" + startTime;
@@ -1304,6 +1361,8 @@ namespace BinanceHand
             ResetOrderView();
 
             itemData.isChartShowing = true;
+            //100, 250, 500
+            itemData.hoSub = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdates(itemData.Name, (int)hoChart.Tag, 500, data2 => { BeginInvoke(hoUpdates, data2, FUItemDataList[data2.Symbol.ToUpper()]); }).Data;
         }
         void ChartScroll(Chart chart, ScrollType scrollType)
         {
@@ -1645,6 +1704,7 @@ namespace BinanceHand
             markUpdates += new MarkUpdates(OnMarkPriceUpdates);
             accountUpdates = new AccountUpdates(OnAccountUpdates);
             orderUpdates = new OrderUpdates(OnOrderUpdates);
+            hoUpdates = new HoUpdates(OnHoUpdates);
 
             socketClient.FuturesUsdt.SubscribeToKlineUpdates(FUSymbolList, KlineInterval.OneMinute, data => { BeginInvoke(klineUpdates, data, FUItemDataList[data.Symbol]); });
             FUKlineRcvTextBox.Text = "0";
@@ -2518,6 +2578,83 @@ namespace BinanceHand
                 }
             }
         }
+        void OnHoUpdates(IBinanceFuturesEventOrderBook data, ItemData itemData)
+        {
+            if (!itemData.isChartShowing)
+                return;
+
+            itemData.hoHighQuan = 0;
+
+            itemData.hoIndex = 19;
+            foreach (var bid in data.Bids)
+            {
+                itemData.hoLog = (int)Math.Log10((double)(bid.Price * 1.005m - bid.Price));
+                if (itemData.hoLog >= 0) itemData.hoLog++;
+                itemData.hoLog = (decimal)Math.Pow(10, (double)itemData.hoLog);
+                itemData.hoPosition = (bid.Price / ((int)(bid.Price / itemData.hoLog) * itemData.hoLog) - 1) * 100 / 0.5m;
+                itemData.hoInt = (int)itemData.hoPosition;
+                itemData.hoDecimal = itemData.hoPosition - itemData.hoInt;
+                if (itemData.hoDecimal <= 0.2m)
+                {
+                    hoChart.Series[0].Points[itemData.hoIndex].AxisLabel = bid.Price + "_" + itemData.hoInt;
+                    hoChart.Series[1].Points[itemData.hoIndex].AxisLabel = bid.Price + "_" + itemData.hoInt;
+                    hoChart.Series[0].Points[itemData.hoIndex].Color = pureMsAmtColor;
+                }
+                else
+                {
+                    hoChart.Series[0].Points[itemData.hoIndex].AxisLabel = bid.Price.ToString();
+                    hoChart.Series[1].Points[itemData.hoIndex].AxisLabel = bid.Price.ToString();
+                }
+
+                hoChart.Series[0].Points[itemData.hoIndex].YValues[0] = (double)bid.Quantity;
+                hoChart.Series[1].Points[itemData.hoIndex].YValues[0] = 0;
+
+                itemData.hoIndex--;
+
+                if (bid.Quantity > itemData.hoHighQuan)
+                {
+                    itemData.hoHighQuan = bid.Quantity;
+                    itemData.hoPrice = bid.Price;
+                }
+            }
+
+            itemData.hoIndex = 20;
+            foreach (var ask in data.Asks)
+            {
+                itemData.hoLog = (int)Math.Log10((double)(ask.Price * 1.005m - ask.Price));
+                if (itemData.hoLog >= 0) itemData.hoLog++;
+                itemData.hoLog = (decimal)Math.Pow(10, (double)itemData.hoLog);
+                itemData.hoPosition = (ask.Price / ((int)(ask.Price / itemData.hoLog) * itemData.hoLog) - 1) * 100 / 0.5m;
+                itemData.hoInt = (int)itemData.hoPosition;
+                itemData.hoDecimal = itemData.hoPosition - itemData.hoInt;
+                if (itemData.hoDecimal <= 0.2m)
+                {
+                    hoChart.Series[0].Points[itemData.hoIndex].AxisLabel = ask.Price + "_" + itemData.hoInt;
+                    hoChart.Series[1].Points[itemData.hoIndex].AxisLabel = ask.Price + "_" + itemData.hoInt;
+                    hoChart.Series[1].Points[itemData.hoIndex].Color = pureMdAmtColor;
+                }
+                else
+                {
+                    hoChart.Series[0].Points[itemData.hoIndex].AxisLabel = ask.Price.ToString();
+                    hoChart.Series[1].Points[itemData.hoIndex].AxisLabel = ask.Price.ToString();
+                }
+
+                hoChart.Series[0].Points[itemData.hoIndex].YValues[0] = 0;
+                hoChart.Series[1].Points[itemData.hoIndex].YValues[0] = (double)ask.Quantity;
+
+                itemData.hoIndex++;
+
+                if (ask.Quantity > itemData.hoHighQuan)
+                {
+                    itemData.hoHighQuan = ask.Quantity;
+                    itemData.hoPrice = ask.Price;
+                }
+            }
+
+            hoChart.ChartAreas[0].AxisY.ScaleView.Zoom(0, (double)itemData.hoHighQuan);
+            hoChart.ChartAreas[0].AxisY.ScaleView.Position = 0;
+            hoHighPriceTextBox.Text = ((int)(itemData.hoHighQuan * itemData.hoPrice / 1000)).ToString();
+        }
 
         void SetAgg(ItemData itemData, bool on)
         {
@@ -2534,7 +2671,7 @@ namespace BinanceHand
                 itemData.ms20secTot = 0;
                 itemData.md20secTot = 0;
 
-                itemData.sub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
+                itemData.aggSub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
 
                 FUAggReq++;
             }
@@ -2542,7 +2679,7 @@ namespace BinanceHand
             {
                 itemData.Real = 0;
 
-                socketClient.Unsubscribe(itemData.sub);
+                socketClient.Unsubscribe(itemData.aggSub);
 
                 itemData.AggFirst = true;
 
