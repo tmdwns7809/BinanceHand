@@ -647,10 +647,10 @@ namespace BinanceHand
             // hoHighPriceTextBox
             // 
             this.hoHighPriceTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.hoHighPriceTextBox.Location = new System.Drawing.Point(725, 358);
+            this.hoHighPriceTextBox.Location = new System.Drawing.Point(685, 358);
             this.hoHighPriceTextBox.Name = "hoHighPriceTextBox";
             this.hoHighPriceTextBox.ReadOnly = true;
-            this.hoHighPriceTextBox.Size = new System.Drawing.Size(34, 14);
+            this.hoHighPriceTextBox.Size = new System.Drawing.Size(58, 14);
             this.hoHighPriceTextBox.TabIndex = 6;
             this.hoHighPriceTextBox.Text = "000";
             // 

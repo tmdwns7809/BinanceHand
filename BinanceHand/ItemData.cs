@@ -14,7 +14,7 @@ namespace BinanceHand
         public UpdateSubscription hoSub;
         public int hoIndex;
         public decimal hoHighQuan;
-        public decimal hoPrice;
+        public decimal hoHighPrice;
         public decimal hoLog;
         public decimal hoPosition;
         public int hoInt;
@@ -106,6 +106,8 @@ namespace BinanceHand
         public decimal minNotionalValue;
         public decimal PNL;
         public decimal ROE;
+        public int Has = 0;
+        public decimal ClosePNL;
 
         public List<BinanceFuturesBracket> brackets;
 
