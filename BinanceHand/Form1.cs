@@ -956,32 +956,32 @@ namespace BinanceHand
             column0.FreeSpaceProportion = column0Size;
             column0.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(column0);
-            var column1Size = 2;
+            var column1Size = 1;
             var column1 = new OLVColumn("R", "Real");
             column1.FreeSpaceProportion = column1Size;
             column1.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(column1);
-            var column2Size = 3;
-            var column2 = new OLVColumn("SDP", "minLowestSDevRatioPrice");
+            var column2Size = 2;
+            var column2 = new OLVColumn("SDP", "lastSDevRatioPrice");
             column2.FreeSpaceProportion = column2Size;
             column2.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(column2);
-            var column3Size = 3;
-            var column3 = new OLVColumn("SD", "minLowestSDevRatio");
+            var column3Size = 2;
+            var column3 = new OLVColumn("SD", "lastSDevRatio");
             column3.FreeSpaceProportion = column3Size;
             column3.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(column3);
-            var column4Size = 3;
-            var column4 = new OLVColumn("Count", "minLowestSDevCount10sec");
+            var column4Size = 2;
+            var column4 = new OLVColumn("C", "lastSDevCount10sec");
             column4.FreeSpaceProportion = column4Size;
             column4.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(column4);
-            var column5Size = 3;
+            var column5Size = 2;
             var column5 = new OLVColumn("Has", "Has");
             column5.FreeSpaceProportion = column5Size;
             column5.HeaderFormatStyle = headerstyle;
             FUListView.AllColumns.Add(column5);
-            var column6Size = 3;
+            var column6Size = 2;
             var column6 = new OLVColumn("PNL", "ClosePNL");
             column6.FreeSpaceProportion = column6Size;
             column6.HeaderFormatStyle = headerstyle;
@@ -1371,8 +1371,8 @@ namespace BinanceHand
             ResetOrderView();
 
             itemData.isChartShowing = true;
-            //100, 250, 500
-            itemData.hoSub = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdates(itemData.Name, (int)hoChart.Tag, 500, data2 => { BeginInvoke(hoUpdates, data2, FUItemDataList[data2.Symbol.ToUpper()]); }).Data;
+            //100, 500
+            itemData.hoSub = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdates(itemData.Name, (int)hoChart.Tag, 100, data2 => { BeginInvoke(hoUpdates, data2, FUItemDataList[data2.Symbol.ToUpper()]); }).Data;
         }
         void ChartScroll(Chart chart, ScrollType scrollType)
         {
@@ -2096,9 +2096,6 @@ namespace BinanceHand
 
                     if (itemData.secLastIndex > 20)
                     {
-                        itemData.price10secHighest = itemData.secStickList[itemData.secLastIndex].Price[0];
-                        itemData.price10secLowest = itemData.secStickList[itemData.secLastIndex].Price[1];
-
                         itemData.ms5secTot = itemData.ms5secTot + itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 5].Ms;
                         itemData.md5secTot = itemData.md5secTot + itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 5].Md;
                         itemData.ms5secAvg = itemData.ms5secTot / 5;
@@ -2111,140 +2108,185 @@ namespace BinanceHand
 
                         itemData.ms20secTot = itemData.ms20secTot + itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 20].Ms;
                         itemData.md20secTot = itemData.md20secTot + itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 20].Md;
-
                         itemData.ms20secAvg = itemData.ms20secTot / 20;
                         itemData.md20secAvg = itemData.md20secTot / 20;
 
-                        itemData.ms10secDev = Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Ms, 2);
-                        itemData.md10secDev = Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Md, 2);
-
-                        itemData.count10sec = itemData.secStickList[itemData.secLastIndex].TCount;
-
-                        for (itemData.index = itemData.secLastIndex - 9; itemData.index < itemData.secLastIndex; itemData.index++)
+                        itemData.price10Diff = itemData.secStickList[itemData.secLastIndex].Price[3] / itemData.secStickList[itemData.secLastIndex - 9].Price[3];
+                        if (itemData.price10Diff > 1.005m || itemData.price10Diff < 0.995m)
                         {
-                            if (itemData.secStickList[itemData.index].Price[0] > itemData.price10secHighest)
-                                itemData.price10secHighest = itemData.secStickList[itemData.index].Price[0];
-                            if (itemData.secStickList[itemData.index].Price[1] < itemData.price10secLowest)
-                                itemData.price10secLowest = itemData.secStickList[itemData.index].Price[1];
+                            itemData.price10Diff = (itemData.price10Diff - 1) * 100 / 2;
 
-                            itemData.ms10secDev += Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.index].Ms, 2);
-                            itemData.md10secDev += Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.index].Md, 2);
-
-                            itemData.count10sec += itemData.secStickList[itemData.index].TCount;
-                        }
-
-                        itemData.ms10secSDev = Math.Pow(itemData.ms10secDev, 0.5);
-                        itemData.md10secSDev = Math.Pow(itemData.md10secDev, 0.5);
-
-                        itemData.SDevRatioPrice = itemData.price10secHighest / itemData.price10secLowest;
-                        itemData.msSDevRatio = itemData.ms10secSDev / itemData.ms10secAvg;
-                        itemData.mdSDevRatio = itemData.md10secSDev / itemData.md10secAvg;
-
-                        if (itemData.SDevRatioPrice > 1.007m
-                            && (itemData.msSDevRatio < 2.0 || itemData.mdSDevRatio < 2.0)
-                            && itemData.count10sec > 300)
-                        {
-                            if (itemData.Real != 2)
-                            {
-                                itemData.Real = 2;
-                                Task.Run(() =>
-                                {
-                                    var ok = false;
-                                    Task.Run(() =>
-                                    {
-                                        MessageBox.Show("Real 2 감지", "Real", MessageBoxButtons.OK);
-                                        ok = true;
-                                        return;
-                                    });
-                                    while (true)
-                                    {
-                                        if (ok)
-                                            return;
-                                        soundEngine.Play2D(failSound, false, false, false);
-                                        Thread.Sleep((int)failSound.PlayLength + 500);
-                                    }
-                                });
-                                FUListView.RefreshObject(itemData);
-                                dbHelper.SaveData1("Detect_History", "Time", itemData.secStick.Time.ToString(secTimeFormat), "Symbol", itemData.Name
-                                    , "Data", "Real 2 in : 전10초폭: " + Math.Round(itemData.SDevRatioPrice, 4)
-                                    + " 표준편차비: 매수" + Math.Round(itemData.msSDevRatio, 2) + " 매도" + Math.Round(itemData.mdSDevRatio, 2) + " 체결수: " + itemData.count10sec);
-                            }
-                            itemData.Real2Condition = 0;
-                            itemData.real2Ms10secAvg = itemData.ms10secAvg;
-                            itemData.real2Md10secAvg = itemData.md10secAvg;
-                            if (itemData.real2Ms10secAvg > itemData.real2Md10secAvg)
-                            {
-                                itemData.real2BigAmt10secAvg = itemData.real2Ms10secAvg;
-                                itemData.real2SmallAmt10secAvg = itemData.real2Md10secAvg;
-                            }
+                            if (itemData.price10Diff > 0)
+                                itemData.ms10secDev = Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Ms, 2);
                             else
-                            {
-                                itemData.real2BigAmt10secAvg = itemData.real2Md10secAvg;
-                                itemData.real2SmallAmt10secAvg = itemData.real2Ms10secAvg;
-                            }
-                            if (itemData.isChartShowing)
-                            {
-                                if (secChart.ChartAreas[1].AxisY2.StripLines.Count() == 0)
-                                {
-                                    var strip = new StripLine();
-                                    strip.ForeColor = ForeColor;
-                                    strip.TextLineAlignment = StringAlignment.Center;
-                                    strip.TextAlignment = StringAlignment.Center;
-                                    strip.StripWidth = itemData.real2SmallAmt10secAvg * 2;
-                                    strip.BackColor = realSmallAmtColor;
-                                    strip.Text = strip.StripWidth.ToString();
-                                    strip.IntervalOffset = -itemData.real2SmallAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines.Add(strip);
+                                itemData.md10secDev = Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Md, 2);
 
-                                    strip = new StripLine();
-                                    strip.ForeColor = ForeColor;
-                                    strip.TextLineAlignment = StringAlignment.Center;
-                                    strip.TextAlignment = StringAlignment.Center;
-                                    strip.StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
-                                    strip.BackColor = realBigAmtColor;
-                                    strip.Text = strip.StripWidth.ToString();
-                                    strip.IntervalOffset = itemData.real2SmallAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines.Add(strip);
+                            itemData.count10sec = itemData.secStickList[itemData.secLastIndex].TCount;
 
-                                    strip = new StripLine();
-                                    strip.ForeColor = ForeColor;
-                                    strip.TextLineAlignment = StringAlignment.Center;
-                                    strip.TextAlignment = StringAlignment.Center;
-                                    strip.StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
-                                    strip.BackColor = realBigAmtColor;
-                                    strip.Text = strip.StripWidth.ToString();
-                                    strip.IntervalOffset = -itemData.real2BigAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines.Add(strip);
-                                }
+                            for (itemData.index = itemData.secLastIndex - 9; itemData.index <= itemData.secLastIndex; itemData.index++)
+                            {
+                                itemData.priceStandard = itemData.secStickList[itemData.secLastIndex - 9].Price[3] + itemData.index * itemData.price10Diff / 10;
+
+                                if (Math.Abs(itemData.secStickList[itemData.index].Price[0] - itemData.priceStandard) > itemData.price10Diff
+                                    || Math.Abs(itemData.secStickList[itemData.index].Price[1] - itemData.priceStandard) > itemData.price10Diff
+                                    || Math.Abs(itemData.secStickList[itemData.index].Price[2] - itemData.priceStandard) > itemData.price10Diff
+                                    || Math.Abs(itemData.secStickList[itemData.index].Price[3] - itemData.priceStandard) > itemData.price10Diff)
+                                    break;
+
+                                if (itemData.price10Diff > 0)
+                                    itemData.ms10secDev += Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.index].Ms, 2);
                                 else
-                                {
-                                    secChart.ChartAreas[1].AxisY2.StripLines[0].StripWidth = itemData.real2SmallAmt10secAvg * 2;
-                                    secChart.ChartAreas[1].AxisY2.StripLines[0].IntervalOffset = -itemData.real2SmallAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines[0].Text = secChart.ChartAreas[1].AxisY2.StripLines[0].StripWidth.ToString();
+                                    itemData.md10secDev += Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.index].Md, 2);
 
-                                    secChart.ChartAreas[1].AxisY2.StripLines[1].StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines[1].IntervalOffset = itemData.real2SmallAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines[1].Text = secChart.ChartAreas[1].AxisY2.StripLines[1].StripWidth.ToString();
-
-                                    secChart.ChartAreas[1].AxisY2.StripLines[2].StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines[2].IntervalOffset = -itemData.real2BigAmt10secAvg;
-                                    secChart.ChartAreas[1].AxisY2.StripLines[2].Text = secChart.ChartAreas[1].AxisY2.StripLines[2].StripWidth.ToString();
-                                }
+                                itemData.count10sec += itemData.secStickList[itemData.index].TCount;
                             }
-                        }
 
-                        if (itemData.msSDevRatio < itemData.lowestSDevRatio || itemData.mdSDevRatio < itemData.lowestSDevRatio)
-                        {
-                            itemData.lowestSDevRatioPrice = itemData.SDevRatioPrice;
-                            itemData.lowestSDevRatio = itemData.msSDevRatio;
-                            if (itemData.mdSDevRatio < itemData.msSDevRatio)
-                                itemData.lowestSDevRatio = itemData.mdSDevRatio;
-                            itemData.lowestSDevCount10sec = itemData.count10sec;
+                            if (itemData.index == itemData.secLastIndex + 1)
+                            {
+                                if (itemData.price10Diff > 0)
+                                    itemData.SDevRatio = Math.Pow(itemData.ms10secDev / 10, 0.5) / itemData.ms10secAvg;
+                                else
+                                    itemData.SDevRatio = Math.Pow(itemData.md10secDev / 10, 0.5) / itemData.md10secAvg;
+
+                                if (itemData.SDevRatio < 1.0 && itemData.count10sec > 300)
+                                {
+                                    if (itemData.Real != 2)
+                                    {
+                                        itemData.Real = 2;
+                                        Task.Run(() =>
+                                        {
+                                            var ok = false;
+                                            Task.Run(() =>
+                                            {
+                                                MessageBox.Show("Real 2 감지", "Real", MessageBoxButtons.OK);
+                                                ok = true;
+                                                return;
+                                            });
+                                            while (true)
+                                            {
+                                                if (ok)
+                                                    return;
+                                                soundEngine.Play2D(failSound, false, false, false);
+                                                Thread.Sleep((int)failSound.PlayLength + 500);
+                                            }
+                                        });
+                                        FUListView.RefreshObject(itemData);
+                                        dbHelper.SaveData1("Detect_History", "Time", itemData.secStick.Time.ToString(secTimeFormat), "Symbol", itemData.Name
+                                            , "Data", "Real 2 in : 전10초폭: " + Math.Round(itemData.price10Diff * 2, 4)
+                                            + " 표준편차비: " + Math.Round(itemData.SDevRatio, 2) + " 체결수: " + itemData.count10sec);
+                                    }
+                                    itemData.Real2Condition = 0;
+                                    if (itemData.price10Diff > 0)
+                                    {
+                                        itemData.real2BigAmt10secAvg = itemData.ms10secAvg;
+                                        itemData.real2SmallAmt10secAvg = itemData.md10secAvg;
+                                    }
+                                    else
+                                    {
+                                        itemData.real2BigAmt10secAvg = itemData.md10secAvg;
+                                        itemData.real2SmallAmt10secAvg = itemData.ms10secAvg;
+                                    }
+                                    if (itemData.isChartShowing)
+                                    {
+                                        if (secChart.ChartAreas[1].AxisY2.StripLines.Count() == 0)
+                                        {
+                                            var strip = new StripLine();
+                                            strip.ForeColor = ForeColor;
+                                            strip.TextLineAlignment = StringAlignment.Center;
+                                            strip.TextAlignment = StringAlignment.Center;
+                                            strip.StripWidth = itemData.real2SmallAmt10secAvg * 2;
+                                            strip.BackColor = realSmallAmtColor;
+                                            strip.Text = strip.StripWidth.ToString();
+                                            strip.IntervalOffset = -itemData.real2SmallAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines.Add(strip);
+
+                                            strip = new StripLine();
+                                            strip.ForeColor = ForeColor;
+                                            strip.TextLineAlignment = StringAlignment.Center;
+                                            strip.TextAlignment = StringAlignment.Center;
+                                            strip.StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
+                                            strip.BackColor = realBigAmtColor;
+                                            strip.Text = strip.StripWidth.ToString();
+                                            strip.IntervalOffset = itemData.real2SmallAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines.Add(strip);
+
+                                            strip = new StripLine();
+                                            strip.ForeColor = ForeColor;
+                                            strip.TextLineAlignment = StringAlignment.Center;
+                                            strip.TextAlignment = StringAlignment.Center;
+                                            strip.StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
+                                            strip.BackColor = realBigAmtColor;
+                                            strip.Text = strip.StripWidth.ToString();
+                                            strip.IntervalOffset = -itemData.real2BigAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines.Add(strip);
+                                        }
+                                        else
+                                        {
+                                            secChart.ChartAreas[1].AxisY2.StripLines[0].StripWidth = itemData.real2SmallAmt10secAvg * 2;
+                                            secChart.ChartAreas[1].AxisY2.StripLines[0].IntervalOffset = -itemData.real2SmallAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines[0].Text = secChart.ChartAreas[1].AxisY2.StripLines[0].StripWidth.ToString();
+
+                                            secChart.ChartAreas[1].AxisY2.StripLines[1].StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines[1].IntervalOffset = itemData.real2SmallAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines[1].Text = secChart.ChartAreas[1].AxisY2.StripLines[1].StripWidth.ToString();
+
+                                            secChart.ChartAreas[1].AxisY2.StripLines[2].StripWidth = itemData.real2BigAmt10secAvg - itemData.real2SmallAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines[2].IntervalOffset = -itemData.real2BigAmt10secAvg;
+                                            secChart.ChartAreas[1].AxisY2.StripLines[2].Text = secChart.ChartAreas[1].AxisY2.StripLines[2].StripWidth.ToString();
+                                        }
+                                    }
+                                }
+
+                                itemData.lastSDevRatioPrice = Math.Round(itemData.price10Diff * 2, 2); 
+                                itemData.lastSDevRatio = Math.Round(itemData.SDevRatio, 2); 
+                                itemData.lastSDevCount10sec = itemData.count10sec;
+                            }
                         }
 
                         if (itemData.isChartShowing)
-                            autoTextBox.Text =
-                                Math.Round((decimal)(itemData.ms10secAvg + itemData.md10secAvg) / 2 / 100 * itemData.price10secLowest, 0).ToString();
+                            autoTextBox.Text = Math.Round((decimal)(itemData.ms10secAvg + itemData.md10secAvg) / 2 / 100 * itemData.secStick.Price[3], 0).ToString();
+
+                        // simul
+                        if (!itemData.simulEnterOrder && itemData.Real == 2 && EnterCondition(itemData))
+                        {
+                            itemData.simulEnterOrder = true;
+
+                            itemData.simulBhtPrc = itemData.secStick.Price[3];
+                            itemData.simulBhtTime = itemData.secStick.Time;
+                        }
+                        else if (itemData.simulEnterOrder && ExitCondition(itemData))
+                        {
+                            if (itemData.simulLorS)
+                                itemData.simulProfitRate = Math.Round((data.Price / itemData.simulBhtPrc - 1) * 100, 2);
+                            else
+                                itemData.simulProfitRate = Math.Round((itemData.simulBhtPrc / data.Price - 1) * 100, 2);
+
+                            simulTotalTrades++;
+                            simulThisTrades++;
+                            if (itemData.simulProfitRate > commisionRate)
+                            {
+                                simulTotalWin++;
+                                simulThisWin++;
+                            }
+                            simulTotalRateSum += itemData.simulProfitRate;
+                            simulThisRateSum += itemData.simulProfitRate;
+
+                            simulTotalWinRateTextBox.Text = Math.Round((double)simulTotalWin / simulTotalTrades, 2) + "(" + simulTotalTrades + ") " + Math.Round((double)simulTotalRateSum / simulTotalTrades, 2);
+                            simulTodayWinRateTextBox.Text = Math.Round((double)simulThisWin / simulThisTrades, 2) + "(" + simulThisTrades + ") " + Math.Round((double)simulThisRateSum / simulThisTrades, 2);
+
+                            var simulResultData = new SimulResultData
+                            {
+                                Name = itemData.Name,
+                                ProfitRate = itemData.simulProfitRate,
+                                Time = itemData.simulBhtTime.ToString(secTimeFormat) + "+" + Math.Round(data.TradeTime.Subtract(itemData.simulBhtTime).TotalSeconds, 1)
+                            };
+
+                            dbHelper.SaveData1("Simulation_Trade_History", "Time", simulResultData.Time, "Symbol", simulResultData.Name, "Profit", simulResultData.ProfitRate.ToString());
+
+                            simulResultListView.InsertObjects(0, new List<SimulResultData> { simulResultData });
+
+                            itemData.simulEnterOrder = false;
+                        }
                     }
                     else
                     {
@@ -2303,20 +2345,7 @@ namespace BinanceHand
                 if (data.TradeTime.Subtract(itemData.minStick.Time).TotalMinutes >= 1)
                 {
                     if (itemData.minStick.Time != default)
-                    {
                         itemData.minStickList.Add(itemData.minStick);
-
-                        if (itemData.lowestSDevRatioPrice != 0 && itemData.lowestSDevRatio != double.MaxValue)
-                        {
-                            itemData.minLowestSDevRatioPrice = Math.Round((itemData.lowestSDevRatioPrice - 1) * 100, 2);
-                            itemData.minLowestSDevRatio = Math.Round(itemData.lowestSDevRatio, 2);
-                            itemData.minLowestSDevCount10sec = itemData.lowestSDevCount10sec;
-                        }
-                        itemData.lowestSDevRatioPrice = itemData.SDevRatioPrice;
-                        itemData.lowestSDevRatio = itemData.msSDevRatio;
-
-                        FUListView.RefreshObject(itemData);
-                    }
 
                     itemData.minStick = new Stick();
 
@@ -2805,9 +2834,9 @@ namespace BinanceHand
                 FUAggReq--;
                 FUAggRcvTextBox.Text = FUAggRcv.ToString();
 
-                itemData.minLowestSDevRatioPrice = 0;
-                itemData.minLowestSDevRatio = 0;
-                itemData.minLowestSDevCount10sec = 0;
+                itemData.lastSDevRatioPrice = 0;
+                itemData.lastSDevRatio = 0;
+                itemData.lastSDevCount10sec = 0;
             }
             FUAggReqTextBox.Text = "/" + FUAggReq + "(A)";
             FUListView.RefreshObject(itemData);
