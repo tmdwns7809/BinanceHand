@@ -43,7 +43,7 @@ namespace BinanceHand
         static int PrcAlpha = 255;
         static int amtAlpha = 255;
         static int stripAlpha = 5;
-        static int simulStripAlpha = 20;
+        static int simulStripAlpha = 50;
         Color msAmtColor = Color.FromArgb(amtAlpha, 0, 89, 64);
         Color pureMsAmtColor = Color.FromArgb(amtAlpha, 19, 158, 119);
         Color realSmallAmtColor = Color.FromArgb(stripAlpha, Color.LightBlue);
@@ -55,15 +55,13 @@ namespace BinanceHand
         Color earningColor = Color.FromArgb(simulStripAlpha, Color.Gold);
         Color losingColor = Color.FromArgb(simulStripAlpha, Color.LightGray);
         Color hasColor = Color.SkyBlue;
-
-        int baseChartViewSticksSize = 120;
-
         static int gridAlpha = 20;
         Color gridColor = Color.FromArgb(gridAlpha, Color.Gray);
-
         Color controlBackColor = Color.FromArgb(24, 26, 32);
         Color buttonSelectedColor = Color.DarkGray;
         Color buttonColor = Color.Gray;
+
+        int baseChartViewSticksSize = 120;
 
         string ForDecimalString = "0.#############################";
 
@@ -1016,7 +1014,7 @@ namespace BinanceHand
 
             realButton.BackColor = buttonColor;
             realButton.ForeColor = ForeColor;
-            realButton.Location = new Point(FUAggReqTextBox.Location.X + FUAggReqTextBox.Width, FUAggReqTextBox.Location.Y + 2);
+            realButton.Location = new Point(FUAggReqTextBox.Location.X + FUAggReqTextBox.Width, FUAggReqTextBox.Location.Y - 2);
             realButton.Click += (sebder, e) => {
                 var itemData = FUListView.SelectedObject as ItemData;
 
@@ -1024,6 +1022,33 @@ namespace BinanceHand
                     SetAgg(itemData, false);
                 else
                     SetAgg(itemData, true);
+            };
+
+            hoButton.BackColor = buttonColor;
+            hoButton.ForeColor = ForeColor;
+            hoButton.Location = new Point(realButton.Location.X + realButton.Width + 5, realButton.Location.Y);
+            hoButton.Click += (sebder, e) => {
+                var itemData = FUListView.SelectedObject as ItemData;
+
+                if (itemData.hoSub == default)  //100, 500
+                    itemData.hoSub = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdates(itemData.Name, (int)hoChart.Tag, 100, data2 => { BeginInvoke(hoUpdates, data2, FUItemDataList[data2.Symbol.ToUpper()]); }).Data;
+                else
+                {
+                    socketClient.Unsubscribe(itemData.hoSub);
+                    itemData.hoSub = default;
+                }
+            };
+
+            saveButton.BackColor = buttonColor;
+            saveButton.ForeColor = ForeColor;
+            saveButton.Location = new Point(hoButton.Location.X + hoButton.Width + 5, hoButton.Location.Y);
+            saveButton.Click += (sebder, e) => {
+                var itemData = FUListView.SelectedObject as ItemData;
+
+                List<Stick> secList = new List<Stick>();
+                secList.AddRange(itemData.oldSecStickList);
+                secList.AddRange(itemData.secStickList);
+                dbHelper.SaveSticksCSVData(itemData.Name + "_" + secList[0].Time.ToString(secTimeFormatSCV), secList);
             };
         }
 
@@ -1194,7 +1219,7 @@ namespace BinanceHand
                 return;
             }
 
-            var b = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeout(itemDataShowing.Name, TimeSpan.FromSeconds(2));
+            var b = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeout(itemDataShowing.Name, TimeSpan.FromSeconds(1));
 
             if (!b.Success)
             {
@@ -1227,6 +1252,7 @@ namespace BinanceHand
 
                 var resultData = new ResultData { Symbol = itemDataShowing.Name };
                 resultData.EntryTime = DateTime.UtcNow;
+                resultData.EntryGapAndTimeAndSuccessAmount = "0";
                 resultListView.InsertObjects(0, new List<ResultData> { resultData });
 
                 itemDataShowing.Size = 0;
@@ -1295,10 +1321,7 @@ namespace BinanceHand
                 return;
 
             if (itemDataShowing != null && itemDataShowing.isChartShowing)
-            {
                 itemDataShowing.isChartShowing = false;
-                socketClient.Unsubscribe(itemData.hoSub);
-            }
             itemDataShowing = itemData;
 
             Text = itemData.Name + "-Future(Usdt)      Binance       UTC-" + startTime;
@@ -1371,8 +1394,6 @@ namespace BinanceHand
             ResetOrderView();
 
             itemData.isChartShowing = true;
-            //100, 500
-            itemData.hoSub = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdates(itemData.Name, (int)hoChart.Tag, 100, data2 => { BeginInvoke(hoUpdates, data2, FUItemDataList[data2.Symbol.ToUpper()]); }).Data;
         }
         void ChartScroll(Chart chart, ScrollType scrollType)
         {
@@ -2020,7 +2041,7 @@ namespace BinanceHand
                         List<Stick> secList = new List<Stick>();
                         secList.AddRange(itemData.oldSecStickList);
                         secList.AddRange(itemData.secStickList);
-                        dbHelper.SaveSticksCSVData(itemData.Name + "_" + DateTime.UtcNow.ToString(secTimeFormatSCV), secList);
+                        dbHelper.SaveSticksCSVData(itemData.Name + "_" + secList[0].Time.ToString(secTimeFormatSCV), secList);
                     }
                     else
                         itemData.Real2Condition++;
@@ -2094,29 +2115,34 @@ namespace BinanceHand
 
                     itemData.secLastIndex = itemData.secStickList.Count - 1;
 
-                    if (itemData.secLastIndex > 20)
+                    if (itemData.secLastIndex > 10)
                     {
-                        itemData.ms5secTot = itemData.ms5secTot + itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 5].Ms;
-                        itemData.md5secTot = itemData.md5secTot + itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 5].Md;
-                        itemData.ms5secAvg = itemData.ms5secTot / 5;
-                        itemData.md5secAvg = itemData.md5secTot / 5;
+                        itemData.ms3secTot = itemData.ms3secTot + itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 3].Ms;
+                        itemData.md3secTot = itemData.md3secTot + itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 3].Md;
+                        itemData.ms3secAvg = itemData.ms3secTot / 3;
+                        itemData.md3secAvg = itemData.md3secTot / 3;
+
+                        itemData.ms8secTot = itemData.ms8secTot + itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 8].Ms;
+                        itemData.md8secTot = itemData.md8secTot + itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 8].Md;
+                        itemData.ms8secAvg = (itemData.ms8secTot - itemData.ms3secTot) / 5;
+                        itemData.md8secAvg = (itemData.md8secTot - itemData.md3secTot) / 5;
 
                         itemData.ms10secTot = itemData.ms10secTot + (double)(itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 10].Ms);
                         itemData.md10secTot = itemData.md10secTot + (double)(itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 10].Md);
                         itemData.ms10secAvg = itemData.ms10secTot / 10;
                         itemData.md10secAvg = itemData.md10secTot / 10;
 
-                        itemData.ms20secTot = itemData.ms20secTot + itemData.secStickList[itemData.secLastIndex].Ms - itemData.secStickList[itemData.secLastIndex - 20].Ms;
-                        itemData.md20secTot = itemData.md20secTot + itemData.secStickList[itemData.secLastIndex].Md - itemData.secStickList[itemData.secLastIndex - 20].Md;
-                        itemData.ms20secAvg = itemData.ms20secTot / 20;
-                        itemData.md20secAvg = itemData.md20secTot / 20;
-
-                        itemData.price10Diff = itemData.secStickList[itemData.secLastIndex].Price[3] / itemData.secStickList[itemData.secLastIndex - 9].Price[3];
-                        if (itemData.price10Diff > 1.005m || itemData.price10Diff < 0.995m)
+                        itemData.priceDiffRate = (itemData.secStickList[itemData.secLastIndex].Price[3] + itemData.secStickList[itemData.secLastIndex].Price[2]) 
+                            / (itemData.secStickList[itemData.secLastIndex - 9].Price[3] + itemData.secStickList[itemData.secLastIndex - 9].Price[2]);
+                        if (itemData.priceDiffRate > 1.005m || itemData.priceDiffRate < 0.995m)
                         {
-                            itemData.price10Diff = (itemData.price10Diff - 1) * 100 / 2;
+                            itemData.priceDiffRate = itemData.priceDiffRate - 1;
+                            itemData.priceDiffStep = ((itemData.secStickList[itemData.secLastIndex].Price[3] + itemData.secStickList[itemData.secLastIndex].Price[2]) / 2
+                                - (itemData.secStickList[itemData.secLastIndex - 9].Price[3] + itemData.secStickList[itemData.secLastIndex - 9].Price[2]) / 2) / 9;
+                            itemData.priceRange = (itemData.secStickList[itemData.secLastIndex].Price[3] + itemData.secStickList[itemData.secLastIndex].Price[2]
+                                + itemData.secStickList[itemData.secLastIndex - 9].Price[3] + itemData.secStickList[itemData.secLastIndex - 9].Price[2]) / 4 * (0.001m + Math.Abs(itemData.priceDiffRate / 2));
 
-                            if (itemData.price10Diff > 0)
+                            if (itemData.priceDiffRate > 0)
                                 itemData.ms10secDev = Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Ms, 2);
                             else
                                 itemData.md10secDev = Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.secLastIndex].Md, 2);
@@ -2125,15 +2151,16 @@ namespace BinanceHand
 
                             for (itemData.index = itemData.secLastIndex - 9; itemData.index <= itemData.secLastIndex; itemData.index++)
                             {
-                                itemData.priceStandard = itemData.secStickList[itemData.secLastIndex - 9].Price[3] + itemData.index * itemData.price10Diff / 10;
+                                itemData.priceStandard = (itemData.secStickList[itemData.secLastIndex - 9].Price[2] + itemData.secStickList[itemData.secLastIndex - 9].Price[3]) / 2 
+                                    + (itemData.index - itemData.secLastIndex + 9) * itemData.priceDiffStep;
 
-                                if (Math.Abs(itemData.secStickList[itemData.index].Price[0] - itemData.priceStandard) > itemData.price10Diff
-                                    || Math.Abs(itemData.secStickList[itemData.index].Price[1] - itemData.priceStandard) > itemData.price10Diff
-                                    || Math.Abs(itemData.secStickList[itemData.index].Price[2] - itemData.priceStandard) > itemData.price10Diff
-                                    || Math.Abs(itemData.secStickList[itemData.index].Price[3] - itemData.priceStandard) > itemData.price10Diff)
+                                if (Math.Abs(itemData.secStickList[itemData.index].Price[0] - itemData.priceStandard) > itemData.priceRange
+                                    || Math.Abs(itemData.secStickList[itemData.index].Price[1] - itemData.priceStandard) > itemData.priceRange
+                                    || Math.Abs(itemData.secStickList[itemData.index].Price[2] - itemData.priceStandard) > itemData.priceRange
+                                    || Math.Abs(itemData.secStickList[itemData.index].Price[3] - itemData.priceStandard) > itemData.priceRange)
                                     break;
 
-                                if (itemData.price10Diff > 0)
+                                if (itemData.priceDiffRate > 0)
                                     itemData.ms10secDev += Math.Pow(itemData.ms10secAvg - (double)itemData.secStickList[itemData.index].Ms, 2);
                                 else
                                     itemData.md10secDev += Math.Pow(itemData.md10secAvg - (double)itemData.secStickList[itemData.index].Md, 2);
@@ -2141,14 +2168,14 @@ namespace BinanceHand
                                 itemData.count10sec += itemData.secStickList[itemData.index].TCount;
                             }
 
-                            if (itemData.index == itemData.secLastIndex + 1)
+                            if (itemData.index > itemData.secLastIndex)
                             {
-                                if (itemData.price10Diff > 0)
+                                if (itemData.priceDiffRate > 0)
                                     itemData.SDevRatio = Math.Pow(itemData.ms10secDev / 10, 0.5) / itemData.ms10secAvg;
                                 else
                                     itemData.SDevRatio = Math.Pow(itemData.md10secDev / 10, 0.5) / itemData.md10secAvg;
 
-                                if (itemData.SDevRatio < 1.0 && itemData.count10sec > 300)
+                                if (itemData.SDevRatio < 0.7 && itemData.count10sec > 500)
                                 {
                                     if (itemData.Real != 2)
                                     {
@@ -2172,11 +2199,11 @@ namespace BinanceHand
                                         });
                                         FUListView.RefreshObject(itemData);
                                         dbHelper.SaveData1("Detect_History", "Time", itemData.secStick.Time.ToString(secTimeFormat), "Symbol", itemData.Name
-                                            , "Data", "Real 2 in : 전10초폭: " + Math.Round(itemData.price10Diff * 2, 4)
+                                            , "Data", "Real 2 in : 전10초폭: " + Math.Round(itemData.priceDiffRate * 100, 4)
                                             + " 표준편차비: " + Math.Round(itemData.SDevRatio, 2) + " 체결수: " + itemData.count10sec);
                                     }
                                     itemData.Real2Condition = 0;
-                                    if (itemData.price10Diff > 0)
+                                    if (itemData.priceDiffRate > 0)
                                     {
                                         itemData.real2BigAmt10secAvg = itemData.ms10secAvg;
                                         itemData.real2SmallAmt10secAvg = itemData.md10secAvg;
@@ -2237,7 +2264,7 @@ namespace BinanceHand
                                     }
                                 }
 
-                                itemData.lastSDevRatioPrice = Math.Round(itemData.price10Diff * 2, 2); 
+                                itemData.lastSDevRatioPrice = Math.Round(itemData.priceDiffRate * 100, 2); 
                                 itemData.lastSDevRatio = Math.Round(itemData.SDevRatio, 2); 
                                 itemData.lastSDevCount10sec = itemData.count10sec;
                             }
@@ -2247,14 +2274,7 @@ namespace BinanceHand
                             autoTextBox.Text = Math.Round((decimal)(itemData.ms10secAvg + itemData.md10secAvg) / 2 / 100 * itemData.secStick.Price[3], 0).ToString();
 
                         // simul
-                        if (!itemData.simulEnterOrder && itemData.Real == 2 && EnterCondition(itemData))
-                        {
-                            itemData.simulEnterOrder = true;
-
-                            itemData.simulBhtPrc = itemData.secStick.Price[3];
-                            itemData.simulBhtTime = itemData.secStick.Time;
-                        }
-                        else if (itemData.simulEnterOrder && ExitCondition(itemData))
+                        if (itemData.simulEnterOrder && ExitCondition(itemData))
                         {
                             if (itemData.simulLorS)
                                 itemData.simulProfitRate = Math.Round((data.Price / itemData.simulBhtPrc - 1) * 100, 2);
@@ -2287,17 +2307,25 @@ namespace BinanceHand
 
                             itemData.simulEnterOrder = false;
                         }
+
+                        if (!itemData.simulEnterOrder && itemData.Real == 2 && EnterCondition(itemData))
+                        {
+                            itemData.simulEnterOrder = true;
+
+                            itemData.simulBhtPrc = itemData.secStick.Price[3];
+                            itemData.simulBhtTime = itemData.secStick.Time;
+                        }
                     }
                     else
                     {
-                        itemData.ms5secTot += itemData.secStickList[itemData.secLastIndex].Ms;
-                        itemData.md5secTot += itemData.secStickList[itemData.secLastIndex].Md;
+                        itemData.ms3secTot += itemData.secStickList[itemData.secLastIndex].Ms;
+                        itemData.md3secTot += itemData.secStickList[itemData.secLastIndex].Md;
+
+                        itemData.ms8secTot += itemData.secStickList[itemData.secLastIndex].Ms;
+                        itemData.md8secTot += itemData.secStickList[itemData.secLastIndex].Md;
 
                         itemData.ms10secTot += (double)itemData.secStickList[itemData.secLastIndex].Ms;
                         itemData.md10secTot += (double)itemData.secStickList[itemData.secLastIndex].Md;
-
-                        itemData.ms20secTot += itemData.secStickList[itemData.secLastIndex].Ms;
-                        itemData.md20secTot += itemData.secStickList[itemData.secLastIndex].Md;
 
                         if (itemData.isChartShowing)
                             autoTextBox.Text = "0000";
@@ -2429,85 +2457,6 @@ namespace BinanceHand
                         }
                     }
                     chartNow.ChartAreas[0].AxisY2.StripLines[0].Text = itemData.ClosePNL.ToString();
-                }
-            }
-
-            {       // 시뮬레이션
-                if (!itemData.simulEnterOrder && itemData.Real == 2 && EnterCondition(itemData))
-                {
-                    itemData.simulEnterOrder = true;
-
-                    itemData.simulBhtPrc = itemData.secStick.Price[3];
-                    itemData.simulBhtTime = itemData.secStick.Time;
-                }
-                else if (itemData.simulEnterOrder)
-                {
-                    if (!itemData.tooManyAmt
-                        &&
-                        (
-                            (itemData.simulLorS 
-                                && itemData.secStick.Ms - itemData.secStick.Md > itemData.ms20secAvg * 12
-                                && itemData.secStick.Ms - itemData.secStick.Md > itemData.md20secAvg * 10
-                                && itemData.secStick.Ms / (itemData.secStick.Ms + itemData.secStick.Md) > 0.9m)
-                            ||
-                            (!itemData.simulLorS 
-                                && itemData.secStick.Md - itemData.secStick.Ms > itemData.md20secAvg * 12
-                                && itemData.secStick.Md - itemData.secStick.Ms > itemData.ms20secAvg * 10
-                                && itemData.secStick.Md / (itemData.secStick.Ms + itemData.secStick.Md) > 0.9m)
-                        )
-                    )
-                    {
-                        itemData.tooManyAmt = true;
-                        itemData.tooManyAmtTime = itemData.secStick.Time;
-                    }
-
-                    if (data.TradeTime.Subtract(itemData.simulBhtTime).TotalSeconds >= 1
-                        &&
-                        (
-                            ExitCondition(itemData)
-                            ||
-                            (
-                                itemData.tooManyAmt && data.TradeTime.Subtract(itemData.tooManyAmtTime).TotalSeconds >= 1
-                                && 
-                                (
-                                    (itemData.simulLorS && itemData.secStickList.Last().Ms < itemData.ms20secAvg)
-                                    || 
-                                    (!itemData.simulLorS && itemData.secStickList.Last().Md < itemData.md20secAvg)
-                                )
-                            )
-                        )
-                    )
-                    {
-                        if (itemData.simulLorS)
-                            itemData.simulProfitRate =  Math.Round((data.Price / itemData.simulBhtPrc - 1) * 100, 2);
-                        else
-                            itemData.simulProfitRate =  Math.Round((itemData.simulBhtPrc / data.Price - 1) * 100, 2);
-
-                        simulTotalTrades++;
-                        simulThisTrades++;
-                        if (itemData.simulProfitRate > commisionRate)
-                        {
-                            simulTotalWin++;
-                            simulThisWin++;
-                        }
-                        simulTotalRateSum += itemData.simulProfitRate;
-                        simulThisRateSum += itemData.simulProfitRate;
-
-                        simulTotalWinRateTextBox.Text = Math.Round((double)simulTotalWin / simulTotalTrades, 2) + "(" + simulTotalTrades + ") " + Math.Round((double)simulTotalRateSum / simulTotalTrades, 2);
-                        simulTodayWinRateTextBox.Text = Math.Round((double)simulThisWin / simulThisTrades, 2) + "(" + simulThisTrades + ") " + Math.Round((double)simulThisRateSum / simulThisTrades, 2);
-
-                        var simulResultData = new SimulResultData {
-                            Name = itemData.Name,
-                            ProfitRate = itemData.simulProfitRate,
-                            Time = itemData.simulBhtTime.ToString(secTimeFormat) + "+" + Math.Round(data.TradeTime.Subtract(itemData.simulBhtTime).TotalSeconds, 1)
-                        };
-
-                        dbHelper.SaveData1("Simulation_Trade_History", "Time", simulResultData.Time, "Symbol", simulResultData.Name, "Profit", simulResultData.ProfitRate.ToString());
-
-                        simulResultListView.InsertObjects(0, new List<SimulResultData> { simulResultData });
-
-                        itemData.simulEnterOrder = false;
-                    }
                 }
             }
         }
@@ -2810,17 +2759,21 @@ namespace BinanceHand
                 itemData.Real = 1;
 
                 itemData.secStickList.Clear();
+                itemData.oldSecStickList.Clear();
                 itemData.secStick = new Stick();
-                itemData.ms5secTot = 0;
-                itemData.md5secTot = 0;
+                itemData.ms3secTot = 0;
+                itemData.md3secTot = 0;
                 itemData.ms10secTot = 0;
                 itemData.md10secTot = 0;
-                itemData.ms20secTot = 0;
-                itemData.md20secTot = 0;
+                itemData.ms8secTot = 0;
+                itemData.md8secTot = 0;
 
                 itemData.aggSub = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdates(itemData.Name, data2 => { BeginInvoke(aggUpdates, data2, FUItemDataList[data2.Symbol]); }).Data;
 
                 FUAggReq++;
+
+                if (FUAggReq % 10 == 0)
+                    dbHelper.SaveData1("AggOn_History", "Time", DateTime.Now.ToString(secTimeFormat), "Data", FUAggReq.ToString(), "", "");
             }
             else
             {
@@ -2844,73 +2797,127 @@ namespace BinanceHand
 
         bool EnterCondition(ItemData itemData)
         {
-            if (itemData.secStickList.Last().Ms > (decimal)itemData.real2BigAmt10secAvg * 0.8m
-                && itemData.secStick.Ms > (decimal)itemData.real2BigAmt10secAvg * 0.8m
-                && itemData.secStickList.Last().Md < (decimal)itemData.real2SmallAmt10secAvg * 1.2m
-                && itemData.secStick.Md < (decimal)itemData.real2SmallAmt10secAvg * 1.2m
-                && itemData.secStickList.Last().Ms - itemData.secStickList.Last().Md > itemData.ms20secAvg * 2
-                && itemData.secStickList.Last().Ms - itemData.secStickList.Last().Md > itemData.md20secAvg * 1.5m
-                && itemData.secStick.Ms - itemData.secStick.Md > itemData.ms20secAvg * 2
-                && itemData.secStick.Ms - itemData.secStick.Md > itemData.md20secAvg * 1.5m
-                &&
-                (
-                    itemData.pureSecCountQAvg < 0.8m
-                    ||
-                    (
-                        itemData.secStickList.Last().Ms - itemData.secStickList.Last().Md > itemData.ms5secAvg * 2
-                        && itemData.secStickList.Last().Ms - itemData.secStickList.Last().Md > itemData.md5secAvg * 1.5m
-                        && itemData.secStick.Ms - itemData.secStick.Md > itemData.ms5secAvg * 2
-                        && itemData.secStick.Ms - itemData.secStick.Md > itemData.md5secAvg * 1.5m
-                    )
-                )
-            )
+            if (itemData.secStickList[itemData.secLastIndex].TCount + itemData.secStickList[itemData.secLastIndex - 1].TCount + itemData.secStickList[itemData.secLastIndex - 2].TCount < 100)
+                return false;
+
+            itemData.priceDiffRate = 
+                (itemData.secStickList[itemData.secLastIndex].Price[2] + itemData.secStickList[itemData.secLastIndex].Price[3]) 
+                    / (itemData.secStickList[itemData.secLastIndex - 2].Price[2] + itemData.secStickList[itemData.secLastIndex - 2].Price[3]) - 1;
+            itemData.simulLorS = itemData.priceDiffRate > 0 ? true : false;
+            itemData.priceDiffRate = Math.Abs(itemData.priceDiffRate);
+            if (itemData.priceDiffRate > 0.002m)
             {
-                itemData.tooManyAmt = false;
-                itemData.simulLorS = true;
-                return true;
-            }
-            else if(itemData.secStickList.Last().Md > (decimal)itemData.real2BigAmt10secAvg * 0.8m
-                && itemData.secStick.Md > (decimal)itemData.real2BigAmt10secAvg * 0.8m
-                && itemData.secStickList.Last().Ms < (decimal)itemData.real2SmallAmt10secAvg * 1.2m
-                && itemData.secStick.Ms < (decimal)itemData.real2SmallAmt10secAvg * 1.2m
-                && itemData.secStickList.Last().Md - itemData.secStickList.Last().Ms > itemData.md20secAvg * 2
-                && itemData.secStickList.Last().Md - itemData.secStickList.Last().Ms > itemData.ms20secAvg * 1.5m
-                && itemData.secStick.Md - itemData.secStick.Ms > itemData.md20secAvg * 2
-                && itemData.secStick.Md - itemData.secStick.Ms > itemData.ms20secAvg * 1.5m
-                &&
-                (
-                    itemData.pureSecCountQAvg > 0.2m
-                    ||
-                    (
-                        itemData.secStickList.Last().Md - itemData.secStickList.Last().Ms > itemData.md5secAvg * 2
-                        && itemData.secStickList.Last().Md - itemData.secStickList.Last().Ms > itemData.ms5secAvg * 1.5m
-                        && itemData.secStick.Md - itemData.secStick.Ms > itemData.md5secAvg * 2
-                        && itemData.secStick.Md - itemData.secStick.Ms > itemData.ms5secAvg * 1.5m
-                    )
-                )
-            )
-            {
-                itemData.tooManyAmt = false;
-                itemData.simulLorS = false;
-                return true;
+                itemData.priceDiffStep = ((itemData.secStickList[itemData.secLastIndex].Price[3] + itemData.secStickList[itemData.secLastIndex].Price[2]) / 2
+                    - (itemData.secStickList[itemData.secLastIndex - 2].Price[3] + itemData.secStickList[itemData.secLastIndex - 2].Price[2]) / 2) / 2;
+                itemData.priceRange = (itemData.secStickList[itemData.secLastIndex].Price[3] + itemData.secStickList[itemData.secLastIndex].Price[2]
+                    + itemData.secStickList[itemData.secLastIndex - 2].Price[3] + itemData.secStickList[itemData.secLastIndex - 2].Price[2]) / 4 * (0.001m + itemData.priceDiffRate / 2);
+
+                for (itemData.index = itemData.secLastIndex - 2; itemData.index <= itemData.secLastIndex; itemData.index++)
+                {
+                    var priceStandard = (itemData.secStickList[itemData.secLastIndex - 2].Price[2] + itemData.secStickList[itemData.secLastIndex - 2].Price[3]) / 2
+                       + (itemData.index - itemData.secLastIndex + 2) * itemData.priceDiffStep;
+
+                    if (Math.Abs(itemData.secStickList[itemData.index].Price[2] - priceStandard) > itemData.priceRange
+                        || Math.Abs(itemData.secStickList[itemData.index].Price[3] - priceStandard) > itemData.priceRange
+                        || (itemData.simulLorS && itemData.secStickList[itemData.index].Price[3] < itemData.secStickList[itemData.index].Price[2])
+                        || (!itemData.simulLorS && itemData.secStickList[itemData.index].Price[3] > itemData.secStickList[itemData.index].Price[2]))
+                        return false;
+                }
+
+                if (itemData.priceDiffRate < 0.003m)
+                {
+                    itemData.priceDiffRate =
+                        Math.Abs((itemData.secStickList[itemData.secLastIndex - 3].Price[2] + itemData.secStickList[itemData.secLastIndex - 3].Price[3])
+                            / (itemData.secStickList[itemData.secLastIndex - 7].Price[2] + itemData.secStickList[itemData.secLastIndex - 7].Price[3]) - 1);
+                    if (itemData.priceDiffRate < 0.001m)
+                    {
+                        itemData.priceDiffStep = ((itemData.secStickList[itemData.secLastIndex - 3].Price[3] + itemData.secStickList[itemData.secLastIndex - 3].Price[2]) / 2
+                            - (itemData.secStickList[itemData.secLastIndex - 7].Price[3] + itemData.secStickList[itemData.secLastIndex - 7].Price[2]) / 2) / 4;
+                        itemData.priceRange = (itemData.secStickList[itemData.secLastIndex - 3].Price[3] + itemData.secStickList[itemData.secLastIndex - 3].Price[2]
+                            + itemData.secStickList[itemData.secLastIndex - 7].Price[3] + itemData.secStickList[itemData.secLastIndex - 7].Price[2]) / 4 * 0.0015m;
+
+                        for (itemData.index = itemData.secLastIndex - 7; itemData.index <= itemData.secLastIndex - 3; itemData.index++)
+                        {
+                            var priceStandard = (itemData.secStickList[itemData.secLastIndex - 7].Price[2] + itemData.secStickList[itemData.secLastIndex - 7].Price[3]) / 2
+                               + (itemData.index - itemData.secLastIndex + 7) * itemData.priceDiffStep;
+
+                            if (Math.Abs(itemData.secStickList[itemData.index].Price[0] - priceStandard) > itemData.priceRange
+                                || Math.Abs(itemData.secStickList[itemData.index].Price[1] - priceStandard) > itemData.priceRange
+                                || Math.Abs(itemData.secStickList[itemData.index].Price[2] - priceStandard) > itemData.priceRange
+                                || Math.Abs(itemData.secStickList[itemData.index].Price[3] - priceStandard) > itemData.priceRange)
+                                return false;
+                        }
+
+                        return true;
+                    }
+                    else
+                        return false;
+                }
+                else
+                {
+                    if ((itemData.simulLorS && itemData.ms3secAvg > 2 * itemData.ms8secAvg) || (!itemData.simulLorS && itemData.md3secAvg > 2 * itemData.md8secAvg))
+                        return false;
+
+                    itemData.priceDiffRate =
+                        (itemData.secStickList[itemData.secLastIndex - 3].Price[2] + itemData.secStickList[itemData.secLastIndex - 3].Price[3])
+                            / (itemData.secStickList[itemData.secLastIndex - 7].Price[2] + itemData.secStickList[itemData.secLastIndex - 7].Price[3]) - 1;
+                    if ((itemData.simulLorS && itemData.priceDiffRate < -0.001m) || (!itemData.simulLorS && itemData.priceDiffRate > 0.001m))
+                    {
+                        itemData.priceDiffRate = Math.Abs(itemData.priceDiffRate);
+                        itemData.priceDiffStep = ((itemData.secStickList[itemData.secLastIndex - 3].Price[3] + itemData.secStickList[itemData.secLastIndex - 3].Price[2]) / 2
+                            - (itemData.secStickList[itemData.secLastIndex - 7].Price[3] + itemData.secStickList[itemData.secLastIndex - 7].Price[2]) / 2) / 4;
+                        itemData.priceRange = (itemData.secStickList[itemData.secLastIndex - 3].Price[3] + itemData.secStickList[itemData.secLastIndex - 3].Price[2]
+                            + itemData.secStickList[itemData.secLastIndex - 7].Price[3] + itemData.secStickList[itemData.secLastIndex - 7].Price[2]) / 4 * (0.001m + itemData.priceDiffRate / 2);
+
+                        for (itemData.index = itemData.secLastIndex - 7; itemData.index <= itemData.secLastIndex - 3; itemData.index++)
+                        {
+                            var priceStandard = (itemData.secStickList[itemData.secLastIndex - 7].Price[2] + itemData.secStickList[itemData.secLastIndex - 7].Price[3]) / 2
+                               + (itemData.index - itemData.secLastIndex + 7) * itemData.priceDiffStep;
+
+                            if (Math.Abs(itemData.secStickList[itemData.index].Price[0] - priceStandard) > itemData.priceRange
+                                || Math.Abs(itemData.secStickList[itemData.index].Price[1] - priceStandard) > itemData.priceRange
+                                || Math.Abs(itemData.secStickList[itemData.index].Price[2] - priceStandard) > itemData.priceRange
+                                || Math.Abs(itemData.secStickList[itemData.index].Price[3] - priceStandard) > itemData.priceRange)
+                                return false;
+                        }
+
+                        return true;
+                    }
+                    else
+                        return false;
+                }
             }
             else
                 return false;
         }
         bool ExitCondition(ItemData itemData)
         {
-            if ((itemData.simulLorS
-                && itemData.secStickList.Last().Md > itemData.ms5secAvg
-                && itemData.secStickList.Last().Md > itemData.ms20secAvg * 2
-                && itemData.secStickList.Last().Md > itemData.secStickList.Last().Ms)
-                ||
-                (!itemData.simulLorS
-                && itemData.secStickList.Last().Ms > itemData.md5secAvg
-                && itemData.secStickList.Last().Ms > itemData.md20secAvg * 2
-                && itemData.secStickList.Last().Ms > itemData.secStickList.Last().Md))
-                return true;
+            itemData.priceDiffRate =
+                (itemData.secStickList[itemData.secLastIndex - 1].Price[2] + itemData.secStickList[itemData.secLastIndex - 1].Price[3])
+                    / (itemData.secStickList[itemData.secLastIndex - 4].Price[2] + itemData.secStickList[itemData.secLastIndex - 4].Price[3]) - 1;
+            itemData.priceDiffStep = ((itemData.secStickList[itemData.secLastIndex - 1].Price[3] + itemData.secStickList[itemData.secLastIndex - 1].Price[2]) / 2
+                - (itemData.secStickList[itemData.secLastIndex - 4].Price[3] + itemData.secStickList[itemData.secLastIndex - 4].Price[2]) / 2) / 3;
+            itemData.priceStandard = (itemData.secStickList[itemData.secLastIndex - 1].Price[2] + itemData.secStickList[itemData.secLastIndex - 1].Price[3]) / 2
+               + itemData.priceDiffStep;
+
+            if (itemData.simulLorS)
+            {
+                if (itemData.priceDiffRate < -0.001m)
+                    return true;
+                else if (itemData.secStickList[itemData.secLastIndex].Price[3] / itemData.priceStandard < 0.999m - Math.Abs(itemData.priceDiffRate) / 2)
+                    return true;
+                else
+                    return false;
+            }
             else
-                return false;
+            {
+                if (itemData.priceDiffRate > 0.001m)
+                    return true;
+                else if (itemData.secStickList[itemData.secLastIndex].Price[3] / itemData.priceStandard > 1.001m + Math.Abs(itemData.priceDiffRate) / 2)
+                    return true;
+                else
+                    return false;
+            }
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)

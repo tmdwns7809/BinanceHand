@@ -43,6 +43,7 @@ namespace BinanceHand
             this.FUAggReqTextBox = new System.Windows.Forms.TextBox();
             this.minChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.FUGroupBox = new System.Windows.Forms.GroupBox();
+            this.hoButton = new System.Windows.Forms.Button();
             this.realButton = new System.Windows.Forms.Button();
             this.orderGroupBox = new System.Windows.Forms.GroupBox();
             this.leverageTextBox0 = new System.Windows.Forms.TextBox();
@@ -84,6 +85,7 @@ namespace BinanceHand
             this.simulResultGroupBox = new System.Windows.Forms.GroupBox();
             this.hoChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.hoHighPriceTextBox = new System.Windows.Forms.TextBox();
+            this.saveButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.secChart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FUListView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minChart)).BeginInit();
@@ -185,6 +187,8 @@ namespace BinanceHand
             this.FUGroupBox.Controls.Add(this.FUKlineReqTextBox);
             this.FUGroupBox.Controls.Add(this.FUAggRcvTextBox);
             this.FUGroupBox.Controls.Add(this.FUAggReqTextBox);
+            this.FUGroupBox.Controls.Add(this.saveButton);
+            this.FUGroupBox.Controls.Add(this.hoButton);
             this.FUGroupBox.Controls.Add(this.realButton);
             this.FUGroupBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FUGroupBox.Location = new System.Drawing.Point(658, 60);
@@ -194,10 +198,20 @@ namespace BinanceHand
             this.FUGroupBox.TabStop = false;
             this.FUGroupBox.Text = "Futures-USD";
             // 
+            // hoButton
+            // 
+            this.hoButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.hoButton.Location = new System.Drawing.Point(150, 33);
+            this.hoButton.Name = "hoButton";
+            this.hoButton.Size = new System.Drawing.Size(29, 20);
+            this.hoButton.TabIndex = 12;
+            this.hoButton.Text = "Ho";
+            this.hoButton.UseVisualStyleBackColor = true;
+            // 
             // realButton
             // 
             this.realButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.realButton.Location = new System.Drawing.Point(147, 29);
+            this.realButton.Location = new System.Drawing.Point(150, 13);
             this.realButton.Name = "realButton";
             this.realButton.Size = new System.Drawing.Size(43, 20);
             this.realButton.TabIndex = 12;
@@ -654,6 +668,16 @@ namespace BinanceHand
             this.hoHighPriceTextBox.TabIndex = 6;
             this.hoHighPriceTextBox.Text = "000";
             // 
+            // saveButton
+            // 
+            this.saveButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.saveButton.Location = new System.Drawing.Point(150, 59);
+            this.saveButton.Name = "saveButton";
+            this.saveButton.Size = new System.Drawing.Size(43, 20);
+            this.saveButton.TabIndex = 12;
+            this.saveButton.Text = "Save";
+            this.saveButton.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -759,6 +783,8 @@ namespace BinanceHand
         private System.Windows.Forms.GroupBox simulResultGroupBox;
         private System.Windows.Forms.DataVisualization.Charting.Chart hoChart;
         private System.Windows.Forms.TextBox hoHighPriceTextBox;
+        private System.Windows.Forms.Button hoButton;
+        private System.Windows.Forms.Button saveButton;
     }
 }
 

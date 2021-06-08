@@ -20,7 +20,6 @@ namespace BinanceHand
         public int hoInt;
         public decimal hoDecimal;
 
-
         public string Name;
 
         public short Real = 0;
@@ -47,9 +46,11 @@ namespace BinanceHand
         public double md10secDev;
         public double SDevRatio;
         public decimal lastSDevRatioPrice;
-        public double lastSDevRatio = double.MaxValue;
+        public double lastSDevRatio;
         public int lastSDevCount10sec;
-        public decimal price10Diff;
+        public decimal priceDiffStep;
+        public decimal priceRange;
+        public decimal priceDiffRate;
         public decimal priceStandard;
         public int index;
 
@@ -116,15 +117,15 @@ namespace BinanceHand
 
         public bool simulLorS;
 
-        public decimal ms5secTot = 0;
-        public decimal ms5secAvg;
-        public decimal md5secTot = 0;
-        public decimal md5secAvg;
+        public decimal ms3secTot = 0;
+        public decimal ms3secAvg;
+        public decimal md3secTot = 0;
+        public decimal md3secAvg;
 
-        public decimal ms20secTot = 0;
-        public decimal ms20secAvg;
-        public decimal md20secTot = 0;
-        public decimal md20secAvg;
+        public decimal ms8secTot = 0;
+        public decimal ms8secAvg;
+        public decimal md8secTot = 0;
+        public decimal md8secAvg;
 
         public Queue<decimal> pureSecCountQ = new Queue<decimal>();
         public decimal pureSecCountQTot = 0;

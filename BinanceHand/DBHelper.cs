@@ -96,7 +96,7 @@ namespace BinanceHand
             {
                 string[] lines = new string[data.Count];
                 for (int i = 0; i < data.Count; i++)
-                    lines[i] = data[i].Time + "," + data[i].Price[0] + "," + data[i].Price[1] + "," + data[i].Price[2] + "," + data[i].Price[3] + "," + data[i].Ms + "," + data[i].Md + "," + data[i].TCount;
+                    lines[i] = data[i].Time.ToString("yyyy-MM-dd HH:mm:ss") + "," + data[i].Price[0] + "," + data[i].Price[1] + "," + data[i].Price[2] + "," + data[i].Price[3] + "," + data[i].Ms + "," + data[i].Md + "," + data[i].TCount;
                 File.WriteAllLines(CSVPath + name + ".csv", lines);
             }));
         }
