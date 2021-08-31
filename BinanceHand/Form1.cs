@@ -91,6 +91,7 @@ namespace BinanceHand
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
             Trading.instance.ResetOrderView += Trading_ResetOrderView;
             Trading.instance.LoadMoreAdditional += Trading_LoadMoreAdditional;
+            Trading.instance.PlaceOrder += Trading_PlaceOrder;
 
             SetOrderView();
 
@@ -891,10 +892,7 @@ namespace BinanceHand
                     {
                         resultData.LastGapAndTimeAndSuccessAmount = Math.Round((itemData.OrderAmount - Math.Abs(itemData.Size)) / itemData.OrderAmount, 2).ToString();
 
-                        if (itemData.LorS)
-                            PlaceOrder(OrderSide.Sell, true);
-                        else
-                            PlaceOrder(OrderSide.Buy, true);
+                        Trading_PlaceOrder(itemData, !itemData.LorS, true, itemData.isAuto);
                     }
                     else
                     {
@@ -943,89 +941,104 @@ namespace BinanceHand
             else
                 socketClient.Unsubscribe(itemData.hoSub);
         }
-
-        void PlaceOrder(OrderSide orderSide, bool market)
+        void Trading_PlaceOrder(TradeItemData itemData0, bool buy, bool market, bool auto)
         {
-            if (!decimal.TryParse(orderPriceTextBox1.Text, out decimal priceRate) 
-                || !decimal.TryParse(orderSizeTextBox1.Text, out decimal size) || size <= 0 
-                || !int.TryParse(autoSizeTextBox0.Text, out int limitPercent) || limitPercent <= 0)
+            var itemData = itemData0 as BinanceItemData;
+
+            if (itemData.secStick.Price[3] == default)
+            {
+                MessageBox.Show("close price error");
+                return;
+            }
+            else
+                itemData.orderStartClosePrice = itemData.secStick.Price[3];
+
+            decimal priceRate = 0.1m;
+            decimal quantity = itemData.position ?
+                Math.Abs(itemData.Size) :
+                (int)(itemData.minNotionalValue / itemData.orderStartClosePrice / itemData.minSize + 1) * itemData.minSize;
+            int limitPercent = default;
+
+            if (!auto &&
+                (!decimal.TryParse(orderPriceTextBox1.Text, out priceRate)
+                    || (!itemData.position && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
+                    || !int.TryParse(autoSizeTextBox0.Text, out limitPercent) || limitPercent <= 0))
             {
                 MessageBox.Show("input error");
                 orderPriceTextBox1.Clear();
                 return;
             }
 
-            itemDataShowing.orderStartClosePrice = itemDataShowing.minStick.Price[3];
-
             var orderType = OrderType.Limit;
             TimeInForce? timeInForce = null;
-            decimal? price = null;
-            decimal quantity;
+            decimal? price = buy ?
+                    (int)(itemData.orderStartClosePrice * (1 + priceRate / 100) / itemData.priceTickSize + 1) * itemData.priceTickSize :
+                    (int)(itemData.orderStartClosePrice * (1 - priceRate / 100) / itemData.priceTickSize) * itemData.priceTickSize;
 
-            if (!marketRadioButton.Checked && !market)
+            if (!auto)
             {
-                if (orderSide == OrderSide.Buy)
-                    price = (int)(itemDataShowing.orderStartClosePrice * (1 + priceRate / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
-                else
-                    price = (int)(itemDataShowing.orderStartClosePrice * (1 - priceRate / 100) / itemDataShowing.priceTickSize) * itemDataShowing.priceTickSize;
-
-                if (PORadioButton.Checked)
-                    timeInForce = TimeInForce.GoodTillCrossing;
-                else if (IOCRadioButton.Checked)
-                    timeInForce = TimeInForce.ImmediateOrCancel;
-                else
-                    timeInForce = TimeInForce.GoodTillCancel;
-            }
-            else
-                orderType = OrderType.Market;
-
-            if (!miniSizeCheckBox.Checked && !autoSizeCheckBox.Checked)
-                quantity = (int)(size / itemDataShowing.minSize) * itemDataShowing.minSize;
-            else
-            {
-                if (itemDataShowing.position)
-                    quantity = Math.Abs(itemDataShowing.Size);
-                else if (miniSizeCheckBox.Checked)
-                    quantity = (int)(itemDataShowing.minNotionalValue / price / itemDataShowing.minSize + 1) * itemDataShowing.minSize;
+                if (!marketRadioButton.Checked && !market)
+                {
+                    if (PORadioButton.Checked)
+                        timeInForce = TimeInForce.GoodTillCrossing;
+                    else if (IOCRadioButton.Checked)
+                        timeInForce = TimeInForce.ImmediateOrCancel;
+                    else
+                        timeInForce = TimeInForce.GoodTillCancel;
+                }
                 else
                 {
-                    quantity = (int)((decimal)(itemDataShowing.ms10secAvg + itemDataShowing.md10secAvg) / 2 / 100 / itemDataShowing.minSize) * itemDataShowing.minSize;
+                    orderType = OrderType.Market;
+                    price = null;
+                }
+            }
 
-                    var budget = assetDic["Available Balance"].Amount * limitPercent / 100;
-                    if (budget < itemDataShowing.minNotionalValue)
-                        budget = itemDataShowing.minNotionalValue;
-                    var limitAmount = (int)(budget / price / itemDataShowing.minSize + 1) * itemDataShowing.minSize;
+            if (!auto && (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked) && !itemData.position)
+            {
+                if (miniSizeCheckBox.Checked)
+                    quantity = (int)(itemData.minNotionalValue / itemData.orderStartClosePrice / itemData.minSize + 1) * itemData.minSize;
+                else
+                {
+                    quantity = (int)((itemData.ms10secAvg + itemData.md10secAvg) / 2 / 100 / itemData.minSize) * itemData.minSize;
+
+                    var budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount * limitPercent / 100;
+                    if (budget < itemData.minNotionalValue)
+                        budget = itemData.minNotionalValue;
+
+                    var limitAmount = (int)(budget / price / itemData.minSize + 1) * itemData.minSize;
 
                     if (limitAmount < quantity)
                         quantity = limitAmount;
                 }
             }
 
-            if (!itemDataShowing.position)
+            if (!itemData.position)
             {
-                if (price * quantity > itemDataShowing.maxNotionalValue)
+                if (price * quantity > itemData.maxNotionalValue)
                 {
                     MessageBox.Show("lower leverage");
                     return;
                 }
-                if (price * quantity < itemDataShowing.minNotionalValue)
+                if (price * quantity < itemData.minNotionalValue)
                 {
                     MessageBox.Show("too small");
                     return;
                 }
             }
 
-            orderSizeTextBox1.Text = quantity.ToString();
+            if (!auto)
+                orderSizeTextBox1.Text = quantity.ToString();
+
             var a = client.FuturesUsdt.Order.PlaceOrder(
-                itemDataShowing.Code
-                , orderSide
+                itemData.Code
+                , buy ? OrderSide.Buy : OrderSide.Sell
                 , orderType
                 , quantity
                 , PositionSide.Both
                 , timeInForce
-                , ROCheckBox.Checked
+                , auto ? true : ROCheckBox.Checked
                 , price);
-            itemDataShowing.positionWhenOrder = itemDataShowing.position;
+            itemData.positionWhenOrder = itemData.position;
 
             if (!a.Success)
             {
@@ -1033,7 +1046,7 @@ namespace BinanceHand
                 return;
             }
 
-            var b = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeout(itemDataShowing.Code, TimeSpan.FromSeconds(1));
+            var b = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeout(itemData.Code, TimeSpan.FromSeconds(1));
 
             if (!b.Success)
             {
@@ -1041,37 +1054,32 @@ namespace BinanceHand
                 return;
             }
 
-            if (itemDataShowing.position)
+            if (itemData.position)
             {
-                ResultData resultData;
-
-                if (resultListView.Items.Count == 0)
+                if (itemData.resultData == default)
                 {
-                    resultData = new ResultData { Symbol = itemDataShowing.Code };
-                    resultListView.InsertObjects(0, new List<ResultData> { resultData });
+                    itemData.resultData = new TradeResultData { Symbol = itemData.Code };
+                    (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
                 }
-                else
-                    resultData = resultListView.GetModelObject(0) as ResultData;
 
-                resultData.LastTime = DateTime.UtcNow;
+                itemData.resultData.LastTime = DateTime.UtcNow;
                 if (!market)
-                    resultData.LastGapAndTimeAndSuccessAmount = "1";
+                    itemData.resultData.LastGapAndTimeAndSuccessAmount = "1";
             }
             else
             {
-                if (orderSide == OrderSide.Buy)
-                    itemDataShowing.LorS = true;
-                else
-                    itemDataShowing.LorS = false;
+                itemData.LorS = buy;
 
-                var resultData = new ResultData { Symbol = itemDataShowing.Code };
-                resultData.EntryTime = DateTime.UtcNow;
-                resultData.EntryGapAndTimeAndSuccessAmount = "0";
-                resultListView.InsertObjects(0, new List<ResultData> { resultData });
+                itemData.resultData = new TradeResultData { Symbol = itemData.Code };
+                itemData.resultData.EntryTime = DateTime.UtcNow;
+                itemData.resultData.EntryGapAndTimeAndSuccessAmount = "0";
+                (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
 
-                itemDataShowing.Size = 0;
+                itemData.Size = 0;
             }
-        }
 
+            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, DateTime.Now.ToString(Trading.instance.secTimeFormat) + "~" + itemData.secStick.Time.ToString(Trading.instance.secTimeFormat),
+                DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 " + (buy ? "매수" : "매도") + "주문전송", DBHelper.conn1OrderHistoryColumn2, "주문가격:" + price + " 주문수량:" + quantity);
+        }
     }
 }
