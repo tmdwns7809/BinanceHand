@@ -445,7 +445,7 @@ namespace BinanceHand
             {
                 itemData.klineFirst = false;
 
-                BeginInvoke(new Action(() => { Trading.instance.UpdateReqRcv(Trading.instance.KlineRcvTextBox, Trading.instance.KlineRcv + 1); }));
+                Trading.instance.UpdateReqRcv(Trading.instance.KlineRcvTextBox, Trading.instance.KlineRcv + 1);
             }
 
             if (data.Data.Final)
@@ -454,7 +454,7 @@ namespace BinanceHand
                 {
                     if (itemData.Real == 0)
                     {
-                        BeginInvoke(new Action(() => { Trading.instance.SetAgg(itemData, true); }));
+                        Trading.instance.SetAgg(itemData, true);
 
                         Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Trading.instance.secTimeFormat),
                             DBHelper.conn1DetectHistoryColumn1, itemData.Code, DBHelper.conn1DetectHistoryColumn2, "Real 1 in : 전분폭 > 2%");
@@ -466,7 +466,7 @@ namespace BinanceHand
                     itemData.Real1Condition++;
                 else if (itemData.Real == 1 && !itemData.isChartShowing && !itemData.simulEnterOrder)
                 {
-                    BeginInvoke(new Action(() => { Trading.instance.SetAgg(itemData, false); }));
+                    Trading.instance.SetAgg(itemData, false);
 
                     Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Trading.instance.secTimeFormat),
                         DBHelper.conn1DetectHistoryColumn1, itemData.Code, DBHelper.conn1DetectHistoryColumn2, "Real out : 15연속 전분폭 < 2%");
@@ -542,7 +542,7 @@ namespace BinanceHand
             {
                 itemData.AggFirst = false;
 
-                BeginInvoke(new Action(() => { Trading.instance.UpdateReqRcv(Trading.instance.aggRcvTextBox, Trading.instance.aggRcv + 1); }));
+                Trading.instance.UpdateReqRcv(Trading.instance.aggRcvTextBox, Trading.instance.aggRcv + 1);
 
                 Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString("yyyy-MM-dd") + " " + itemData.newTime,
                     DBHelper.conn1DetectHistoryColumn1, itemData.Code + "~첫체결", DBHelper.conn1DetectHistoryColumn2, " 종가:" + itemData.newPrice);
@@ -566,9 +566,7 @@ namespace BinanceHand
                 itemData.ho.MsPrice[itemData.hoIndex] = bid.Price;
                 itemData.ho.MsQuan[itemData.hoIndex] = bid.Quantity;
 
-                BeginInvoke(new Action(() => { 
-                    Trading.instance.HoMain0(itemData, true); 
-                }));
+                Trading.instance.HoMain0(itemData, true);
 
                 itemData.hoIndex++;
             }
@@ -579,12 +577,12 @@ namespace BinanceHand
                 itemData.ho.MdPrice[itemData.hoIndex] = ask.Price;
                 itemData.ho.MdQuan[itemData.hoIndex] = ask.Quantity;
 
-                BeginInvoke(new Action(() => { Trading.instance.HoMain0(itemData, false); }));
+                Trading.instance.HoMain0(itemData, false);
 
                 itemData.hoIndex++;
             }
 
-            BeginInvoke(new Action(() => { Trading.instance.HoMain1(itemData); }));
+            Trading.instance.HoMain1(itemData);
         }
 
         void OnMarkPriceUpdates(DataEvent<BinanceFuturesUsdtStreamMarkPrice> data0)
