@@ -193,10 +193,11 @@ namespace BinanceHand
             else
             {   // 2 api: 1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD secret: F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX
                 // 1 api: DpLZEH9lDIuoYvs5L9YcDshSXW1rN9Rlw6OMj7zVQwR7wuBGt9vtyntEDNUfUb50 secret: xXhj8yvUrLgVxlO4BioadC4RQSoydDLR2UFIaMcqBCdX1WM2LjVsM3cxC1Y9lgVJ
-                clientOption.ApiCredentials = new ApiCredentials("1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD", "F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX");
+                // future2 api: MaVxZ9KHAO4Mel6AO4svPJALO6tgxnMXgHDwWdQBBJGJJjXNJhiLoiPgodGMLku8    secret: xxZa8xZx6TgWrve5O0a7fUzjo0RbJiGxHriBuHgKA8cDORZvwkBn8QGoZxKhlcsA
+                clientOption.ApiCredentials = new ApiCredentials("MaVxZ9KHAO4Mel6AO4svPJALO6tgxnMXgHDwWdQBBJGJJjXNJhiLoiPgodGMLku8", "xxZa8xZx6TgWrve5O0a7fUzjo0RbJiGxHriBuHgKA8cDORZvwkBn8QGoZxKhlcsA");
                 clientOption.AutoTimestamp = false;
                 clientOption.TradeRulesBehaviour = TradeRulesBehaviour.None;
-                socketOption.ApiCredentials = new ApiCredentials("1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD", "F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX");
+                socketOption.ApiCredentials = new ApiCredentials("MaVxZ9KHAO4Mel6AO4svPJALO6tgxnMXgHDwWdQBBJGJJjXNJhiLoiPgodGMLku8", "xxZa8xZx6TgWrve5O0a7fUzjo0RbJiGxHriBuHgKA8cDORZvwkBn8QGoZxKhlcsA");
                 socketOption.AutoReconnect = true;
                 socketOption.ReconnectInterval = TimeSpan.FromMinutes(1);
                 //clientOption.LogVerbosity = LogVerbosity.Debug;
@@ -205,6 +206,15 @@ namespace BinanceHand
 
             client = new BinanceClient(clientOption);
             socketClient = new BinanceSocketClient(socketOption);
+
+            socketClient.UnsubscribeAllAsync().Wait();
+            //var itemData = new TradeItemData("BTCUSDT");
+            //var task = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdatesAsync(itemData.Code, OnAggregatedTradeUpdates);
+            //task.Wait();
+
+            //var result = task.Result;
+            //if (!result.Success)
+            //    MessageBox.Show(result.Error.Message);
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -548,10 +558,19 @@ namespace BinanceHand
                     DBHelper.conn1DetectHistoryColumn1, itemData.Code + "~첫체결", DBHelper.conn1DetectHistoryColumn2, " 종가:" + itemData.newPrice);
             }
 
-            BeginInvoke(new Action(() => { Trading.instance.AggMain(itemData); }));
+            if (itemData.isChartShowing && Trading.instance.secChart.InvokeRequired)
+                Invoke(new Action(() => { Trading.instance.AggMain(itemData); }));
+            else
+                Trading.instance.AggMain(itemData);
         }
         void OnHoUpdates(DataEvent<IBinanceFuturesEventOrderBook> data0)
         {
+            if (Trading.instance.hoChart.InvokeRequired)
+            {
+                BeginInvoke(new Action(() => { OnHoUpdates(data0); }));
+                return;
+            }
+
             var data = data0.Data;
             var itemData = Trading.instance.itemDataList[data.Symbol.ToUpper()] as BinanceItemData;
 
@@ -571,7 +590,7 @@ namespace BinanceHand
                 itemData.hoIndex++;
             }
 
-            itemData.hoIndex = Trading.instance.HOlevel / 2;
+            itemData.hoIndex = 0;
             foreach (var ask in data.Asks)
             {
                 itemData.ho.MdPrice[itemData.hoIndex] = ask.Price;
@@ -959,9 +978,9 @@ namespace BinanceHand
                 end += limit;
             }
 
-            chart.ChartAreas[0].RecalculateAxesScale();
             chart.ChartAreas[0].AxisX.ScaleView.Zoom(start, end);
             chart.ChartAreas[0].RecalculateAxesScale();
+            chart.ChartAreas[1].RecalculateAxesScale();
             Trading.instance.AdjustChart(chart);
         }
         void Trading_AggONandOFF(TradeItemData itemData, bool on)
@@ -978,7 +997,7 @@ namespace BinanceHand
                 (itemData as BinanceItemData).aggSub = result.Data;
             }
             else
-                socketClient.UnsubscribeAsync((itemData as BinanceItemData).aggSub).Wait();
+                socketClient.UnsubscribeAsync((itemData as BinanceItemData).aggSub);
         }
         void Trading_HoONandOFF(TradeItemData itemData, bool on)
         {
@@ -994,7 +1013,7 @@ namespace BinanceHand
                 (itemData as BinanceItemData).hoSub = result.Data;
             }
             else
-                socketClient.UnsubscribeAsync((itemData as BinanceItemData).hoSub).Wait();
+                socketClient.UnsubscribeAsync((itemData as BinanceItemData).hoSub);
         }
         void Trading_PlaceOrder(TradeItemData itemData0, bool buy, bool market, bool auto)
         {
@@ -1141,7 +1160,9 @@ namespace BinanceHand
             if (tokenSource != null)
                 tokenSource.Cancel();
 
-            socketClient.UnsubscribeAllAsync();
+            //socketClient.UnsubscribeAllAsync().Wait();
+            //socketClient.Dispose();
+
             Trading.instance.dbHelper.Close();
         }
     }
