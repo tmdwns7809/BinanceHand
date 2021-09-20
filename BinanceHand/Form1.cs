@@ -131,7 +131,7 @@ namespace BinanceHand
             orderPriceTextBox2.Location = new Point(orderPriceTextBox1.Location.X + orderPriceTextBox1.Size.Width + 3, orderPriceTextBox0.Location.Y);
 
             Trading.instance.SetRadioButton_CheckBox(marketRadioButton, "Market",
-                GTCRadioButton.Size, new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 10, orderPriceTextBox2.Location.Y));
+                new Size(100, GTCRadioButton.Height), new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 10, orderPriceTextBox2.Location.Y));
 
             Trading.instance.SetTextBox(orderSizeTextBox0, "Size", true);
             orderSizeTextBox0.Size = orderPriceTextBox0.Size;
@@ -148,11 +148,11 @@ namespace BinanceHand
             miniSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) TickMinSizeButton(miniSizeCheckBox.Checked); };
 
             Trading.instance.SetRadioButton_CheckBox(ROCheckBox, "Reduce Only",
-                PORadioButton.Size, new Point(miniSizeCheckBox.Location.X + miniSizeCheckBox.Size.Width + 10, miniSizeCheckBox.Location.Y));
+                PORadioButton.Size, new Point(miniSizeCheckBox.Location.X, miniSizeCheckBox.Location.Y + miniSizeCheckBox.Height));
 
             Trading.instance.SetRadioButton_CheckBox(autoSizeCheckBox, "Auto",
                 new Size(50, GTCRadioButton.Height),
-                new Point(orderSizeTextBox0.Location.X + 20, orderSizeTextBox0.Location.Y + orderSizeTextBox0.Size.Height + 10 + (autoSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
+                new Point(orderSizeTextBox0.Location.X + 20, ROCheckBox.Location.Y + ROCheckBox.Size.Height + 10 + (autoSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
             autoSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) TickAutoSizeButton(autoSizeCheckBox.Checked); };
 
             Trading.instance.SetTextBox(autoSizeTextBox0, "", true);
@@ -579,22 +579,22 @@ namespace BinanceHand
 
             itemData.hoHighQuan = 0;
 
-            itemData.hoIndex = 0;
+            itemData.hoIndex = 19;
             foreach (var bid in data.Bids)
             {
-                itemData.ho.MsPrice[itemData.hoIndex] = bid.Price;
-                itemData.ho.MsQuan[itemData.hoIndex] = bid.Quantity;
+                itemData.ho.Price[itemData.hoIndex] = bid.Price;
+                itemData.ho.Quan[itemData.hoIndex] = bid.Quantity;
 
                 Trading.instance.HoMain0(itemData, true);
 
-                itemData.hoIndex++;
+                itemData.hoIndex--;
             }
 
-            itemData.hoIndex = 0;
+            itemData.hoIndex = 20;
             foreach (var ask in data.Asks)
             {
-                itemData.ho.MdPrice[itemData.hoIndex] = ask.Price;
-                itemData.ho.MdQuan[itemData.hoIndex] = ask.Quantity;
+                itemData.ho.Price[itemData.hoIndex] = ask.Price;
+                itemData.ho.Quan[itemData.hoIndex] = ask.Quantity;
 
                 Trading.instance.HoMain0(itemData, false);
 
@@ -978,6 +978,8 @@ namespace BinanceHand
                 end += limit;
             }
 
+            chart.ChartAreas[0].RecalculateAxesScale();
+            chart.ChartAreas[1].RecalculateAxesScale();
             chart.ChartAreas[0].AxisX.ScaleView.Zoom(start, end);
             chart.ChartAreas[0].RecalculateAxesScale();
             chart.ChartAreas[1].RecalculateAxesScale();
@@ -1003,7 +1005,7 @@ namespace BinanceHand
         {
             if (on)  //100, 500
             {
-                var task = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdatesAsync(itemData.Code, (int)Trading.instance.hoChart.Tag, 100, OnHoUpdates);
+                var task = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdatesAsync(itemData.Code, (int)Trading.instance.hoChart.Tag, 500, OnHoUpdates);
                 task.Wait();
 
                 var result = task.Result;
