@@ -25,7 +25,6 @@ namespace BinanceHand
         public decimal priceDiffRate;
         public decimal priceStandard;
 
-        public bool LorS = true;
 
         public OrderType OrderType;
         public OrderSide OrderSide;
