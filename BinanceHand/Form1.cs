@@ -762,7 +762,7 @@ namespace BinanceHand
             else if (data.UpdateData.Status == OrderStatus.Filled || data.UpdateData.Status == OrderStatus.Canceled
                 || data.UpdateData.Status == OrderStatus.Rejected || data.UpdateData.Status == OrderStatus.Expired)
             {
-                if (data.UpdateData.Status == OrderStatus.Filled && !itemData.position)
+                if (data.UpdateData.Status == OrderStatus.Filled && itemData.positionWhenOrder)
                 {
                     TradeResultData resultData;
                     if (Trading.instance.realHandResultListView.Items.Count == 0)
@@ -788,7 +788,7 @@ namespace BinanceHand
 
                     Trading.instance.UpdateResult(itemData, itemData.isAuto);
                 }
-                else if ((data.UpdateData.Status == OrderStatus.Filled && itemData.position) || data.UpdateData.Status == OrderStatus.Canceled)
+                else if ((data.UpdateData.Status == OrderStatus.Filled && !itemData.positionWhenOrder) || data.UpdateData.Status == OrderStatus.Canceled)
                 {
                     var resultData = Trading.instance.realHandResultListView.GetModelObject(0) as TradeResultData;
 
@@ -1148,6 +1148,7 @@ namespace BinanceHand
             if (!auto)
                 orderSizeTextBox1.Text = quantity.ToString();
 
+            itemData.positionWhenOrder = itemData.position;
             var task = client.FuturesUsdt.Order.PlaceOrderAsync(
                 itemData.Code
                 , buy ? OrderSide.Buy : OrderSide.Sell
@@ -1170,7 +1171,7 @@ namespace BinanceHand
             if (!result2.Success)
                 MessageBox.Show(result2.Error.Message);
 
-            if (itemData.position)
+            if (itemData.positionWhenOrder)
             {
                 if (itemData.resultData == default)
                 {
