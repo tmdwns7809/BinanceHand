@@ -1015,10 +1015,6 @@ namespace BinanceHand
                         BeginInvoke(new Action(() => { MessageBox.Show(result.Error.Message); }));
 
                     (itemData as BinanceItemData).aggSub = result.Data;
-
-                    itemData.Reset();
-
-                    Trading.instance.CodeListView.RefreshObject(itemData);
                 }));
             }
             else
