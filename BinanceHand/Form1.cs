@@ -461,45 +461,7 @@ namespace BinanceHand
 
             if (data.Data.Final)
             {
-                if (data.Data.High / data.Data.Low > 1.02m)
-                {
-                    if (itemData.Real == 0)
-                    {
-                        Trading.instance.SetAgg(itemData, true);
-
-                        Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Trading.instance.secTimeFormat),
-                            DBHelper.conn1DetectHistoryColumn1, itemData.Code, DBHelper.conn1DetectHistoryColumn2, "Real 1 in : 전분폭 > 2%");
-                    }
-
-                    itemData.Real1Condition = 0;
-                }
-                else if (itemData.Real1Condition < 15)
-                    itemData.Real1Condition++;
-                else if (itemData.Real == 1 && !itemData.isChartShowing && !itemData.simulEnterOrder)
-                {
-                    Trading.instance.SetAgg(itemData, false);
-
-                    Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Trading.instance.secTimeFormat),
-                        DBHelper.conn1DetectHistoryColumn1, itemData.Code, DBHelper.conn1DetectHistoryColumn2, "Real out : 15연속 전분폭 < 2%");
-                }
-
-                if (itemData.Real == 2)
-                {
-                    if (itemData.Real2Condition > 5)
-                    {
-                        itemData.Real = 1;
-                        Trading.instance.CodeListView.RefreshObject(itemData);
-                        Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Trading.instance.secTimeFormat),
-                            DBHelper.conn1DetectHistoryColumn1, itemData.Code, DBHelper.conn1DetectHistoryColumn2, "Real 2 out : 5분연속 기준 미달");
-
-                        List<TradeStick> secList = new List<TradeStick>();
-                        secList.AddRange(itemData.oldSecStickList);
-                        secList.AddRange(itemData.secStickList);
-                        Trading.instance.dbHelper.SaveSticksCSVData(itemData.Code + "_" + secList[0].Time.ToString(Trading.instance.secTimeFormatSCV), secList);
-                    }
-                    else
-                        itemData.Real2Condition++;
-                }
+                Trading.instance.ChangeReal(itemData, data.Data.High / data.Data.Low);
 
                 if (itemData.isChartShowing && itemData.Real == 0 && Trading.instance.chartNow.TabIndex == Trading.instance.minChart.TabIndex)
                 {

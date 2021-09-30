@@ -47,7 +47,6 @@ namespace BinanceHand
         public decimal minSize;
         public decimal priceTickSize;
 
-        public bool simulEnterOrder = false;
 
         public decimal simulBhtPrc;
         public DateTime simulBhtTime;
