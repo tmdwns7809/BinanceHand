@@ -16,16 +16,6 @@ namespace BinanceHand
 
         public bool klineFirst = true;
 
-        public double SDevRatio;
-        public decimal lastSDevRatioPrice;
-        public double lastSDevRatio;
-        public int lastSDevCount10sec;
-        public decimal priceDiffStep;
-        public decimal priceRange;
-        public decimal priceDiffRate;
-        public decimal priceStandard;
-
-
         public OrderType OrderType;
         public OrderSide OrderSide;
         public bool ReduceOnly;
