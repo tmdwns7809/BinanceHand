@@ -1,33 +1,24 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
-using System.Collections;
 using Binance.Net;
 using Binance.Net.Enums;
 using Binance.Net.Objects;
 using CryptoExchange.Net.Authentication;
-using CryptoExchange.Net.Logging;
 using CryptoExchange.Net.Sockets;
 using Binance.Net.Objects.Spot.MarketStream;
 using Binance.Net.Interfaces;
 using System.Windows.Forms.DataVisualization.Charting;
-using BrightIdeasSoftware;
 using Binance.Net.Objects.Futures.MarketStream;
 using Binance.Net.Objects.Futures.UserStream;
-using System.Drawing.Imaging;
-using IrrKlang;
-using System.Drawing.Drawing2D;
-using System.Data.SQLite;
 using TradingLibrary.Trading;
 using TradingLibrary;
+using TradingLibrary.Base;
 
 namespace BinanceHand
 {
@@ -75,14 +66,18 @@ namespace BinanceHand
             FormClosed += Form1_FormClosed;
             Load += Form1_Load;
 
-            Trading.instance = new Trading(this, @"C:\Users\tmdwn\source\repos\BinanceHand\", 0.1m, (0, -1), 20, true);
-            //Trading.instance.HoONandOFF += Trading_HoONandOFF;
+            Trading.instance = new Trading(this, @"C:\Users\tmdwn\source\repos\BinanceHand\", Commision.Binance, (0, -1), 20, false);
+            Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
             Trading.instance.ResetOrderView += Trading_ResetOrderView;
             Trading.instance.LoadMoreAdditional += Trading_LoadMoreAdditional;
             Trading.instance.PlaceOrder += Trading_PlaceOrder;
             Trading.instance.CodeListView.Columns.Remove(Trading.instance.CodeListView.GetColumn("Name"));
+            Trading.instance.realHandResultListView.Columns.Remove(Trading.instance.realHandResultListView.GetColumn("Name"));
+            Trading.instance.realAutoResultListView.Columns.Remove(Trading.instance.realAutoResultListView.GetColumn("Name"));
+            foreach (var listView in Trading.instance.simulResultListView)
+                listView.Columns.Remove(listView.GetColumn("Name"));
 
             SetOrderView();
 
@@ -178,11 +173,11 @@ namespace BinanceHand
                 {   /*future*/
                     clientOption.BaseAddressUsdtFutures = "https://testnet.binancefuture.com";
                     clientOption.BaseAddressCoinFutures = "https://testnet.binancefuture.com";
-                    clientOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
+                    clientOption.ApiCredentials = new ApiCredentials(BinanceBase.testnet_API_Key, BinanceBase.testnet_Secret_Key);
                     socketOption.BaseAddressUsdtFutures = "wss://stream.binancefuture.com";
                     socketOption.BaseAddressCoinFutures = "wss://stream.binancefuture.com";
                     socketOption.BaseAddress = "wss://stream.binancefuture.com";
-                    socketOption.ApiCredentials = new ApiCredentials("91a72629c127988a0f3fd76d0b0e8bd07d2897ce772f3d46950e778024e44779", "8f3064b7fd15884a575e3a4f8646aac9e668931eab20ac975bd8bf372ff2b324");
+                    socketOption.ApiCredentials = new ApiCredentials(BinanceBase.testnet_API_Key, BinanceBase.testnet_Secret_Key);
                 }
                 else
                 {   /*spot 안됌
@@ -193,13 +188,11 @@ namespace BinanceHand
                 }
             }
             else
-            {   // 2 api: 1FTacwabmgbRuWQp69WtsdfI0xTC6W8WdINGz6Y63t82quT3uWSfda5sywM6hahD secret: F0XsXiKbV5oH7K5yynAhugTuFSEKESCXN6TSjLHT7fKADavdJ3pEJdrafqeSzuAX
-                // 1 api: DpLZEH9lDIuoYvs5L9YcDshSXW1rN9Rlw6OMj7zVQwR7wuBGt9vtyntEDNUfUb50 secret: xXhj8yvUrLgVxlO4BioadC4RQSoydDLR2UFIaMcqBCdX1WM2LjVsM3cxC1Y9lgVJ
-                // future2 api: MaVxZ9KHAO4Mel6AO4svPJALO6tgxnMXgHDwWdQBBJGJJjXNJhiLoiPgodGMLku8    secret: xxZa8xZx6TgWrve5O0a7fUzjo0RbJiGxHriBuHgKA8cDORZvwkBn8QGoZxKhlcsA
-                clientOption.ApiCredentials = new ApiCredentials("MaVxZ9KHAO4Mel6AO4svPJALO6tgxnMXgHDwWdQBBJGJJjXNJhiLoiPgodGMLku8", "xxZa8xZx6TgWrve5O0a7fUzjo0RbJiGxHriBuHgKA8cDORZvwkBn8QGoZxKhlcsA");
+            {
+                clientOption.ApiCredentials = new ApiCredentials(BinanceBase.future2_API_Key, BinanceBase.future2_Secret_Key);
                 clientOption.AutoTimestamp = false;
                 clientOption.TradeRulesBehaviour = TradeRulesBehaviour.None;
-                socketOption.ApiCredentials = new ApiCredentials("MaVxZ9KHAO4Mel6AO4svPJALO6tgxnMXgHDwWdQBBJGJJjXNJhiLoiPgodGMLku8", "xxZa8xZx6TgWrve5O0a7fUzjo0RbJiGxHriBuHgKA8cDORZvwkBn8QGoZxKhlcsA");
+                socketOption.ApiCredentials = new ApiCredentials(BinanceBase.future2_API_Key, BinanceBase.future2_Secret_Key);
                 //socketOption.AutoReconnect = true;
                 socketOption.ReconnectInterval = TimeSpan.FromMinutes(1);
                 //clientOption.LogVerbosity = LogVerbosity.Debug;
@@ -222,7 +215,7 @@ namespace BinanceHand
 
             var result = socketClient.FuturesUsdt.SubscribeToKlineUpdatesAsync(symbolList, KlineInterval.OneMinute, OnKlineUpdates).Result;
             if (!result.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             Trading.instance.UpdateReqRcv(Trading.instance.KlineReqTextBox, symbolList.Count);
         }
@@ -230,7 +223,7 @@ namespace BinanceHand
         {
             var result = client.FuturesUsdt.System.GetExchangeInfoAsync().Result;
             if (!result.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             UpdateWeightNow(result.ResponseHeaders);
 
@@ -240,7 +233,7 @@ namespace BinanceHand
                 {
                     case RateLimitType.RequestWeight:
                         if (l.Interval != RateLimitInterval.Minute || l.IntervalNumber != 1)
-                            Trading.instance.ShowError();
+                            Trading.ShowError(this);
 
                         weight_limit = l.Limit;
                         break;
@@ -267,14 +260,18 @@ namespace BinanceHand
                     var result2 = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, KlineInterval.OneDay, null, Trading.instance.NowTime(), 30).Result;
 
                     if (!result2.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     UpdateWeightNow(result2.ResponseHeaders);
 
                     var klines = result2.Data;
+                    var count = klines.Count();
                     if (klines.Count() <= 0)
-                        Trading.instance.ShowError();
-                    itemData.daysFromBorn = klines.Count();
+                        Trading.ShowError(this);
+                    itemData.daysFromBorn = count;
+                    var kline = klines.ElementAt(count - 2);
+                    itemData.Last1dStickFluc = Math.Round((kline.High / kline.Low - 1) * 100, 2);
+
                 }));
 
                 requestTRTaskQueue.Enqueue(new Task(() =>
@@ -282,11 +279,11 @@ namespace BinanceHand
                     var result2 = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, KlineInterval.ThirtyMinutes, null, Trading.instance.NowTime(), 2).Result;
 
                     if (!result2.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     UpdateWeightNow(result2.ResponseHeaders);
 
-                    var kline = result2.Data.ElementAt(0);  //최근게 맨 뒤에 있음
+                    var kline = result2.Data.ElementAt(0);  //최근게 맨 뒤에 있음, 0이 제일 옛날거
                     itemData.Last30minStickFluc = Math.Round((kline.High / kline.Low - 1) * 100, 2);
                     itemData.Budget = (int)(kline.QuoteVolume / 360000);
                     itemData.Count = kline.TradeCount / 1800;
@@ -298,7 +295,7 @@ namespace BinanceHand
             }
 
             if (requestTRTaskQueue.Count == 0)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             Task.Run(() =>
             {
@@ -306,7 +303,7 @@ namespace BinanceHand
                 {
                     requestTRTaskQueue.Dequeue().RunSynchronously();
 
-                    if (weight_now > weight_limit)
+                    if (weight_now + 50 > weight_limit)
                         Thread.Sleep(60000);
 
                     //Thread.Sleep(100);
@@ -317,7 +314,7 @@ namespace BinanceHand
         {
             var result = ((testnet && !testnetFutures) ? client.Spot.UserStream.StartUserStreamAsync() : client.FuturesUsdt.UserStream.StartUserStreamAsync()).Result;
             if (!result.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             UpdateWeightNow(result.ResponseHeaders);
 
@@ -331,7 +328,7 @@ namespace BinanceHand
 
                     var result1 = ((testnet && !testnetFutures) ? client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey) : client.FuturesUsdt.UserStream.KeepAliveUserStreamAsync(listenKey)).Result;
                     if (!result1.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     UpdateWeightNow(result1.ResponseHeaders);
 
@@ -360,7 +357,7 @@ namespace BinanceHand
                             var a = data;
                         })).Result;
             if (!result2.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
         }
         void GetAccountInfo()
         {
@@ -375,9 +372,12 @@ namespace BinanceHand
             Trading.instance.assetDic.Add(AssetTextWalletBalance, new Asset { AssetName = AssetTextWalletBalance });
             Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextWalletBalance]);
 
-            var result = client.FuturesUsdt.Account.GetAccountInfoAsync().Result;
+            var task = client.FuturesUsdt.Account.GetAccountInfoAsync();
+            task.Wait();
+
+            var result = task.Result;
             if (!result.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             UpdateWeightNow(result.ResponseHeaders);
 
@@ -401,7 +401,7 @@ namespace BinanceHand
 
                     var result1 = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates).Result;
                     if (!result1.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     itemData.markSub = result1.Data;
 
@@ -415,7 +415,7 @@ namespace BinanceHand
 
             var result2 = client.FuturesUsdt.GetPositionInformationAsync().Result;
             if (!result2.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             UpdateWeightNow(result2.ResponseHeaders);
 
@@ -425,7 +425,7 @@ namespace BinanceHand
                 {
                     var result3 = client.FuturesUsdt.ChangeMarginTypeAsync(s.Symbol, FuturesMarginType.Cross).Result;
                     if (!result3.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     UpdateWeightNow(result3.ResponseHeaders);
                 }
@@ -449,7 +449,7 @@ namespace BinanceHand
 
                     var result4 = client.FuturesUsdt.GetBracketsAsync(s.Symbol).Result;
                     if (!result4.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     UpdateWeightNow(result4.ResponseHeaders);
 
@@ -752,10 +752,8 @@ namespace BinanceHand
                             asset.Amount = Trading.instance.assetDic[AssetTextWalletBalance].Amount;
                             Trading.instance.assetsListView.Refresh();
 
-                            Trading.instance.CodeListView.RemoveObject(itemData);
-                            Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
-
                             Trading.instance.chartNow.ChartAreas[0].AxisY2.StripLines.Clear();
+                            Trading.instance.ChangeChartAreaBorderColor();
                         }));
                     }
                     else if (itemData.position)
@@ -764,7 +762,7 @@ namespace BinanceHand
                     {
                         var result = await socketClient.FuturesUsdt.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates);
                         if (!result.Success)
-                            Trading.instance.ShowError();
+                            Trading.ShowError(this);
 
                         itemData.markSub = result.Data;
 
@@ -779,11 +777,7 @@ namespace BinanceHand
 
                             Trading_ResetOrderView();
 
-                            var strip = new StripLine();
-                            //strip.Interval = double.NaN;      이거하면 스크롤할때만 보임;;
-                            strip.ForeColor = ForeColor;
-                            strip.TextLineAlignment = StringAlignment.Center;
-                            Trading.instance.chartNow.ChartAreas[0].AxisY2.StripLines.Add(strip);
+                            Trading.instance.ChangeChartAreaBorderColor(itemData.LorS ? ColorSet.VolumeTaker : ColorSet.VolumeMaker, false);
                         }));
                     }
                 }
@@ -823,24 +817,26 @@ namespace BinanceHand
                     TradeResultData resultData;
                     if (Trading.instance.realHandResultListView.Items.Count == 0)
                     {
-                        resultData = new TradeResultData { Symbol = itemData.Code };
+                        resultData = new TradeResultData { Code = itemData.Code, Name = itemData.Name };
                         Trading.instance.realHandResultListView.InsertObjects(0, new List<TradeResultData> { resultData });
                     }
                     else
                         resultData = Trading.instance.realHandResultListView.GetModelObject(0) as TradeResultData;
                     if (data.UpdateData.Side == OrderSide.Sell)
                     {
-                        resultData.LastGap = Math.Round((itemData.orderStartClosePrice / data.UpdateData.AveragePrice - 1) * 100, 2);
+                        resultData.Exit_Send_Price__Diff = itemData.OrderPrice.ToString(ForDecimalString) + "(" + Math.Round((data.UpdateData.AveragePrice / itemData.OrderPrice - 1) * 100, 2) + "%)";
                         resultData.ProfitRate = (double)Math.Round((data.UpdateData.AveragePrice / itemData.EntryPrice - 1) * 100, 2);
                     }
                     else
                     {
-                        resultData.LastGap = Math.Round((data.UpdateData.AveragePrice / itemData.orderStartClosePrice - 1) * 100, 2);
+                        resultData.Exit_Send_Price__Diff = itemData.OrderPrice.ToString(ForDecimalString) + "(" + Math.Round((itemData.OrderPrice / data.UpdateData.AveragePrice - 1) * 100, 2) + "%)";
                         resultData.ProfitRate = (double)Math.Round((itemData.EntryPrice / data.UpdateData.AveragePrice - 1) * 100, 2);
                     }
-                    resultData.ProfitRateAndValue = resultData.ProfitRate + ", " + data.UpdateData.RealizedProfit.ToString(ForDecimalString);
-                    resultData.LastGapAndTimeAndSuccessAmount = resultData.LastGap + ", " + Math.Round((data.UpdateData.UpdateTime - resultData.LastTime).TotalSeconds, 1)
-                        + ", " + resultData.LastGapAndTimeAndSuccessAmount;
+                    resultData.Profit_Rate = resultData.ProfitRate + "%";
+                    resultData.Profit_Value = data.UpdateData.RealizedProfit.ToString(ForDecimalString) + "$";
+                    resultData.Exit_Send_Time__Diff = resultData.ExitSendTime.ToString(Trading.instance.timeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.ExitSendTime).Milliseconds / 1000D, 1) + "s)";
+                    if (resultData.Exit_Send_Amount__Diff == default)
+                        resultData.Exit_Send_Amount__Diff = itemData.OrderAmount.ToString(ForDecimalString) + "(" + Math.Round((data.UpdateData.AccumulatedQuantityOfFilledTrades / itemData.OrderAmount - 1) * 100, 0) + "%)";
 
                     Trading.instance.UpdateResult(itemData, itemData.isAuto);
                 }
@@ -850,7 +846,7 @@ namespace BinanceHand
 
                     if (data.UpdateData.Status == OrderStatus.Canceled && itemData.positionWhenOrder)
                     {
-                        resultData.LastGapAndTimeAndSuccessAmount = Math.Round((itemData.OrderAmount - Math.Abs(itemData.Size)) / itemData.OrderAmount, 2).ToString();
+                        resultData.Exit_Send_Amount__Diff = itemData.OrderAmount.ToString(ForDecimalString) + "(" + Math.Round((Math.Abs(itemData.Size) / itemData.OrderAmount - 1) * 100, 0) + "%)";
 
                         Trading_PlaceOrder(itemData, !itemData.LorS, true, itemData.isAuto);
                     }
@@ -859,15 +855,11 @@ namespace BinanceHand
                         if (data.UpdateData.AveragePrice != 0)
                         {
                             itemData.EntryPrice = data.UpdateData.AveragePrice;
-
-                            if (data.UpdateData.Side == OrderSide.Buy)
-                                resultData.EntryGap = Math.Round((data.UpdateData.AveragePrice / itemData.orderStartClosePrice - 1) * 100, 2);
-                            else
-                                resultData.EntryGap = Math.Round((itemData.orderStartClosePrice / data.UpdateData.AveragePrice - 1) * 100, 2);
+                            resultData.Enter_Send_Price__Diff = itemData.OrderPrice.ToString(ForDecimalString) + "(" + 
+                                Math.Round(((data.UpdateData.Side == OrderSide.Buy ? data.UpdateData.AveragePrice / itemData.OrderPrice : itemData.OrderPrice / data.UpdateData.AveragePrice) - 1) * 100, 2) + "%)";
                         }
-
-                        resultData.EntryGapAndTimeAndSuccessAmount = resultData.EntryGap + ", " + Math.Round((data.UpdateData.UpdateTime - resultData.EntryTime).TotalSeconds, 1)
-                            + ", " + Math.Round(Math.Abs(itemData.Size) / itemData.OrderAmount, 2);
+                        resultData.Enter_Send_Time__Diff = resultData.EnterSendTime.ToString(Trading.instance.timeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.EnterSendTime).Milliseconds / 1000D, 1) + "s)";
+                        resultData.Enter_Send_Amount__Diff = itemData.OrderAmount.ToString(ForDecimalString) + "(" + Math.Round((Math.Abs(itemData.Size) / itemData.OrderAmount - 1) * 100, 0) + "%)";
                     }
 
                     Trading.instance.realHandResultListView.RefreshObject(resultData);
@@ -889,7 +881,7 @@ namespace BinanceHand
             {
                 var result = client.FuturesUsdt.GetPositionInformationAsync(itemData.Code).Result;
                 if (!result.Success)
-                    Trading.instance.ShowError();
+                    Trading.ShowError(this);
 
                 UpdateWeightNow(result.ResponseHeaders);
 
@@ -903,7 +895,7 @@ namespace BinanceHand
 
                     var result1 = client.FuturesUsdt.GetBracketsAsync(itemData.Code).Result;
                     if (!result1.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     UpdateWeightNow(result1.ResponseHeaders);
 
@@ -971,7 +963,7 @@ namespace BinanceHand
                 stick = ref itemDataShowing.dayStick;
             }
             else
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             var start = (int)chart.ChartAreas[0].AxisX.ScaleView.ViewMinimum + 1;
             var end = (int)chart.ChartAreas[0].AxisX.ScaleView.ViewMaximum - 1;
@@ -1001,7 +993,7 @@ namespace BinanceHand
             {
                 var result = client.FuturesUsdt.Market.GetKlinesAsync(itemDataShowing.Code, interval, null, endTime, limit).Result;
                 if (!result.Success)
-                    Trading.instance.ShowError();
+                    Trading.ShowError(this);
 
                 UpdateWeightNow(result.ResponseHeaders);
 
@@ -1052,7 +1044,7 @@ namespace BinanceHand
                 {
                     var result = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdatesAsync(itemData.Code, OnAggregatedTradeUpdates).Result;
                     if (!result.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     (itemData as BinanceItemData).aggSub = result.Data;
                 }));
@@ -1068,7 +1060,7 @@ namespace BinanceHand
                 {
                     var result = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdatesAsync(itemData.Code, (int)Trading.instance.hoChart.Tag, 500, OnHoUpdates).Result;
                     if (!result.Success)
-                        Trading.instance.ShowError();
+                        Trading.ShowError(this);
 
                     (itemData as BinanceItemData).hoSub = result.Data;
 
@@ -1097,7 +1089,7 @@ namespace BinanceHand
 
             if (itemData.secStick.Price[3] == default)
             {
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
                 return;
             }
             else
@@ -1116,7 +1108,7 @@ namespace BinanceHand
                     || (!itemData.position && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
                     || (!miniSizeCheckBox.Checked && (!int.TryParse(autoSizeTextBox0.Text, out limitPercent) || limitPercent <= 0))))
             {
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
                 orderPriceTextBox1.Clear();
                 return;
             }
@@ -1166,7 +1158,7 @@ namespace BinanceHand
 
             if (!itemData.position && (price * quantity > itemData.maxNotionalValue || price * quantity < itemData.minNotionalValue))
             {
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
                 return;
             }
 
@@ -1185,31 +1177,28 @@ namespace BinanceHand
                 , auto ? true : ROCheckBox.Checked
                 , price).Result;
             if (!result.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             var result2 = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeoutAsync(itemData.Code, TimeSpan.FromSeconds(1)).Result;
             if (!result2.Success)
-                Trading.instance.ShowError();
+                Trading.ShowError(this);
 
             if (itemData.positionWhenOrder)
             {
                 if (itemData.resultData == default)
                 {
-                    itemData.resultData = new TradeResultData { Symbol = itemData.Code };
+                    itemData.resultData = new TradeResultData { Code = itemData.Code };
                     (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
                 }
 
-                itemData.resultData.LastTime = Trading.instance.NowTime();
-                if (!market)
-                    itemData.resultData.LastGapAndTimeAndSuccessAmount = "1";
+                itemData.resultData.ExitSendTime = Trading.instance.NowTime();
             }
             else
             {
                 itemData.LorS = buy;
 
-                itemData.resultData = new TradeResultData { Symbol = itemData.Code };
-                itemData.resultData.EntryTime = Trading.instance.NowTime();
-                itemData.resultData.EntryGapAndTimeAndSuccessAmount = "0";
+                itemData.resultData = new TradeResultData { Code = itemData.Code };
+                itemData.resultData.EnterSendTime = Trading.instance.NowTime();
                 (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
 
                 itemData.Size = 0;
@@ -1223,7 +1212,10 @@ namespace BinanceHand
         {
             base.OnClosed(e);
 
-            socketClient.UnsubscribeAllAsync();
+            Task.Run(new Action(() =>
+            {
+                socketClient.UnsubscribeAllAsync();
+            }));
         }
     }
 }

@@ -9,7 +9,7 @@ using TradingLibrary;
 
 namespace BinanceHand
 {
-    class BinanceItemData : TradeItemData
+    public class BinanceItemData : TradeItemData
     {
         public UpdateSubscription aggSub;
         public UpdateSubscription hoSub;
