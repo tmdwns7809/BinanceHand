@@ -937,7 +937,7 @@ namespace BinanceHand
 
             orderPriceTextBox1.Text = Trading.instance.limitPrice.ToString();
         }
-        void Trading_LoadMoreAdditional(Chart chart, int limit, bool loadNew)
+        void Trading_LoadMoreAdditional(Chart chart, bool loadNew)
         {
             var itemDataShowing = Trading.instance.itemDataShowing as BinanceItemData;
 
@@ -989,45 +989,43 @@ namespace BinanceHand
                     se.Points.RemoveAt(0);
             }
 
-            if (limit > 0)
+            var limit = Trading.instance.baseLoadSticksSize;
+            var result = client.FuturesUsdt.Market.GetKlinesAsync(itemDataShowing.Code, interval, null, endTime, limit).Result;
+            if (!result.Success)
+                Trading.ShowError(this);
+
+            UpdateWeightNow(result.ResponseHeaders);
+
+            var klines = result.Data;
+            TradeStick newStick;
+
+            var first = true;
+            limit = 0;
+            foreach (var kline in klines.Reverse())
             {
-                var result = client.FuturesUsdt.Market.GetKlinesAsync(itemDataShowing.Code, interval, null, endTime, limit).Result;
-                if (!result.Success)
-                    Trading.ShowError(this);
+                limit++;
 
-                UpdateWeightNow(result.ResponseHeaders);
-
-                var klines = result.Data;
-                TradeStick newStick;
-
-                var first = true;
-                limit = 0;
-                foreach (var kline in klines.Reverse())
+                newStick = new TradeStick();
+                newStick.Price[0] = kline.High;
+                newStick.Price[1] = kline.Low;
+                newStick.Price[2] = kline.Open;
+                newStick.Price[3] = kline.Close;
+                newStick.Ms = kline.TakerBuyBaseVolume;
+                newStick.Md = kline.BaseVolume - kline.TakerBuyBaseVolume;
+                newStick.Time = kline.OpenTime;
+                newStick.TCount = kline.TradeCount;
+                Trading.instance.InsertFullChartPoint(chart, newStick);
+                if (first && loadNew)
                 {
-                    limit++;
-
-                    newStick = new TradeStick();
-                    newStick.Price[0] = kline.High;
-                    newStick.Price[1] = kline.Low;
-                    newStick.Price[2] = kline.Open;
-                    newStick.Price[3] = kline.Close;
-                    newStick.Ms = kline.TakerBuyBaseVolume;
-                    newStick.Md = kline.BaseVolume - kline.TakerBuyBaseVolume;
-                    newStick.Time = kline.OpenTime;
-                    newStick.TCount = kline.TradeCount;
-                    Trading.instance.InsertFullChartPoint(chart, newStick);
-                    if (first && loadNew)
-                    {
-                        first = false;
-                        TradeStick.Copy(newStick, stick);
-                    }
-                    else
-                        list.Insert(0, newStick);
+                    first = false;
+                    TradeStick.Copy(newStick, stick);
                 }
-
-                start += limit;
-                end += limit;
+                else
+                    list.Insert(0, newStick);
             }
+
+            start += limit;
+            end += limit;
 
             chart.ChartAreas[0].RecalculateAxesScale();
             chart.ChartAreas[1].RecalculateAxesScale();
