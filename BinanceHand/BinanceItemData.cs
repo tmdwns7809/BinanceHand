@@ -35,7 +35,6 @@ namespace BinanceHand
         public List<BinanceFuturesBracket> brackets;
 
         public decimal minSize;
-        public decimal priceTickSize;
 
 
         public decimal simulBhtPrc;
@@ -60,7 +59,7 @@ namespace BinanceHand
         public BinanceItemData(BinanceFuturesUsdtSymbol fu) : base(fu.Name.Trim().ToUpper())
         {
             minSize = fu.LotSizeFilter.MinQuantity;
-            priceTickSize = fu.PriceFilter.TickSize;
+            hoDiff = fu.PriceFilter.TickSize;
             minNotionalValue = fu.MinNotionalFilter.MinNotional;
         }
     }

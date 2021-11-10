@@ -60,7 +60,6 @@ namespace BinanceHand
         int weight_now;
 
         Queue<Task> requestTRTaskQueue = new Queue<Task>();
-        CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
         Dictionary<KlineInterval, ChartValues> binanceChartValuesDic = new Dictionary<KlineInterval, ChartValues>();
 
@@ -304,7 +303,7 @@ namespace BinanceHand
 
                     Thread.Sleep(1000);
                 }
-            }, cancelTokenSource.Token);
+            }, Trading.instance.tokenSource.Token);
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -614,16 +613,8 @@ namespace BinanceHand
             list.Remove(last);
 
             var name = binanceChartValuesDic[interval].Text;
-            if (Trading.instance.CheckSuddenBurstOfMin(false, list, last, itemData))
-            {
-                itemData.Suddens++;
-                itemData.SuddenNames += name + ",";
-            }
-            else if (itemData.SuddenNames.Contains(name))
-            {
-                itemData.Suddens--;
-                itemData.SuddenNames.Replace(name + ",", "");
-            }
+            if (itemData.SuddenNames.Contains(name) && !Trading.instance.CheckSuddenBurst(false, list, last, itemData, binanceChartValuesDic[interval]))
+                Trading.instance.UpdateSuddens(itemData, binanceChartValuesDic[interval], false);
 
             return list;
         }
@@ -642,7 +633,7 @@ namespace BinanceHand
             miniSizeCheckBox.Checked = on;
             if (itemDataShowing.position)
                 orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
-            else if (itemDataShowing.secStick.Price[3] != 0)
+            else if (itemDataShowing.secStick != default)
                 orderSizeTextBox1.Text = ((int)(itemDataShowing.minNotionalValue / itemDataShowing.secStick.Price[3] / itemDataShowing.minSize + 1) * itemDataShowing.minSize).ToString();
             else
                 orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
@@ -706,11 +697,13 @@ namespace BinanceHand
             if (itemData.minStickList.Count != 0 && itemData.minStick.Time.Subtract(itemData.minStickList.Last().Time).TotalMinutes == 0)
                 itemData.minStickList.RemoveAt(itemData.minStickList.Count - 1);
 
-            Trading.instance.CheckSuddenBurstOfMin(false, itemData.minStickList, itemData.minStick, itemData);
+            if (!itemData.SuddenNames.Contains(BaseChartTimeSet.OneMinute.Text) 
+                && Trading.instance.CheckSuddenBurst(false, itemData.minStickList, itemData.minStick, itemData, BaseChartTimeSet.OneMinute))
+                itemData.SuddenMinCount = 0;
 
             if (data.Data.Final)
             {
-                Trading.instance.ChangeRealIf(itemData, data.Data.High / data.Data.Low);
+                Trading.instance.CheckEveryMinute(itemData, data.Data.High / data.Data.Low);
 
                 itemData.minStickList.Add(itemData.minStick);
 
@@ -796,9 +789,9 @@ namespace BinanceHand
                     DBHelper.conn1DetectHistoryColumn1, itemData.Code + "~첫체결", DBHelper.conn1DetectHistoryColumn2, " 종가:" + itemData.newPrice);
             }
 
-            if (itemData.isChartShowing && Trading.instance.mainChart.InvokeRequired)
-                Invoke(new Action(() => { Trading.instance.AggMain(itemData); }));
-            else
+            //if (itemData.isChartShowing && Trading.instance.mainChart.InvokeRequired)
+            //    Invoke(new Action(() => { Trading.instance.AggMain(itemData); }));
+            //else
                 Trading.instance.AggMain(itemData);
         }
         void OnHoUpdates(DataEvent<IBinanceFuturesEventOrderBook> data0)
@@ -1007,7 +1000,7 @@ namespace BinanceHand
                     }
                     resultData.Profit_Rate = resultData.ProfitRate + "%";
                     resultData.Profit_Value = data.UpdateData.RealizedProfit.ToString(ForDecimalString) + "$";
-                    resultData.Exit_Send_Time__Diff = resultData.ExitSendTime.ToString(Trading.instance.timeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.ExitSendTime).Milliseconds / 1000D, 1) + "s)";
+                    resultData.Exit_Send_Time__Diff = resultData.ExitSendTime.ToString(Trading.instance.timeFormatNoDate) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.ExitSendTime).Milliseconds / 1000D, 1) + "s)";
                     if (resultData.Exit_Send_Amount__Diff == default)
                         resultData.Exit_Send_Amount__Diff = itemData.OrderAmount.ToString(ForDecimalString) + "(" + Math.Round((data.UpdateData.AccumulatedQuantityOfFilledTrades / itemData.OrderAmount - 1) * 100, 0) + "%)";
 
@@ -1031,7 +1024,7 @@ namespace BinanceHand
                             resultData.Enter_Send_Price__Diff = itemData.OrderPrice.ToString(ForDecimalString) + "(" + 
                                 Math.Round(((data.UpdateData.Side == OrderSide.Buy ? data.UpdateData.AveragePrice / itemData.OrderPrice : itemData.OrderPrice / data.UpdateData.AveragePrice) - 1) * 100, 2) + "%)";
                         }
-                        resultData.Enter_Send_Time__Diff = resultData.EnterSendTime.ToString(Trading.instance.timeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.EnterSendTime).Milliseconds / 1000D, 1) + "s)";
+                        resultData.Enter_Send_Time__Diff = resultData.EnterSendTime.ToString(Trading.instance.timeFormatNoDate) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.EnterSendTime).Milliseconds / 1000D, 1) + "s)";
                         resultData.Enter_Send_Amount__Diff = itemData.OrderAmount.ToString(ForDecimalString) + "(" + Math.Round((Math.Abs(itemData.Size) / itemData.OrderAmount - 1) * 100, 0) + "%)";
                     }
 
@@ -1122,6 +1115,8 @@ namespace BinanceHand
             {
                 interval = KlineInterval.OneMinute;
                 list = itemDataShowing.minStickList;
+                if (loadNew)
+                    itemDataShowing.minStick = new TradeStick();
                 stick = itemDataShowing.minStick;
             }
 
@@ -1138,6 +1133,10 @@ namespace BinanceHand
                 end = 0;
 
                 endTime = Trading.instance.NowTime();
+            }
+            else
+            {
+                endTime = DateTime.Parse(chart.Series[0].Points[0].AxisLabel).AddSeconds(-1);
             }
 
             var limit = Trading.instance.baseLoadSticksSize;
@@ -1178,13 +1177,8 @@ namespace BinanceHand
             start += limit;
             end += limit;
 
-            chart.ChartAreas[0].RecalculateAxesScale();
-            chart.ChartAreas[1].RecalculateAxesScale();
 
-            chart.ChartAreas[0].AxisX.ScaleView.Zoom(start, end);
-            
-            chart.ChartAreas[0].RecalculateAxesScale();
-            chart.ChartAreas[1].RecalculateAxesScale();
+            Trading.instance.ZoomX(chart, start, end);
             
             Trading.instance.AdjustChart(chart);
         }
@@ -1268,8 +1262,8 @@ namespace BinanceHand
             var orderType = OrderType.Limit;
             TimeInForce? timeInForce = null;
             decimal? price = buy ?
-                    (int)(itemData.orderStartClosePrice * (1 + priceRate / 100) / itemData.priceTickSize + 1) * itemData.priceTickSize :
-                    (int)(itemData.orderStartClosePrice * (1 - priceRate / 100) / itemData.priceTickSize) * itemData.priceTickSize;
+                    (int)(itemData.orderStartClosePrice * (1 + priceRate / 100) / itemData.hoDiff + 1) * itemData.hoDiff :
+                    (int)(itemData.orderStartClosePrice * (1 - priceRate / 100) / itemData.hoDiff) * itemData.hoDiff;
 
             if (!auto)
             {
@@ -1368,11 +1362,6 @@ namespace BinanceHand
             {
                 socketClient.UnsubscribeAllAsync();
             }));
-
-            if (cancelTokenSource != null)
-                cancelTokenSource.Cancel();
-
-            Trading.instance.dbHelper.Close();
         }
     }
 }
