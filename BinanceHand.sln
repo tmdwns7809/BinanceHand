@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradingLibrary", "..\Tradin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JooHand", "..\JooHand\JooHand\JooHand.csproj", "{9555527B-DA78-44B2-AEBB-DAE72872E46E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackTestingFinal", "..\BackTestingFinal\BackTestingFinal\BackTestingFinal.csproj", "{CAE52C9C-63A7-4819-A427-421F70EB3FD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{9555527B-DA78-44B2-AEBB-DAE72872E46E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9555527B-DA78-44B2-AEBB-DAE72872E46E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9555527B-DA78-44B2-AEBB-DAE72872E46E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAE52C9C-63A7-4819-A427-421F70EB3FD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAE52C9C-63A7-4819-A427-421F70EB3FD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAE52C9C-63A7-4819-A427-421F70EB3FD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAE52C9C-63A7-4819-A427-421F70EB3FD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

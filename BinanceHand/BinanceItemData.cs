@@ -6,6 +6,7 @@ using CryptoExchange.Net.Sockets;
 using BrightIdeasSoftware;
 using Binance.Net.Enums;
 using TradingLibrary;
+using TradingLibrary.Base;
 
 namespace BinanceHand
 {
@@ -56,7 +57,7 @@ namespace BinanceHand
 
         public decimal ROE;
 
-        public BinanceItemData(BinanceFuturesUsdtSymbol fu) : base(fu.Name.Trim().ToUpper())
+        public BinanceItemData(BinanceFuturesUsdtSymbol fu, int n) : base(fu.Name.Trim().ToUpper(), n)
         {
             minSize = fu.LotSizeFilter.MinQuantity;
             hoDiff = fu.PriceFilter.TickSize;
