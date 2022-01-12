@@ -58,6 +58,8 @@ namespace BinanceHand
 
         Queue<Task> requestTRTaskQueue = new Queue<Task>();
 
+        int st = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -276,7 +278,7 @@ namespace BinanceHand
                         v.list = LoadSticks(itemData.Code, interval, nowTime.Date, nowTime);
                         v.lastStick = v.list.Last();
                         v.list.RemoveAt(v.list.Count - 1);
-                        BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
+                        BaseFunctions.OneChartFindConditionAndAdd(st, itemData, vc);
                     }));
 
                 //var data = client.FuturesUsdt.ChangeInitialLeverage(itemData.Name, 1);
@@ -578,8 +580,8 @@ namespace BinanceHand
                 }
 
                 itemData.foundList = (new List<(DateTime foundTime, ChartValues chartValues)>(), new List<(DateTime foundTime, ChartValues chartValues)>());
-                itemData.foundListCountLong = 0;
-                itemData.foundListCountShort = 0;
+                itemData.longFound = false;
+                itemData.shortFound = false;
 
                 for (int i = 0; i < itemData.listDic.Count; i++)
                 {
@@ -652,19 +654,21 @@ namespace BinanceHand
                     v.lastStick.TCount += newStick.TCount;
 
                     BaseFunctions.SetRSIAandDiff(v.list, v.lastStick);
-                    BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
+                    BaseFunctions.OneChartFindConditionAndAdd(st, itemData, vc);
                 }
 
                 if (!itemData.Enter && !itemData.position)
                 {
-                    var conditionResult = BaseFunctions.AllChartFindCondition(itemData.foundList);
-                    if (conditionResult.found)
+                    if (itemData.longFound || itemData.shortFound)
                     {
+                        if (itemData.longFound && itemData.shortFound)
+                            BaseFunctions.ShowError(this);
+
                         if (newStick.Time == Trading.firstFinalMin)
                         {
                             lock (Trading.minLocker)
                             {
-                                if (conditionResult.isLong) BaseFunctions.foundItemList.Long.Add((itemData, itemData.foundList.Long));
+                                if (itemData.longFound) BaseFunctions.foundItemList.Long.Add((itemData, itemData.foundList.Long));
                                 else BaseFunctions.foundItemList.Short.Add((itemData, itemData.foundList.Short));
                             }
                         }
@@ -672,29 +676,36 @@ namespace BinanceHand
                         BaseFunctions.AlertStart(itemData.Code + "-" + itemData.foundList);
 
                         var conditionResult2 = BaseFunctions.AllItemFindCondition();
-                        if (newStick.Time == Trading.firstFinalMin && conditionResult2.found && conditionResult2.isLong)
+                        if (newStick.Time == Trading.firstFinalMin && conditionResult2.found)
                         {
-                            var fixedFoundItemList = conditionResult2.isLong ? BaseFunctions.foundItemList.Long : BaseFunctions.foundItemList.Short;
-                            foreach (var foundItem in fixedFoundItemList)
-                                if (!foundItem.itemData.Enter)
-                                {
-                                    itemData.isAuto = true;
-                                    BaseFunctions.EnterSetting(foundItem.itemData, vm.lastStick, foundItem.foundList, conditionResult2.isLong);
-                                    Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + itemData.EnterTime.ToString(BaseFunctions.TimeFormat),
-                                        DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + itemData.EnterPrice);
-                                    Trading_PlaceOrder(itemData, conditionResult2.isLong, false, true);
-                                }
+                            if (conditionResult2.isLong)
+                                foreach (var foundItem in BaseFunctions.foundItemList.Long)
+                                    if (!foundItem.itemData.Enter && Trading_PlaceOrder(itemData, true, false, true))
+                                    {
+                                        itemData.isAuto = true;
+                                        BaseFunctions.EnterSetting(foundItem.itemData, vm.lastStick, foundItem.foundList, true);
+                                        Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + itemData.EnterTime.ToString(BaseFunctions.TimeFormat),
+                                            DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + itemData.EnterPrice);
+                                    }
+                            //if (conditionResult2.isShort)
+                            //    foreach (var foundItem in BaseFunctions.foundItemList.Short)
+                            //        if (!foundItem.itemData.Enter && Trading_PlaceOrder(itemData, false, false, true))
+                            //        {
+                            //            itemData.isAuto = true;
+                            //            BaseFunctions.EnterSetting(foundItem.itemData, vm.lastStick, foundItem.foundList, false);
+                            //            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + itemData.EnterTime.ToString(BaseFunctions.TimeFormat),
+                            //                DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + itemData.EnterPrice);
+                            //        }
                         }
                     }
                 }
                 else if (itemData.Enter && itemData.position && itemData.isAuto)
                 {
-                    if (BaseFunctions.ExitConditionFinal(itemData))
+                    if (BaseFunctions.ExitConditionFinal(itemData) && Trading_PlaceOrder(itemData, !itemData.EnterPositionIsLong, false, true))
                     {
                         itemData.Enter = false;
                         Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + itemData.EnterTime.ToString(BaseFunctions.TimeFormat),
                             DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 매도(자동)", DBHelper.conn1OrderHistoryColumn2, "전송가:" + newStick.Price[3]);
-                        Trading_PlaceOrder(itemData, !itemData.EnterPositionIsLong, false, true);
                     }
                 }
             }
@@ -1124,20 +1135,20 @@ namespace BinanceHand
                 }));
             }
         }
-        void Trading_PlaceOrder(TradeItemData itemData0, bool buy, bool market, bool auto, bool autoCancel = true)
+        bool Trading_PlaceOrder(TradeItemData itemData0, bool buy, bool market, bool auto, bool autoCancel = true)
         {
             var itemData = itemData0 as BinanceItemData;
 
             if (itemData.position && !(itemData.LorS ^ buy))
             {
                 MessageBox.Show("position again?");
-                return;
+                return false;
             }
 
             if (itemData.secStick.Price[3] == default)
             {
-                Trading.ShowError(this);
-                return;
+                BaseFunctions.ShowError(this);
+                return false;
             }
             else
                 itemData.orderStartClosePrice = itemData.secStick.Price[3];
@@ -1155,9 +1166,9 @@ namespace BinanceHand
                     || (!itemData.position && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
                     || (!miniSizeCheckBox.Checked && (!int.TryParse(autoSizeTextBox0.Text, out limitPercent) || limitPercent <= 0))))
             {
-                Trading.ShowError(this);
+                BaseFunctions.ShowError(this);
                 orderPriceTextBox1.Clear();
-                return;
+                return false;
             }
 
             var orderType = OrderType.Limit;
@@ -1205,8 +1216,8 @@ namespace BinanceHand
 
             if (!itemData.position && (price * quantity > itemData.maxNotionalValue || price * quantity < itemData.minNotionalValue))
             {
-                Trading.ShowError(this);
-                return;
+                BaseFunctions.ShowError(this);
+                return false;
             }
 
             if (!auto)
@@ -1224,7 +1235,10 @@ namespace BinanceHand
                 , auto ? true : ROCheckBox.Checked
                 , price).Result;
             if (!result.Success)
+            {
                 BaseFunctions.ShowError(this);
+                return false;
+            }
 
             var result2 = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeoutAsync(itemData.Code, TimeSpan.FromSeconds(1)).Result;
             if (!result2.Success)
@@ -1255,6 +1269,8 @@ namespace BinanceHand
 
             Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + itemData.secStick.Time.ToString(BaseFunctions.TimeFormat),
                 DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 " + (buy ? "매수" : "매도") + "주문전송", DBHelper.conn1OrderHistoryColumn2, "주문가격:" + price + " 주문수량:" + quantity);
+
+            return true;
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
