@@ -58,8 +58,6 @@ namespace BinanceHand
 
         Queue<Task> requestTRTaskQueue = new Queue<Task>();
 
-        int st = 0;
-
         public Form1()
         {
             InitializeComponent();
@@ -278,7 +276,7 @@ namespace BinanceHand
                         v.list = LoadSticks(itemData.Code, interval, nowTime.Date, nowTime);
                         v.lastStick = v.list.Last();
                         v.list.RemoveAt(v.list.Count - 1);
-                        BaseFunctions.OneChartFindConditionAndAdd(st, itemData, vc);
+                        BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
                     }));
 
                 //var data = client.FuturesUsdt.ChangeInitialLeverage(itemData.Name, 1);
@@ -654,7 +652,7 @@ namespace BinanceHand
                     v.lastStick.TCount += newStick.TCount;
 
                     BaseFunctions.SetRSIAandDiff(v.list, v.lastStick);
-                    BaseFunctions.OneChartFindConditionAndAdd(st, itemData, vc);
+                    BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
                 }
 
                 if (!itemData.Enter && !itemData.position)
@@ -676,7 +674,7 @@ namespace BinanceHand
                         BaseFunctions.AlertStart(itemData.Code + "-" + itemData.foundList);
 
                         var conditionResult2 = BaseFunctions.AllItemFindCondition();
-                        if (newStick.Time == Trading.firstFinalMin && conditionResult2.found)
+                        if (newStick.Time == Trading.firstFinalMin && conditionResult2.found && Trading.instance.autoRealTrading)
                         {
                             if (conditionResult2.isLong)
                                 foreach (var foundItem in BaseFunctions.foundItemList.Long)
