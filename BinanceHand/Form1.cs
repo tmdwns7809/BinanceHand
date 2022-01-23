@@ -360,7 +360,9 @@ namespace BinanceHand
                 list.Add(stick);
             }
 
-            list.RemoveRange(0, BaseFunctions.GetStartIndex(list, startTime));
+            var startIndex = BaseFunctions.GetStartIndex(list, startTime);
+            if (startIndex > 0)
+                list.RemoveRange(0, startIndex);
 
             return list;
         }
@@ -603,7 +605,7 @@ namespace BinanceHand
                         timeDiff = newStick.Time.Subtract(v.lastStick.Time).TotalSeconds;
                     }
 
-                    if (timeDiff > vc.seconds || timeDiff < 0)
+                    if (Math.Abs(timeDiff) > vc.seconds)
                         BaseFunctions.ShowError(this);
 
                     if (v.first)
