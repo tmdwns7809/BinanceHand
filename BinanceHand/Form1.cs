@@ -474,8 +474,7 @@ namespace BinanceHand
                     var itemData = (BinanceItemData)Trading.instance.itemDataDic[s.Symbol];
 
                     itemData.RealEnter = true;
-                    itemData.positionData[(int)(s.PositionSide == PositionSide.Long ? Position.Long : Position.Short)].Enter = true;
-                    itemData.EnterN = 1;
+                    itemData.EnterN += 2;
                     itemData.RealPosition = s.PositionSide == PositionSide.Long ? Position.Long : Position.Short;
 
                     var result1 = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates).Result;
@@ -630,6 +629,8 @@ namespace BinanceHand
                     itemData.positionData[j].found = false;
                 }
 
+                itemData.RSIAHighest = 0;
+                itemData.RSIAHighestChart = "";
                 for (int i = BaseFunctions.minCV.index; i <= BaseFunctions.maxCV.index; i++)
                 {
                     var v = itemData.listDic.Values[i];
@@ -702,6 +703,12 @@ namespace BinanceHand
 
                     BaseFunctions.SetRSIAandDiff(v.list, v.lastStick);
                     BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
+
+                    if (Math.Abs(v.lastStick.indicator.RSIA) > itemData.RSIAHighest)
+                    {
+                        itemData.RSIAHighest = (int)v.lastStick.indicator.RSIA;
+                        itemData.RSIAHighestChart = vc.Text;
+                    }
                 }
 
                 for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
@@ -758,7 +765,7 @@ namespace BinanceHand
                             {
                                 Trading.TradingEnterSetting(foundItem.itemData as TradeItemData, foundItem.itemData.positionData[j], foundItem.itemData.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
-                                if (!itemData.RealEnter && Trading.instance.autoRealTrading && buyCount < 3 && itemData.loadingDone)
+                                if (!itemData.RealEnter && Trading.instance.autoRealTrading && buyCount < 1 && itemData.loadingDone)
                                 {
                                     if (!Trading_PlaceOrder(foundItem.itemData as TradeItemData, (Position)j, false, true))
                                         BaseFunctions.ShowError(this, "order fail");
@@ -772,6 +779,8 @@ namespace BinanceHand
                     }
                 }
             }
+
+            Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.Close);
         }
 
         void OnAggregatedTradeUpdates(DataEvent<BinanceStreamAggregatedTrade> data0)
@@ -1178,8 +1187,6 @@ namespace BinanceHand
                         BaseFunctions.ShowError(this);
 
                     (itemData as BinanceItemData).aggSub = result.Data;
-
-                    itemData.AggOn = true;
                 }));
             }
             else
@@ -1187,7 +1194,6 @@ namespace BinanceHand
                 Task.Run(new Action(() =>
                 {
                     socketClient.UnsubscribeAsync((itemData as BinanceItemData).aggSub).Wait();
-                    itemData.AggOn = false;
                 }));
             }
         }
