@@ -44,8 +44,10 @@ namespace BinanceHand
         CheckBox miniSizeCheckBox = new CheckBox();
         CheckBox ROCheckBox = new CheckBox();
         CheckBox autoSizeCheckBox = new CheckBox();
-        TextBox autoSizeTextBox0 = new TextBox();
-        TextBox autoSizeTextBox1 = new TextBox();
+        TextBox maximumBalanceForSizeTextBox0 = new TextBox();
+        TextBox maximumBalanceForSizeTextBox1 = new TextBox();
+        TextBox maximumPercentOfAvgSecForSizeTextBox0 = new TextBox();
+        TextBox maximumPercentOfAvgSecForSizeTextBox1 = new TextBox();
 
         bool testnet = false;
 
@@ -94,7 +96,8 @@ namespace BinanceHand
                     GTCRadioButton, IOCRadioButton, PORadioButton, leverageTextBox0, leverageTextBox1,
                     orderPriceTextBox0, orderPriceTextBox1, orderPriceTextBox2, marketRadioButton,
                     orderSizeTextBox0, orderSizeTextBox1, miniSizeCheckBox, ROCheckBox,
-                    autoSizeCheckBox, autoSizeTextBox0, autoSizeTextBox1
+                    autoSizeCheckBox, maximumBalanceForSizeTextBox0, maximumBalanceForSizeTextBox1,
+                    maximumPercentOfAvgSecForSizeTextBox0, maximumPercentOfAvgSecForSizeTextBox1
                 }.ForEach(new Action<Control>((control) => { Trading.instance.orderGroupBox.Controls.Add(control); }));
 
             Trading.instance.SetRadioButton_CheckBox(GTCRadioButton, "GTC",
@@ -146,25 +149,37 @@ namespace BinanceHand
 
             Trading.instance.SetRadioButton_CheckBox(miniSizeCheckBox, "Minimum Size",
                 new Size(100, GTCRadioButton.Height), new Point(orderSizeTextBox1.Location.X + orderSizeTextBox1.Width, orderSizeTextBox0.Location.Y));
-            miniSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) TickMinSizeButton(miniSizeCheckBox.Checked); };
+            miniSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
             Trading.instance.SetRadioButton_CheckBox(ROCheckBox, "Reduce Only",
                 PORadioButton.Size, new Point(miniSizeCheckBox.Location.X, miniSizeCheckBox.Location.Y + miniSizeCheckBox.Height));
 
-            Trading.instance.SetRadioButton_CheckBox(autoSizeCheckBox, "Auto",
+            Trading.instance.SetRadioButton_CheckBox(autoSizeCheckBox, "Auto Size",
                 new Size(50, GTCRadioButton.Height),
-                new Point(orderSizeTextBox0.Location.X + 20, ROCheckBox.Location.Y + ROCheckBox.Size.Height + 10 + (autoSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
-            autoSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) TickAutoSizeButton(autoSizeCheckBox.Checked); };
+                new Point(orderSizeTextBox0.Location.X + 10, ROCheckBox.Location.Y + ROCheckBox.Size.Height + 10 + (maximumBalanceForSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
+            autoSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
-            Trading.instance.SetTextBox(autoSizeTextBox0, "", true);
-            autoSizeTextBox0.Size = new Size(50, GTCRadioButton.Height);
-            autoSizeTextBox0.Location = new Point(autoSizeCheckBox.Location.X + autoSizeCheckBox.Size.Width + 3, autoSizeCheckBox.Location.Y - (autoSizeTextBox0.Size.Height - autoSizeTextBox1.Size.Height) / 2);
-            autoSizeTextBox0.ReadOnly = false;
-            autoSizeTextBox0.BackColor = ColorSet.ControlBack;
+            Trading.instance.SetTextBox(maximumBalanceForSizeTextBox0, "", true);
+            maximumBalanceForSizeTextBox0.Size = new Size(50, GTCRadioButton.Height);
+            maximumBalanceForSizeTextBox0.Location = new Point(autoSizeCheckBox.Location.X + autoSizeCheckBox.Size.Width + 3, 
+                autoSizeCheckBox.Location.Y - (maximumBalanceForSizeTextBox0.Size.Height - maximumBalanceForSizeTextBox1.Size.Height) / 2);
+            maximumBalanceForSizeTextBox0.ReadOnly = false;
+            maximumBalanceForSizeTextBox0.BackColor = ColorSet.ControlBack;
 
-            Trading.instance.SetTextBox(autoSizeTextBox1, "% of Balance", true);
-            autoSizeTextBox1.Size = new Size(100, GTCRadioButton.Height);
-            autoSizeTextBox1.Location = new Point(autoSizeTextBox0.Location.X + autoSizeTextBox0.Size.Width + 3, autoSizeTextBox0.Location.Y + (autoSizeTextBox0.Size.Height - autoSizeTextBox1.Size.Height) / 2);
+            Trading.instance.SetTextBox(maximumBalanceForSizeTextBox1, "% of Balance", true);
+            maximumBalanceForSizeTextBox1.Size = new Size(100, GTCRadioButton.Height);
+            maximumBalanceForSizeTextBox1.Location = new Point(maximumBalanceForSizeTextBox0.Location.X + maximumBalanceForSizeTextBox0.Size.Width + 3, 
+                maximumBalanceForSizeTextBox0.Location.Y + (maximumBalanceForSizeTextBox0.Size.Height - maximumBalanceForSizeTextBox1.Size.Height) / 2);
+
+            Trading.instance.SetTextBox(maximumPercentOfAvgSecForSizeTextBox0, "", true);
+            maximumPercentOfAvgSecForSizeTextBox0.Size = maximumBalanceForSizeTextBox0.Size;
+            maximumPercentOfAvgSecForSizeTextBox0.Location = maximumBalanceForSizeTextBox0.Location;
+            maximumPercentOfAvgSecForSizeTextBox0.ReadOnly = false;
+            maximumPercentOfAvgSecForSizeTextBox0.BackColor = ColorSet.ControlBack;
+
+            Trading.instance.SetTextBox(maximumPercentOfAvgSecForSizeTextBox1, "% of AvgSecQuan", true);
+            maximumPercentOfAvgSecForSizeTextBox1.Size = maximumBalanceForSizeTextBox1.Size;
+            maximumPercentOfAvgSecForSizeTextBox1.Location = maximumBalanceForSizeTextBox1.Location;
         }
         void SetClientAndKey()
         {
@@ -474,8 +489,8 @@ namespace BinanceHand
                     var itemData = (BinanceItemData)Trading.instance.itemDataDic[s.Symbol];
 
                     itemData.RealEnter = true;
-                    itemData.EnterN += 2;
                     itemData.RealPosition = s.PositionSide == PositionSide.Long ? Position.Long : Position.Short;
+                    itemData.RealEnterN = (int)itemData.RealPosition + 1;
 
                     var result1 = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates).Result;
                     if (!result1.Success)
@@ -539,42 +554,130 @@ namespace BinanceHand
             }
         }
 
-        void TickMinSizeButton(bool on)
+        decimal GetMinQuan(BinanceItemData itemData, decimal price)
         {
-            var itemDataShowing = Trading.instance.itemDataShowing as BinanceItemData;
-
-            miniSizeCheckBox.Checked = on;
-            if (itemDataShowing.RealEnter)
-                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
-            else if (itemDataShowing.secStick != default)
-                orderSizeTextBox1.Text = ((int)(itemDataShowing.minNotionalValue / itemDataShowing.secStick.Price[3] / itemDataShowing.minSize + 1) * itemDataShowing.minSize).ToString();
-            else
-                orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
-
-            autoSizeCheckBox.Enabled = !on;
-            autoSizeTextBox0.Enabled = !on;
-
-            if (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked)
-                orderSizeTextBox1.Enabled = false;
-            else
-                orderSizeTextBox1.Enabled = true;
+            return (int)(itemData.minNotionalValue / price / itemData.minSize + 1) * itemData.minSize;
         }
-        void TickAutoSizeButton(bool on)
+        decimal GetCurrentPrice(TradeItemData itemData)
+        {
+            return (itemData.AggOn && !itemData.AggFirst ? itemData.secStick : itemData.listDic[BaseChartTimeSet.OneMinute].lastStick).Price[3];
+        }
+        void OrderBoxSetting(bool autoSize, bool minSize)
         {
             var itemDataShowing = Trading.instance.itemDataShowing as BinanceItemData;
 
-            autoSizeCheckBox.Checked = on;
-            if (itemDataShowing.RealEnter)
-                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
-            else
-                orderSizeTextBox1.Text = itemDataShowing.minSize.ToString();
+            if (itemDataShowing.RealEnter && autoSize && minSize)
+                BaseFunctions.ShowError(this, "orderBoxError");
+            else if (itemDataShowing.RealEnter && autoSize && !minSize)
+            {
+                if (Trading.instance.positionExitPriceMarket)
+                    marketRadioButton.Checked = true;
+                else
+                    GTCRadioButton.Checked = true;
 
-            if (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked)
                 orderSizeTextBox1.Enabled = false;
-            else
-                orderSizeTextBox1.Enabled = true;
+                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
 
-            autoSizeTextBox0.Text = Trading.instance.autoSizeBudgetLimit.ToString();
+                miniSizeCheckBox.AutoCheck = false;
+                miniSizeCheckBox.Checked = false;
+
+                ROCheckBox.AutoCheck = true;
+                ROCheckBox.Checked = true;
+
+                autoSizeCheckBox.AutoCheck = true;
+                autoSizeCheckBox.Checked = true;
+                maximumBalanceForSizeTextBox0.Enabled = false;
+                maximumPercentOfAvgSecForSizeTextBox0.Enabled = false;
+                maximumBalanceForSizeTextBox0.Text = "-";
+                maximumPercentOfAvgSecForSizeTextBox0.Text = "-";
+            }
+            else if (itemDataShowing.RealEnter && !autoSize && minSize)
+                BaseFunctions.ShowError(this, "orderBoxError");
+            else if (itemDataShowing.RealEnter && !autoSize && !minSize)
+            {
+                if (Trading.instance.positionExitPriceMarket)
+                    marketRadioButton.Checked = true;
+                else
+                    GTCRadioButton.Checked = true;
+
+                orderSizeTextBox1.Enabled = true;
+                orderSizeTextBox1.Text = Math.Abs(itemDataShowing.Size).ToString();
+
+                miniSizeCheckBox.AutoCheck = false;
+                miniSizeCheckBox.Checked = false;
+
+                ROCheckBox.AutoCheck = true;
+                ROCheckBox.Checked = true;
+
+                autoSizeCheckBox.AutoCheck = true;
+                autoSizeCheckBox.Checked = false;
+                maximumBalanceForSizeTextBox0.Enabled = false;
+                maximumPercentOfAvgSecForSizeTextBox0.Enabled = false;
+                maximumBalanceForSizeTextBox0.Text = "-";
+                maximumPercentOfAvgSecForSizeTextBox0.Text = "-";
+            }
+            else if (!itemDataShowing.RealEnter && autoSize && minSize)
+                BaseFunctions.ShowError(this, "orderBoxError");
+            else if (!itemDataShowing.RealEnter && autoSize && !minSize)
+            {
+                IOCRadioButton.Checked = true;
+
+                orderSizeTextBox1.Enabled = false;
+                orderSizeTextBox1.Text = "auto";
+
+                miniSizeCheckBox.AutoCheck = false;
+                miniSizeCheckBox.Checked = false;
+
+                ROCheckBox.AutoCheck = false;
+                ROCheckBox.Checked = false;
+
+                autoSizeCheckBox.AutoCheck = true;
+                autoSizeCheckBox.Checked = true;
+                maximumBalanceForSizeTextBox0.Enabled = true;
+                maximumPercentOfAvgSecForSizeTextBox0.Enabled = true;
+                maximumBalanceForSizeTextBox0.Text = Trading.instance.maximumBalancePercent.ToString();
+                maximumPercentOfAvgSecForSizeTextBox0.Text = Trading.instance.maximumPercentOfAvgSec.ToString();
+            }
+            else if (!itemDataShowing.RealEnter && !autoSize && minSize)
+            {
+                IOCRadioButton.Checked = true;
+
+                orderSizeTextBox1.Enabled = false;
+                orderSizeTextBox1.Text = GetMinQuan(itemDataShowing, GetCurrentPrice(itemDataShowing)).ToString(BaseFunctions.ForDecimalString);
+
+                miniSizeCheckBox.AutoCheck = true;
+                miniSizeCheckBox.Checked = true;
+
+                ROCheckBox.AutoCheck = false;
+                ROCheckBox.Checked = false;
+
+                autoSizeCheckBox.AutoCheck = true;
+                autoSizeCheckBox.Checked = false;
+                maximumBalanceForSizeTextBox0.Enabled = false;
+                maximumPercentOfAvgSecForSizeTextBox0.Enabled = false;
+                maximumBalanceForSizeTextBox0.Text = "-";
+                maximumPercentOfAvgSecForSizeTextBox0.Text = "-";
+            }
+            else if (!itemDataShowing.RealEnter && !autoSize && !minSize)
+            {
+                IOCRadioButton.Checked = true;
+
+                orderSizeTextBox1.Enabled = true;
+                orderSizeTextBox1.Text = GetMinQuan(itemDataShowing, GetCurrentPrice(itemDataShowing)).ToString(BaseFunctions.ForDecimalString);
+
+                miniSizeCheckBox.AutoCheck = true;
+                miniSizeCheckBox.Checked = false;
+
+                ROCheckBox.AutoCheck = false;
+                ROCheckBox.Checked = false;
+
+                autoSizeCheckBox.AutoCheck = true;
+                autoSizeCheckBox.Checked = false;
+                maximumBalanceForSizeTextBox0.Enabled = false;
+                maximumPercentOfAvgSecForSizeTextBox0.Enabled = false;
+                maximumBalanceForSizeTextBox0.Text = "-";
+                maximumPercentOfAvgSecForSizeTextBox0.Text = "-";
+            }
         }
 
         void OnKlineUpdates(DataEvent<IBinanceStreamKlineData> data0)
@@ -720,7 +823,7 @@ namespace BinanceHand
 
                     if (positionData.found)
                     {
-                        BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "-" + itemData.Code + "-" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "-" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text);
+                        BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text);
 
                         foundCount = positionData.foundList.Count - 1;
                         foundText = positionData.foundList[positionData.foundList.Count - 1].chartValues.Text;
@@ -763,7 +866,7 @@ namespace BinanceHand
                         if (conditionResult2.found && conditionResult2.position[j])
                             foreach (var foundItem in BaseFunctions.foundItemList[j])
                             {
-                                Trading.TradingEnterSetting(foundItem.itemData as TradeItemData, foundItem.itemData.positionData[j], foundItem.itemData.listDic.Values[BaseFunctions.minCV.index].lastStick);
+                                Trading.TradingSimulEnterSetting(foundItem.itemData as TradeItemData, foundItem.itemData.positionData[j], foundItem.itemData.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
                                 if (!itemData.RealEnter && Trading.instance.autoRealTrading && buyCount < 1 && itemData.loadingDone)
                                 {
@@ -943,7 +1046,8 @@ namespace BinanceHand
                             itemData.RealEnterTime = BaseFunctions.NowTime();
                             itemData.Size = position.Quantity;
                             itemData.PNL = position.UnrealizedPnl;
-                            itemData.EnterN = 1;
+                            itemData.RealPosition = position.PositionSide == PositionSide.Long ? Position.Long : Position.Short;
+                            itemData.RealEnterN = (int)itemData.RealPosition + 1;
                             Trading.instance.CodeListView.RemoveObject(itemData);
                             Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
 
@@ -1106,24 +1210,10 @@ namespace BinanceHand
             var itemDataShowing = Trading.instance.itemDataShowing as BinanceItemData;
 
             leverageTextBox0.Text = itemDataShowing.Leverage.ToString();
-
-            TickAutoSizeButton(true);
-
             if (itemDataShowing.RealEnter)
-            {
-                TickMinSizeButton(false);
-                if (Trading.instance.positionExitPriceMarket)
-                    marketRadioButton.Checked = true;
-                else
-                    GTCRadioButton.Checked = true;
-                ROCheckBox.Checked = true;
-            }
+                OrderBoxSetting(true, false);
             else
-            {
-                TickMinSizeButton(Trading.instance.miniSizeDefault);
-                GTCRadioButton.Checked = true;
-                ROCheckBox.Checked = false;
-            }
+                OrderBoxSetting(Trading.instance.autoSizeDefault, Trading.instance.miniSizeDefault);
 
             orderPriceTextBox1.Text = Trading.instance.limitPrice.ToString();
         }
@@ -1252,13 +1342,14 @@ namespace BinanceHand
                     (int)(tradeData.Send_Close_Price * (1 + priceRate / 100) / itemData.hoDiff + 1) * itemData.hoDiff :
                     (int)(tradeData.Send_Close_Price * (1 - priceRate / 100) / itemData.hoDiff) * itemData.hoDiff;
 
-            decimal quantity = itemData.RealEnter ?
-                Math.Abs(itemData.Size) :
-                (int)(itemData.minNotionalValue / price / itemData.minSize + 1) * itemData.minSize;
-            int limitPercent = default;
-            if (!auto &&
-                ((!itemData.RealEnter && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
-                    || (!miniSizeCheckBox.Checked && (!int.TryParse(autoSizeTextBox0.Text, out limitPercent) || limitPercent <= 0))))
+            decimal quantity = itemData.RealEnter ? Math.Abs(itemData.Size) : GetMinQuan(itemData, (decimal)price);
+            int limitBalancePercent = default;
+            decimal limitAvgSecPercent = default;
+            if (!auto && !itemData.RealEnter && 
+                (orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0)
+                    || (!miniSizeCheckBox.Checked && autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked && 
+                        (!int.TryParse(maximumBalanceForSizeTextBox0.Text, out limitBalancePercent) || limitBalancePercent <= 0) &&
+                        (!decimal.TryParse(maximumPercentOfAvgSecForSizeTextBox0.Text, out limitAvgSecPercent) || limitAvgSecPercent <= 0))))
             {
                 BaseFunctions.ShowError(this, "order input error");
                 return false;
@@ -1294,7 +1385,7 @@ namespace BinanceHand
                 {
                     quantity = (int)((itemData.ms10secAvg + itemData.md10secAvg) / 2 / 100 / itemData.minSize) * itemData.minSize;
 
-                    var budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount * limitPercent / 100;
+                    var budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount * limitBalancePercent / 100;
                     if (budget < itemData.minNotionalValue)
                         budget = itemData.minNotionalValue;
 
