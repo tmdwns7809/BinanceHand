@@ -71,7 +71,7 @@ namespace BinanceHand
             FormClosed += Form1_FormClosed;
             Load += Form1_Load;
 
-            Trading.instance = new Trading(this, false, 18, 20);
+            Trading.instance = new Trading(this, false, 26, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -153,7 +153,7 @@ namespace BinanceHand
             miniSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
             Trading.instance.SetRadioButton_CheckBox(ROCheckBox, "RO",
-                PORadioButton.Size, new Point(miniSizeCheckBox.Location.X + miniSizeCheckBox.Width + 5, miniSizeCheckBox.Location.Y));
+                miniSizeCheckBox.Size, new Point(miniSizeCheckBox.Location.X + miniSizeCheckBox.Width + 5, miniSizeCheckBox.Location.Y));
 
             Trading.instance.SetRadioButton_CheckBox(autoSizeCheckBox, "Auto Size",
                 new Size(50, GTCRadioButton.Height),
@@ -1357,6 +1357,7 @@ namespace BinanceHand
             var minList = itemData.listDic[BaseChartTimeSet.OneMinute];
 
             tradeData.Send_Close_Price = itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : minList.lastStick.Price[3];
+            tradeData.Last_Min_Qnt = minList.lastStick.Ms + minList.lastStick.Md;
 
             decimal priceRate = 0.1m;
             if (!auto && !decimal.TryParse(orderPriceTextBox1.Text, out priceRate))
@@ -1372,9 +1373,9 @@ namespace BinanceHand
             decimal quantity = itemData.RealEnter ? Math.Abs(itemData.Size) : GetMinQuan(itemData, (decimal)price);
             int limitBalancePercent = default;
             decimal limitAvgSecPercent = default;
-            if (!auto && !itemData.RealEnter && 
-                (orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0)
-                    || (!miniSizeCheckBox.Checked && autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked && 
+            if (!auto && 
+                ((orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
+                    || (autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked && 
                         (!int.TryParse(maximumBalanceForSizeTextBox0.Text, out limitBalancePercent) || limitBalancePercent <= 0) &&
                         (!decimal.TryParse(maximumPercentOfAvgSecForSizeTextBox0.Text, out limitAvgSecPercent) || limitAvgSecPercent <= 0))))
             {
@@ -1407,10 +1408,10 @@ namespace BinanceHand
             if (!auto && (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked) && !itemData.RealEnter)
             {
                 if (miniSizeCheckBox.Checked)
-                    quantity = (int)(itemData.minNotionalValue / price / itemData.minSize + 1) * itemData.minSize;
+                    quantity = GetMinQuan(itemData, (decimal)price);
                 else
                 {
-                    quantity = (int)((itemData.ms10secAvg + itemData.md10secAvg) / 2 / 100 / itemData.minSize) * itemData.minSize;
+                    quantity = (int)(limitAvgSecPercent / 100 * tradeData.Last_Min_Qnt / 60 / itemData.minSize + 1) * itemData.minSize;
 
                     var budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount * limitBalancePercent / 100;
                     if (budget < itemData.minNotionalValue)
@@ -1433,7 +1434,7 @@ namespace BinanceHand
                 price = null;
 
             if (!auto)
-                orderSizeTextBox1.Text = quantity.ToString();
+                orderSizeTextBox1.Text = quantity.ToString(BaseFunctions.ForDecimalString);
 
             itemData.positionWhenOrder = itemData.RealEnter;
             if (!itemData.positionWhenOrder)
@@ -1458,7 +1459,6 @@ namespace BinanceHand
             tradeData.Send_Price = price == null ? 0 : (decimal)price;
             tradeData.Send_Qnt = quantity;
             tradeData.Position = position;
-            tradeData.Last_Min_Qnt = minList.lastStick.Ms + minList.lastStick.Md;
 
             var result2 = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeoutAsync(itemData.Code, TimeSpan.FromSeconds(1)).Result;
             if (!result2.Success)
