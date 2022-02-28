@@ -1380,7 +1380,7 @@ namespace BinanceHand
             decimal limitAvgSecPercent = default;
             if (!auto && 
                 ((orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
-                    || (autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked && 
+                    || (!itemData.RealEnter && autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked && 
                         (!int.TryParse(maximumBalanceForSizeTextBox0.Text, out limitBalancePercent) || limitBalancePercent <= 0) &&
                         (!decimal.TryParse(maximumPercentOfAvgSecForSizeTextBox0.Text, out limitAvgSecPercent) || limitAvgSecPercent <= 0))))
             {
