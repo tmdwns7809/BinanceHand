@@ -328,7 +328,10 @@ namespace BinanceHand
                         BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
 
                         if (interval == oneMintoDay.Last() && itemData.number == Trading.instance.itemDataDic.Count)
-                            BeginInvoke(new Action(() => { Trading.instance.loadingDoneTimeTextBox.Text = "loading done: " + BaseFunctions.NowTime(); }));
+                        {
+                            Trading.loadingDoneTime = BaseFunctions.NowTime();
+                            BeginInvoke(new Action(() => { Trading.instance.loadingDoneTimeTextBox.Text = "loading done: " + Trading.loadingDoneTime; }));
+                        }
                         else if (interval == oneMintoDay[0] && itemData.number % 20 == 1)
                             BeginInvoke(new Action(() => { Trading.instance.loadingDoneTimeTextBox.Text = itemData.number + "/" + Trading.instance.itemDataDic.Count; }));
 
@@ -885,27 +888,28 @@ namespace BinanceHand
                         var conditionResult2 = BaseFunctions.AllItemFindCondition();
                         if (conditionResult2.found && conditionResult2.position[j])
                             foreach (var foundItem in BaseFunctions.foundItemList[j])
-                            {
-                                Trading.TradingSimulEnterSetting(foundItem.itemData as TradeItemData, foundItem.itemData.positionData[j], foundItem.itemData.listDic.Values[BaseFunctions.minCV.index].lastStick);
-
-                                if (!itemData.RealEnter && Trading.instance.autoRealTrading && buyCount < 1 && itemData.loadingDone)
+                                if (Trading.loadingDone && newStick.Time > Trading.loadingDoneTime)
                                 {
-                                    if (!Trading_PlaceOrder(foundItem.itemData as TradeItemData, (Position)j, false, true))
-                                        BaseFunctions.ShowError(this, "order fail");
-                                    else
+                                    Trading.TradingSimulEnterSetting(foundItem.itemData as TradeItemData, foundItem.itemData.positionData[j], foundItem.itemData.listDic.Values[BaseFunctions.minCV.index].lastStick);
+
+                                    if (!itemData.RealEnter && Trading.instance.autoRealTrading && buyCount < 1)
                                     {
-                                        buyCount++;
-                                        Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
-                                            BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + foundItem.itemData.positionData[j].EnterTime.ToString(BaseFunctions.TimeFormat),
-                                            DBHelper.conn1OrderHistoryColumn1, foundItem.itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + foundItem.itemData.positionData[j].EnterPrice);
-                                        BaseFunctions.AlertStart("Real Enter\n" + 
-                                            Enum.GetName(typeof(Position), j) + "\n" + 
-                                            itemData.Code + "\n" + 
-                                            newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + 
-                                            positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
+                                        if (!Trading_PlaceOrder(foundItem.itemData as TradeItemData, (Position)j, false, true))
+                                            BaseFunctions.ShowError(this, "order fail");
+                                        else
+                                        {
+                                            buyCount++;
+                                            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
+                                                BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + foundItem.itemData.positionData[j].EnterTime.ToString(BaseFunctions.TimeFormat),
+                                                DBHelper.conn1OrderHistoryColumn1, foundItem.itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + foundItem.itemData.positionData[j].EnterPrice);
+                                            BaseFunctions.AlertStart("Real Enter\n" +
+                                                Enum.GetName(typeof(Position), j) + "\n" +
+                                                itemData.Code + "\n" +
+                                                newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" +
+                                                positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
+                                        }
                                     }
                                 }
-                            }
                     }
                 }
             }
