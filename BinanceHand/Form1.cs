@@ -59,6 +59,7 @@ namespace BinanceHand
         Queue<Task> requestTRTaskQueue = new Queue<Task>();
 
         int buyCount = 0;
+        object buyCountLocker = new object();
 
         bool klineFirstFinal = true;
         bool klineSecondFinal = true;
@@ -101,28 +102,28 @@ namespace BinanceHand
                 }.ForEach(new Action<Control>((control) => { Trading.instance.orderGroupBox.Controls.Add(control); }));
 
             Trading.instance.SetRadioButton_CheckBox(GTCRadioButton, "GTC",
-                new Size(50, 16), new Point(5, 15));
+                new Size(40, 16), new Point(5, 15));
 
             Trading.instance.SetRadioButton_CheckBox(IOCRadioButton, "IOC",
-                GTCRadioButton.Size, new Point(GTCRadioButton.Location.X + GTCRadioButton.Size.Width + 10, GTCRadioButton.Location.Y));
+                GTCRadioButton.Size, new Point(GTCRadioButton.Location.X + GTCRadioButton.Size.Width + 5, GTCRadioButton.Location.Y));
             //marketRadioButton.CheckedChanged += (sender, e) => { if (marketRadioButton.Checked) orderPriceTextBox1.Enabled = false; else orderPriceTextBox1.Enabled = true; };
 
-            Trading.instance.SetRadioButton_CheckBox(PORadioButton, "Post Only",
-              new Size(100, GTCRadioButton.Height), new Point(IOCRadioButton.Location.X + IOCRadioButton.Size.Width + 10, IOCRadioButton.Location.Y));
+            Trading.instance.SetRadioButton_CheckBox(PORadioButton, "PO",
+              GTCRadioButton.Size, new Point(IOCRadioButton.Location.X + IOCRadioButton.Size.Width + 5, IOCRadioButton.Location.Y));
 
             Trading.instance.SetTextBox(leverageTextBox0, "", true);
             leverageTextBox0.Size = new Size(41, 21);
-            leverageTextBox0.Location = new Point(PORadioButton.Location.X + PORadioButton.Width + 50, PORadioButton.Location.Y);
+            leverageTextBox0.Location = new Point(PORadioButton.Location.X + PORadioButton.Width + 5, PORadioButton.Location.Y);
             leverageTextBox0.ReadOnly = false;
             leverageTextBox0.BorderStyle = BorderStyle.Fixed3D;
 
             Trading.instance.SetTextBox(leverageTextBox1, "/ 125", true);
             leverageTextBox1.Size = new Size(41, 21);
-            leverageTextBox1.Location = new Point(leverageTextBox0.Location.X + leverageTextBox0.Width, leverageTextBox0.Location.Y);
+            leverageTextBox1.Location = new Point(leverageTextBox0.Location.X + leverageTextBox0.Width + 5, leverageTextBox0.Location.Y + 5);
 
             Trading.instance.SetTextBox(orderPriceTextBox0, "Price", true);
-            orderPriceTextBox0.Size = new Size(41, 21);
-            orderPriceTextBox0.Location = new Point(GTCRadioButton.Location.X, GTCRadioButton.Location.Y + GTCRadioButton.Size.Height + 7 + (orderPriceTextBox1.Size.Height - orderPriceTextBox0.Size.Height) / 2);
+            orderPriceTextBox0.Size = new Size(35, 21);
+            orderPriceTextBox0.Location = new Point(GTCRadioButton.Location.X, GTCRadioButton.Location.Y + GTCRadioButton.Size.Height + 5 + (orderPriceTextBox1.Size.Height - orderPriceTextBox0.Size.Height) / 2);
 
             Trading.instance.SetTextBox(orderPriceTextBox1, "", true);
             orderPriceTextBox1.Size = orderPriceTextBox0.Size;
@@ -135,11 +136,11 @@ namespace BinanceHand
             orderPriceTextBox2.Location = new Point(orderPriceTextBox1.Location.X + orderPriceTextBox1.Size.Width + 3, orderPriceTextBox0.Location.Y);
 
             Trading.instance.SetRadioButton_CheckBox(marketRadioButton, "Market",
-                new Size(100, GTCRadioButton.Height), new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 10, orderPriceTextBox2.Location.Y));
+                new Size(100, GTCRadioButton.Height), new Point(orderPriceTextBox2.Location.X + orderPriceTextBox2.Size.Width + 5, orderPriceTextBox2.Location.Y));
 
             Trading.instance.SetTextBox(orderSizeTextBox0, "Size", true);
             orderSizeTextBox0.Size = orderPriceTextBox0.Size;
-            orderSizeTextBox0.Location = new Point(orderPriceTextBox0.Location.X, orderPriceTextBox0.Location.Y + orderPriceTextBox0.Size.Height + 7 + (orderSizeTextBox1.Size.Height - orderSizeTextBox0.Size.Height) / 2);
+            orderSizeTextBox0.Location = new Point(orderPriceTextBox0.Location.X, orderPriceTextBox0.Location.Y + orderPriceTextBox0.Size.Height + 5 + (orderSizeTextBox1.Size.Height - orderSizeTextBox0.Size.Height) / 2);
 
             Trading.instance.SetTextBox(orderSizeTextBox1, "", true);
             orderSizeTextBox1.Size = orderPriceTextBox0.Size;
@@ -147,17 +148,17 @@ namespace BinanceHand
             orderSizeTextBox1.ReadOnly = false;
             orderSizeTextBox1.BackColor = ColorSet.ControlBack;
 
-            Trading.instance.SetRadioButton_CheckBox(miniSizeCheckBox, "Minimum Size",
-                new Size(100, GTCRadioButton.Height), new Point(orderSizeTextBox1.Location.X + orderSizeTextBox1.Width, orderSizeTextBox0.Location.Y));
-            miniSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
+            Trading.instance.SetRadioButton_CheckBox(miniSizeCheckBox, "Min",
+                new Size(50, GTCRadioButton.Height), new Point(orderSizeTextBox1.Location.X + orderSizeTextBox1.Width, orderSizeTextBox0.Location.Y));
+            miniSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
-            Trading.instance.SetRadioButton_CheckBox(ROCheckBox, "Reduce Only",
-                PORadioButton.Size, new Point(miniSizeCheckBox.Location.X, miniSizeCheckBox.Location.Y + miniSizeCheckBox.Height));
+            Trading.instance.SetRadioButton_CheckBox(ROCheckBox, "RO",
+                PORadioButton.Size, new Point(miniSizeCheckBox.Location.X + miniSizeCheckBox.Width + 5, miniSizeCheckBox.Location.Y));
 
             Trading.instance.SetRadioButton_CheckBox(autoSizeCheckBox, "Auto Size",
                 new Size(50, GTCRadioButton.Height),
-                new Point(orderSizeTextBox0.Location.X + 10, ROCheckBox.Location.Y + ROCheckBox.Size.Height + 10 + (maximumBalanceForSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
-            autoSizeCheckBox.CheckedChanged += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
+                new Point(orderSizeTextBox0.Location.X + 10, orderSizeTextBox0.Location.Y + orderSizeTextBox0.Size.Height + 5 + (maximumBalanceForSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
+            autoSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
             Trading.instance.SetTextBox(maximumBalanceForSizeTextBox0, "", true);
             maximumBalanceForSizeTextBox0.Size = new Size(50, GTCRadioButton.Height);
@@ -173,13 +174,25 @@ namespace BinanceHand
 
             Trading.instance.SetTextBox(maximumPercentOfAvgSecForSizeTextBox0, "", true);
             maximumPercentOfAvgSecForSizeTextBox0.Size = maximumBalanceForSizeTextBox0.Size;
-            maximumPercentOfAvgSecForSizeTextBox0.Location = maximumBalanceForSizeTextBox0.Location;
+            maximumPercentOfAvgSecForSizeTextBox0.Location = new Point(maximumBalanceForSizeTextBox0.Location.X, maximumBalanceForSizeTextBox0.Location.Y + maximumBalanceForSizeTextBox0.Height + 5);
             maximumPercentOfAvgSecForSizeTextBox0.ReadOnly = false;
             maximumPercentOfAvgSecForSizeTextBox0.BackColor = ColorSet.ControlBack;
 
             Trading.instance.SetTextBox(maximumPercentOfAvgSecForSizeTextBox1, "% of AvgSecQuan", true);
             maximumPercentOfAvgSecForSizeTextBox1.Size = maximumBalanceForSizeTextBox1.Size;
-            maximumPercentOfAvgSecForSizeTextBox1.Location = maximumBalanceForSizeTextBox1.Location;
+            maximumPercentOfAvgSecForSizeTextBox1.Location = new Point(maximumBalanceForSizeTextBox1.Location.X, maximumBalanceForSizeTextBox1.Location.Y + maximumBalanceForSizeTextBox1.Height + 5);
+
+            Trading.instance.buyButton.Size = new Size(Trading.instance.orderGroupBox.Width / 3 - 10, Trading.instance.orderGroupBox.Height - maximumPercentOfAvgSecForSizeTextBox0.Location.Y - 30);
+            Trading.instance.buyButton.Location = new Point(5, maximumPercentOfAvgSecForSizeTextBox0.Location.Y + maximumPercentOfAvgSecForSizeTextBox0.Height + 5);
+            Trading.instance.buyButton.BringToFront();
+
+            Trading.instance.positionCloseButton.Size = Trading.instance.buyButton.Size;
+            Trading.instance.positionCloseButton.Location = new Point(Trading.instance.buyButton.Location.X + Trading.instance.buyButton.Width + 10, Trading.instance.buyButton.Location.Y);
+            Trading.instance.positionCloseButton.BringToFront();
+
+            Trading.instance.sellButton.Size = Trading.instance.buyButton.Size;
+            Trading.instance.sellButton.Location = new Point(Trading.instance.positionCloseButton.Location.X + Trading.instance.positionCloseButton.Width + 10, Trading.instance.buyButton.Location.Y);
+            Trading.instance.sellButton.BringToFront();
         }
         void SetClientAndKey()
         {
@@ -315,9 +328,9 @@ namespace BinanceHand
                         BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
 
                         if (interval == oneMintoDay.Last() && itemData.number == Trading.instance.itemDataDic.Count)
-                            BeginInvoke(new Action(() => { Text = BaseFunctions.GetStartTimeString() + " loading done: " + BaseFunctions.NowTime(); BaseFunctions.BaseText = Text; }));
+                            BeginInvoke(new Action(() => { Trading.instance.loadingDoneTimeTextBox.Text = "loading done: " + BaseFunctions.NowTime(); }));
                         else if (interval == oneMintoDay[0] && itemData.number % 20 == 1)
-                            BeginInvoke(new Action(() => { Text = BaseFunctions.GetStartTimeString() + " " + itemData.number + "/" + Trading.instance.itemDataDic.Count; BaseFunctions.BaseText = Text; }));
+                            BeginInvoke(new Action(() => { Trading.instance.loadingDoneTimeTextBox.Text = itemData.number + "/" + Trading.instance.itemDataDic.Count; }));
 
                         itemData.loadingDone = true;
                     }));
@@ -556,11 +569,15 @@ namespace BinanceHand
 
         decimal GetMinQuan(BinanceItemData itemData, decimal price)
         {
-            return (int)(itemData.minNotionalValue / price / itemData.minSize + 1) * itemData.minSize;
+            if (price == default)
+                return 0;
+            else
+                return (int)(itemData.minNotionalValue / price / itemData.minSize + 1) * itemData.minSize;
         }
         decimal GetCurrentPrice(TradeItemData itemData)
         {
-            return (itemData.AggOn && !itemData.AggFirst ? itemData.secStick : itemData.listDic[BaseChartTimeSet.OneMinute].lastStick).Price[3];
+            return itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : 
+                (itemData.listDic[BaseChartTimeSet.OneMinute].lastStick == default ? default : itemData.listDic[BaseChartTimeSet.OneMinute].lastStick.Price[3]);
         }
         void OrderBoxSetting(bool autoSize, bool minSize)
         {
@@ -651,7 +668,7 @@ namespace BinanceHand
                 ROCheckBox.AutoCheck = false;
                 ROCheckBox.Checked = false;
 
-                autoSizeCheckBox.AutoCheck = true;
+                autoSizeCheckBox.AutoCheck = false;
                 autoSizeCheckBox.Checked = false;
                 maximumBalanceForSizeTextBox0.Enabled = false;
                 maximumPercentOfAvgSecForSizeTextBox0.Enabled = false;
@@ -807,7 +824,7 @@ namespace BinanceHand
                     BaseFunctions.SetRSIAandDiff(v.list, v.lastStick);
                     BaseFunctions.OneChartFindConditionAndAdd(itemData, vc);
 
-                    if (Math.Abs(v.lastStick.indicator.RSIA) > itemData.RSIAHighest)
+                    if (Math.Abs(v.lastStick.indicator.RSIA) > Math.Abs(itemData.RSIAHighest))
                     {
                         itemData.RSIAHighest = (int)v.lastStick.indicator.RSIA;
                         itemData.RSIAHighestChart = vc.Text;
@@ -823,7 +840,7 @@ namespace BinanceHand
 
                     if (positionData.found)
                     {
-                        BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text);
+                        //BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text);
 
                         foundCount = positionData.foundList.Count - 1;
                         foundText = positionData.foundList[positionData.foundList.Count - 1].chartValues.Text;
@@ -848,12 +865,15 @@ namespace BinanceHand
                     else
                     if (positionData.Enter && BaseFunctions.ExitConditionFinal(itemData, (Position)j))
                     {
-                        positionData.Enter = false;
+                        Trading.TradingSimulExitSetting(itemData, positionData);
 
                         if (itemData.isAuto && itemData.RealEnter && Trading.instance.autoRealTrading)
                         {
                             if (!Trading_PlaceOrder(itemData, (Position)j == Position.Long ? Position.Short : Position.Long, false, true))
                                 BaseFunctions.ShowError(this, "order fail");
+
+                            lock (buyCountLocker)
+                                buyCount--;
 
                             Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + positionData.EnterTime.ToString(BaseFunctions.TimeFormat),
                                 DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 매도(자동)", DBHelper.conn1OrderHistoryColumn2, "전송가:" + newStick.Price[3]);
@@ -873,10 +893,17 @@ namespace BinanceHand
                                     if (!Trading_PlaceOrder(foundItem.itemData as TradeItemData, (Position)j, false, true))
                                         BaseFunctions.ShowError(this, "order fail");
                                     else
+                                    {
                                         buyCount++;
                                         Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
                                             BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + foundItem.itemData.positionData[j].EnterTime.ToString(BaseFunctions.TimeFormat),
                                             DBHelper.conn1OrderHistoryColumn1, foundItem.itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + foundItem.itemData.positionData[j].EnterPrice);
+                                        BaseFunctions.AlertStart("Real Enter\n" + 
+                                            Enum.GetName(typeof(Position), j) + "\n" + 
+                                            itemData.Code + "\n" + 
+                                            newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + 
+                                            positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
+                                    }
                                 }
                             }
                     }
@@ -1011,9 +1038,6 @@ namespace BinanceHand
                         Invoke(new Action(() => {
                             Trading.TradingRealExitSetting(itemData);
 
-                            if (itemData == Trading.instance.itemDataShowing)
-                                Trading_ResetOrderView();
-
                             var asset = Trading.instance.assetDic[AssetTextMarginRatio];
                             asset.Amount = 0;
                             asset = Trading.instance.assetDic[AssetTextMaintenanceMargin];
@@ -1023,11 +1047,6 @@ namespace BinanceHand
                             asset = Trading.instance.assetDic[AssetTextMarginBalance];
                             asset.Amount = Trading.instance.assetDic[AssetTextWalletBalance].Amount;
                             Trading.instance.assetsListView.Refresh();
-
-                            Trading.instance.mainChart.ChartAreas[0].AxisY2.StripLines.Clear();
-                            Trading.instance.mainChart.ChartAreas[0].AxisX.StripLines.Clear();
-                            Trading.instance.mainChart.ChartAreas[1].AxisX.StripLines.Clear();
-                            Trading.instance.ChangeChartAreaBorderColor();
                         }));
                     }
                     else if (itemData.RealEnter)
@@ -1211,9 +1230,17 @@ namespace BinanceHand
 
             leverageTextBox0.Text = itemDataShowing.Leverage.ToString();
             if (itemDataShowing.RealEnter)
+            {
                 OrderBoxSetting(true, false);
+                Trading.instance.positionCloseButton.Enabled = true;
+                Trading.instance.positionCloseButton.BackColor = ColorSet.Button;
+            }
             else
+            {
                 OrderBoxSetting(Trading.instance.autoSizeDefault, Trading.instance.miniSizeDefault);
+                Trading.instance.positionCloseButton.Enabled = false;
+                Trading.instance.positionCloseButton.BackColor = ColorSet.ButtonSelected;
+            }
 
             orderPriceTextBox1.Text = Trading.instance.limitPrice.ToString();
         }
