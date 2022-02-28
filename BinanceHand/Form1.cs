@@ -329,6 +329,7 @@ namespace BinanceHand
 
                         if (interval == oneMintoDay.Last() && itemData.number == Trading.instance.itemDataDic.Count)
                         {
+                            Trading.loadingDone = true;
                             Trading.loadingDoneTime = BaseFunctions.NowTime();
                             BeginInvoke(new Action(() => { Trading.instance.loadingDoneTimeTextBox.Text = "loading done: " + Trading.loadingDoneTime; }));
                         }
