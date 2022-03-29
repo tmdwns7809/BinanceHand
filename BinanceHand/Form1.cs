@@ -85,6 +85,8 @@ namespace BinanceHand
             foreach (var listView in Trading.instance.simulResultListView)
                 listView.Columns.Remove(listView.GetColumn("Name"));
 
+            BaseFunctions.baseInstance = Trading.instance;
+
             SetOrderView();
 
             SetClientAndKey();
@@ -893,30 +895,38 @@ namespace BinanceHand
                             foreach (var foundItem in BaseFunctions.foundItemList[j])
                                 if (Trading.loadingDone && newStick.Time > Trading.loadingDoneTime)
                                 {
-                                    Trading.TradingSimulEnterSetting(foundItem.itemData as TradeItemData, foundItem.itemData.positionData[j], foundItem.itemData.listDic.Values[BaseFunctions.minCV.index].lastStick);
+                                    var iD = foundItem.itemData as TradeItemData;
+                                    Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
-                                    if (!itemData.RealEnter && Trading.instance.autoRealTrading && EnterCount[j] < 3)
+                                    if (!iD.RealEnter && Trading.instance.autoRealTrading && EnterCount[j] < 2)
                                     {
-                                        if (!Trading_PlaceOrder(foundItem.itemData as TradeItemData, (Position)j, false, true))
-                                            BaseFunctions.ShowError(this, "order fail");
-                                        else
+                                        try
                                         {
-                                            lock (CountLocker)
+                                            if (!Trading_PlaceOrder(iD, (Position)j, false, true))
+                                                BaseFunctions.ShowError(this, "order fail");
+                                            else
                                             {
-                                                EnterCount[j]++;
-                                                CurrentCount[j]++;
+                                                lock (CountLocker)
+                                                {
+                                                    EnterCount[j]++;
+                                                    CurrentCount[j]++;
+                                                }
+
+                                                Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
+                                                    BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + iD.positionData[j].EnterTime.ToString(BaseFunctions.TimeFormat),
+                                                    DBHelper.conn1OrderHistoryColumn1, iD.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + iD.positionData[j].EnterPrice);
+                                                BaseFunctions.AlertStart("Real Enter\n" +
+                                                    Enum.GetName(typeof(Position), j) + "\n" +
+                                                    iD.Code + "\n" +
+                                                    newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" +
+                                                    iD.positionData[j].foundList[iD.positionData[j].foundList.Count - 1].chartValues.Text + "\n" +
+                                                    "Enter Count: " + EnterCount[j], true);
                                             }
-
-
-                                            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
-                                                BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + foundItem.itemData.positionData[j].EnterTime.ToString(BaseFunctions.TimeFormat),
-                                                DBHelper.conn1OrderHistoryColumn1, foundItem.itemData.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + foundItem.itemData.positionData[j].EnterPrice);
-                                            BaseFunctions.AlertStart("Real Enter\n" +
-                                                Enum.GetName(typeof(Position), j) + "\n" +
-                                                itemData.Code + "\n" +
-                                                newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" +
-                                                positionData.foundList[positionData.foundList.Count - 1].chartValues.Text + "\n" +
-                                                "Enter Count: " + EnterCount[j], true);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            BaseFunctions.ShowError(this, e.Message);
+                                            throw;
                                         }
                                     }
                                 }
@@ -1486,7 +1496,13 @@ namespace BinanceHand
                 {
                     itemData.resultData = new TradeResultData { Code = itemData.Code };
                     itemData.resultData.Position = position == Position.Long ? "Short" : "Long";
-                    (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
+
+                    if (InvokeRequired)
+                        BeginInvoke(new Action(() => {
+                            (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
+                        }));
+                    else
+                        (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
                 }
 
                 itemData.resultData.ExitSendTime = BaseFunctions.NowTime();
@@ -1500,7 +1516,12 @@ namespace BinanceHand
                 itemData.resultData = new TradeResultData { Code = itemData.Code };
                 itemData.resultData.Position = position == Position.Long ? "Long" : "Short";
                 itemData.resultData.EnterSendTime = BaseFunctions.NowTime();
-                (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
+                if (InvokeRequired)
+                    BeginInvoke(new Action(() => {
+                        (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
+                    }));
+                else
+                    (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
 
                 itemData.Size = 0;
             }
