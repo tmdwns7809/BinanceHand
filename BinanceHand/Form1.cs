@@ -65,6 +65,9 @@ namespace BinanceHand
         bool klineFirstFinal = true;
         bool klineSecondFinal = true;
 
+        decimal autoLimitAvgSecPercent = 1;
+        int autoLimitBalancePercent = 50;
+
         public Form1()
         {
             InitializeComponent();
@@ -72,7 +75,7 @@ namespace BinanceHand
             FormClosed += Form1_FormClosed;
             Load += Form1_Load;
 
-            Trading.instance = new Trading(this, false, 1, 20);
+            Trading.instance = new Trading(this, false, 1.112m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -734,9 +737,11 @@ namespace BinanceHand
                         Trading.firstFinalMin = newStick.Time;
                         Trading.instance.KlineRcv = 0;
                         Trading.instance.UpdateFoundInText(default, true);
-                        BaseFunctions.foundItemList = new List<(BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)>)>[]
-                            { new List<(BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)>)>(),
-                                new List<(BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)>)>() };
+                        BaseFunctions.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>[] 
+                        {
+                            new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>(),
+                            new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>()
+                        };
                     }
 
                     Trading.instance.KlineRcv++;
@@ -868,7 +873,7 @@ namespace BinanceHand
                     {
                         if (!itemData.positionData[(int)Position.Long].Enter && !itemData.positionData[(int)Position.Short].Enter && positionData.found)
                             lock (Trading.minLocker)
-                                BaseFunctions.foundItemList[j].Add((itemData, positionData.foundList));
+                                BaseFunctions.foundItemList[j].Add(itemData.number, (itemData, positionData.foundList));
                         else
                         if (positionData.Enter && BaseFunctions.ExitConditionFinal(itemData, (Position)j))
                         {
@@ -876,6 +881,7 @@ namespace BinanceHand
 
                             if (itemData.isAuto && itemData.RealEnter && Trading.instance.autoRealTrading)
                             {
+                                itemData.DetectTime = newStick.Time;
                                 if (!Trading_PlaceOrder(itemData, (Position)j == Position.Long ? Position.Short : Position.Long, false, true))
                                     BaseFunctions.ShowError(this, "order fail");
 
@@ -892,16 +898,17 @@ namespace BinanceHand
                     {
                         var conditionResult2 = BaseFunctions.AllItemFindCondition();
                         if (conditionResult2.found && conditionResult2.position[j])
-                            foreach (var foundItem in BaseFunctions.foundItemList[j])
+                            foreach (var foundItem in BaseFunctions.foundItemList[j].Values)
                                 if (Trading.loadingDone && newStick.Time > Trading.loadingDoneTime)
                                 {
                                     var iD = foundItem.itemData as TradeItemData;
                                     Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
-                                    if (!iD.RealEnter && Trading.instance.autoRealTrading && EnterCount[j] < 2)
+                                    if (!iD.RealEnter && Trading.instance.autoRealTrading && EnterCount[j] < 1)
                                     {
                                         try
                                         {
+                                            iD.DetectTime = newStick.Time;
                                             if (!Trading_PlaceOrder(iD, (Position)j, false, true))
                                                 BaseFunctions.ShowError(this, "order fail");
                                             else
@@ -932,9 +939,16 @@ namespace BinanceHand
                                 }
                     }
                 }
-            }
 
-            Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.Close);
+                Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.Close);
+            }
+            else
+            {
+                if (data0.Timestamp.Subtract(itemData.lastReceiveTime).TotalSeconds >= 1)
+                    Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.Close);
+
+                itemData.lastReceiveTime = data0.Timestamp;
+            }
         }
 
         void OnAggregatedTradeUpdates(DataEvent<BinanceStreamAggregatedTrade> data0)
@@ -1133,11 +1147,11 @@ namespace BinanceHand
             {
                 itemData.OrderFilled = data.UpdateData.AccumulatedQuantityOfFilledTrades;
                 var tradData = itemData.positionWhenOrder ? itemData.ExitTradeData : itemData.EnterTradeData;
-                tradData.Get_Time = BaseFunctions.NowTime();
+                tradData.Detect_Stick_Time = itemData.DetectTime;
+                tradData.Here_Get_Time = BaseFunctions.NowTime();
+                tradData.Server_Get_Time = data.UpdateData.UpdateTime;
                 tradData.Get_Price = data.UpdateData.AveragePrice;
                 tradData.Get_Qnt = data.UpdateData.AccumulatedQuantityOfFilledTrades;
-                Trading.instance.dbHelper.SaveStrategyTradeData(itemData.isAuto, tradData.Send_Time, tradData.Get_Time, itemData.Code, !itemData.positionWhenOrder, 
-                    tradData.Position, tradData.Send_Close_Price, tradData.Send_Price, tradData.Get_Price, tradData.Last_Min_Qnt, tradData.Send_Qnt, tradData.Send_Qnt);
             }
             else if (data.UpdateData.Status == OrderStatus.Filled || data.UpdateData.Status == OrderStatus.Canceled
                 || data.UpdateData.Status == OrderStatus.Rejected || data.UpdateData.Status == OrderStatus.Expired)
@@ -1178,6 +1192,8 @@ namespace BinanceHand
                         resultData.Exit_Send_Amount__Diff = itemData.OrderAmount.ToString(BaseFunctions.ForDecimalString) + "(" + Math.Round(Math.Abs(itemData.OrderFilled - itemData.Size) / itemData.OrderAmount * 100, 0) + "%)";
                         resultData.Exit_Send_Time__Diff = resultData.ExitSendTime.ToString(BaseFunctions.TimeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.ExitSendTime).Milliseconds / 1000D, 1) + "s)";
 
+                        itemData.ExitCanceledTradeData = itemData.ExitTradeData;
+
                         Trading_PlaceOrder(itemData, itemData.RealPosition == Position.Long ? Position.Short : Position.Long, true, itemData.isAuto);
                     }
                     else
@@ -1196,11 +1212,11 @@ namespace BinanceHand
                 }
 
                 var tradData = itemData.positionWhenOrder ? itemData.ExitTradeData : itemData.EnterTradeData;
-                tradData.Get_Time = BaseFunctions.NowTime();
+                tradData.Detect_Stick_Time = itemData.DetectTime;
+                tradData.Here_Get_Time = BaseFunctions.NowTime();
+                tradData.Server_Get_Time = data.UpdateData.UpdateTime;
                 tradData.Get_Price = data.UpdateData.AveragePrice;
                 tradData.Get_Qnt = data.UpdateData.AccumulatedQuantityOfFilledTrades;
-                Trading.instance.dbHelper.SaveStrategyTradeData(itemData.isAuto, tradData.Send_Time, tradData.Get_Time, itemData.Code, !itemData.positionWhenOrder,
-                    tradData.Position, tradData.Send_Close_Price, tradData.Send_Price, tradData.Get_Price, tradData.Last_Min_Qnt, tradData.Send_Qnt, tradData.Send_Qnt);
 
                 if (!itemData.RealEnter && !itemData.positionWhenOrder)
                 {
@@ -1261,7 +1277,7 @@ namespace BinanceHand
             }
             else
             {
-                OrderBoxSetting(Trading.instance.autoSizeDefault, Trading.instance.miniSizeDefault);
+                OrderBoxSetting(Trading.instance.autoSizeDefault, Trading.instance.minSizeDefault);
                 Trading.instance.positionCloseButton.Enabled = false;
                 Trading.instance.positionCloseButton.BackColor = ColorSet.ButtonSelected;
             }
@@ -1394,11 +1410,10 @@ namespace BinanceHand
                     (int)(tradeData.Send_Close_Price * (1 + priceRate / 100) / itemData.hoDiff + 1) * itemData.hoDiff :
                     (int)(tradeData.Send_Close_Price * (1 - priceRate / 100) / itemData.hoDiff) * itemData.hoDiff;
 
-            decimal quantity = itemData.RealEnter ? Math.Abs(itemData.Size) : GetMinQuan(itemData, (decimal)price);
+            decimal quantity = itemData.RealEnter ? Math.Abs(itemData.Size) : default;
             int limitBalancePercent = default;
             decimal limitAvgSecPercent = default;
-            if (!auto && 
-                ((orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
+            if (!auto && ((orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
                     || (!itemData.RealEnter && autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked && 
                         (!int.TryParse(maximumBalanceForSizeTextBox0.Text, out limitBalancePercent) || limitBalancePercent <= 0) &&
                         (!decimal.TryParse(maximumPercentOfAvgSecForSizeTextBox0.Text, out limitAvgSecPercent) || limitAvgSecPercent <= 0))))
@@ -1406,10 +1421,37 @@ namespace BinanceHand
                 BaseFunctions.ShowError(this, "order input error");
                 return false;
             }
+            else if (!itemData.RealEnter && (auto || miniSizeCheckBox.Checked || autoSizeCheckBox.Checked))
+            {
+                var minQuan = GetMinQuan(itemData, (decimal)price);
+                if (!auto && miniSizeCheckBox.Checked)
+                    quantity = minQuan;
+                else
+                {
+                    if (auto)
+                    {
+                        limitAvgSecPercent = autoLimitAvgSecPercent;
+                        limitBalancePercent = autoLimitBalancePercent;
+                    }
+
+                    quantity = (int)(limitAvgSecPercent / 100 * tradeData.Last_Min_Qnt / 60 / itemData.minSize + 1) * itemData.minSize;
+                    if (quantity < minQuan)
+                        quantity = minQuan;
+
+                    var budget = Trading.instance.assetDic[AssetTextWalletBalance].Amount * limitBalancePercent / 100;
+                    if (budget > Trading.instance.assetDic[AssetTextAvailableBalance].Amount)
+                        return false;
+
+                    var limitAmount = budget < itemData.minNotionalValue ? minQuan : 
+                        ((int)(budget / price / itemData.minSize + 1) * itemData.minSize);
+
+                    if (limitAmount < quantity)
+                        quantity = limitAmount;
+                }
+            }
 
             var orderType = OrderType.Limit;
             TimeInForce? timeInForce = null;
-
             if (!auto)
             {
                 if (!marketRadioButton.Checked && !market)
@@ -1429,24 +1471,6 @@ namespace BinanceHand
             else
                 timeInForce = TimeInForce.GoodTillCancel;
 
-            if (!auto && (miniSizeCheckBox.Checked || autoSizeCheckBox.Checked) && !itemData.RealEnter)
-            {
-                if (miniSizeCheckBox.Checked)
-                    quantity = GetMinQuan(itemData, (decimal)price);
-                else
-                {
-                    quantity = (int)(limitAvgSecPercent / 100 * tradeData.Last_Min_Qnt / 60 / itemData.minSize + 1) * itemData.minSize;
-
-                    var budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount * limitBalancePercent / 100;
-                    if (budget < itemData.minNotionalValue)
-                        budget = itemData.minNotionalValue;
-
-                    var limitAmount = (int)(budget / price / itemData.minSize + 1) * itemData.minSize;
-
-                    if (limitAmount < quantity)
-                        quantity = limitAmount;
-                }
-            }
 
             if (!itemData.RealEnter && price * quantity < itemData.minNotionalValue)
             {
@@ -1463,6 +1487,8 @@ namespace BinanceHand
             itemData.positionWhenOrder = itemData.RealEnter;
             if (!itemData.positionWhenOrder)
                 itemData.isAuto = auto;
+            else
+                itemData.ExitCanceledTradeData = null;
 
             var result = client.FuturesUsdt.Order.PlaceOrderAsync(
                 itemData.Code
@@ -1479,7 +1505,7 @@ namespace BinanceHand
                 return false;
             }
 
-            tradeData.Send_Time = BaseFunctions.NowTime();
+            tradeData.Here_Send_Time = BaseFunctions.NowTime();
             tradeData.Send_Price = price == null ? 0 : (decimal)price;
             tradeData.Send_Qnt = quantity;
             tradeData.Position = position;
@@ -1526,7 +1552,7 @@ namespace BinanceHand
                 itemData.Size = 0;
             }
 
-            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + tradeData.Send_Time.ToString(BaseFunctions.TimeFormat),
+            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + tradeData.Here_Send_Time.ToString(BaseFunctions.TimeFormat),
                 DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 " + (position == Position.Long ? "매수" : "매도") + "주문전송", DBHelper.conn1OrderHistoryColumn2, "주문가격:" + price + " 주문수량:" + quantity);
 
             return true;
