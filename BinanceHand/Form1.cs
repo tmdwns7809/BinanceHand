@@ -24,11 +24,11 @@ namespace BinanceHand
 {
     public partial class Form1 : Form
     {
+        string AssetTextUnrealizedPNL = "Unrealized PNL";
         string AssetTextMarginRatio = "Margin Ratio";
         string AssetTextMaintenanceMargin = "Maintenance Margin";
         string AssetTextMarginBalance = "Margin Balance";
         string AssetTextAvailableBalance = "Available Balance";
-        string AssetTextWalletBalance = "Wallet Balance";
 
         RadioButton GTCRadioButton = new RadioButton();
         RadioButton IOCRadioButton = new RadioButton();
@@ -66,7 +66,10 @@ namespace BinanceHand
         bool klineSecondFinal = true;
 
         decimal autoLimitAvgSecPercent = 1;
-        int autoLimitBalancePercent = 50;
+        int autoLimitBalancePercent = 1;
+
+        Dictionary<string, BinanceItemData> positions = new Dictionary<string, BinanceItemData>();
+        Dictionary<string, BinanceItemData> orders = new Dictionary<string, BinanceItemData>();
 
         public Form1()
         {
@@ -479,16 +482,18 @@ namespace BinanceHand
         }
         void GetAccountInfo()
         {
-            Trading.instance.assetDic.Add(AssetTextMarginRatio, new Asset { AssetName = AssetTextMarginRatio });
-            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMarginRatio]);
-            Trading.instance.assetDic.Add(AssetTextMaintenanceMargin, new Asset { AssetName = AssetTextMaintenanceMargin });
-            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMaintenanceMargin]);
+            Trading.instance.assetDic.Add(Trading.AssetTextWalletBalance, new Asset { AssetName = Trading.AssetTextWalletBalance });
+            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[Trading.AssetTextWalletBalance]);
+            Trading.instance.assetDic.Add(AssetTextUnrealizedPNL, new Asset { AssetName = AssetTextUnrealizedPNL });
+            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextUnrealizedPNL]);
             Trading.instance.assetDic.Add(AssetTextMarginBalance, new Asset { AssetName = AssetTextMarginBalance });
             Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMarginBalance]);
+            Trading.instance.assetDic.Add(AssetTextMaintenanceMargin, new Asset { AssetName = AssetTextMaintenanceMargin });
+            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMaintenanceMargin]);
+            Trading.instance.assetDic.Add(AssetTextMarginRatio, new Asset { AssetName = AssetTextMarginRatio });
+            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMarginRatio]);
             Trading.instance.assetDic.Add(AssetTextAvailableBalance, new Asset { AssetName = AssetTextAvailableBalance });
             Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextAvailableBalance]);
-            Trading.instance.assetDic.Add(AssetTextWalletBalance, new Asset { AssetName = AssetTextWalletBalance });
-            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextWalletBalance]);
 
             var result = client.FuturesUsdt.Account.GetAccountInfoAsync().Result;
             if (!result.Success)
@@ -497,16 +502,16 @@ namespace BinanceHand
             BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
 
             foreach (var s in result.Data.Assets)
-            {
                 if (s.Asset == "USDT")
-                {
-                    Trading.instance.assetDic[AssetTextMarginBalance].Amount = s.MarginBalance;
-                    Trading.instance.assetDic[AssetTextAvailableBalance].Amount = s.AvailableBalance;
-                    Trading.instance.assetDic[AssetTextWalletBalance].Amount = s.WalletBalance;
-                }
-            }
+                    lock (Trading.instance.assetLocker)
+                    {
+                        Trading.instance.assetDic[AssetTextMaintenanceMargin].Amount = s.MaintMargin;
+                        Trading.instance.assetDic[AssetTextMarginBalance].Amount = s.MarginBalance;
+                        Trading.instance.assetDic[AssetTextAvailableBalance].Amount = s.AvailableBalance;
+                        Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount = s.WalletBalance;
+                        Trading.instance.assetDic[AssetTextMarginRatio].Amount = Math.Round(s.MaintMargin / s.MarginBalance * 100, 2);
+                    }
             foreach (var s in result.Data.Positions)
-            {
                 if (s.EntryPrice != 0m)
                 {
                     var itemData = (BinanceItemData)Trading.instance.itemDataDic[s.Symbol];
@@ -523,7 +528,6 @@ namespace BinanceHand
                     Trading.instance.CodeListView.RemoveObject(itemData);
                     Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
                 }
-            }
 
             var result2 = client.FuturesUsdt.GetPositionInformationAsync().Result;
             if (!result2.Success)
@@ -555,9 +559,13 @@ namespace BinanceHand
                     itemData.ClosePNL = itemData.PNL;
                     itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
                     itemData.maxNotionalValue = s.MaxNotional;
+                    positions.Add(itemData.Code, itemData);
+                    orders.Remove(itemData.Code);
                     itemData.RealEnter = true;
                     itemData.RealPosition = itemData.Size > 0 ? Position.Long : Position.Short;
                     itemData.RealEnterN = (int)itemData.RealPosition + 1;
+
+                    UpdateAssets();
 
                     Trading.instance.CodeListView.RefreshObject(itemData);
 
@@ -927,7 +935,7 @@ namespace BinanceHand
                                                     iD.Code + "\n" +
                                                     newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" +
                                                     iD.positionData[j].foundList[iD.positionData[j].foundList.Count - 1].chartValues.Text + "\n" +
-                                                    "Enter Count: " + EnterCount[j], true);
+                                                    "Enter Count: " + EnterCount[j], BaseFunctions.isAlertSoundOn, true);
                                             }
                                         }
                                         catch (Exception e)
@@ -1023,11 +1031,11 @@ namespace BinanceHand
                 itemData.MarkPrice = Math.Round(data.MarkPrice, 2);
                 itemData.notianalValue = data.MarkPrice * Math.Abs(itemData.Size);
                 itemData.InitialMargin = Math.Round(itemData.notianalValue / itemData.Leverage, 2);
-                itemData.PNL = Math.Round((itemData.MarkPrice - itemData.RealEnterPrice) * itemData.Size, 2);
+                itemData.PNLa = (itemData.MarkPrice - itemData.RealEnterPrice) * itemData.Size;
+                itemData.PNL = Math.Round(itemData.PNLa, 2);
                 itemData.ROE = Math.Round(itemData.PNL / itemData.InitialMargin * 100, 2);
 
                 for (int i = 0; i < itemData.brackets.Count; i++)
-                {
                     if (itemData.notianalValue > itemData.brackets[i].Floor && itemData.notianalValue <= itemData.brackets[i].Cap)
                     {
                         itemData.maintMargin = 0;
@@ -1039,30 +1047,54 @@ namespace BinanceHand
 
                         break;
                     }
-                }
-
-                var walletBalance = Trading.instance.assetDic[AssetTextWalletBalance].Amount;
-                var MaintMargin = Trading.instance.assetDic[AssetTextMaintenanceMargin];
-                MaintMargin.Amount = Math.Round(itemData.maintMargin, 2);
-                var MarginBalance = Trading.instance.assetDic[AssetTextMarginBalance];
-                MarginBalance.Amount = Math.Round(walletBalance + itemData.PNL, 2);
-                var asset = Trading.instance.assetDic[AssetTextAvailableBalance];
-                asset.Amount = Math.Round(walletBalance + itemData.PNL - itemData.InitialMargin, 2);
-                asset = Trading.instance.assetDic[AssetTextMarginRatio];
-                asset.Amount = Math.Round(MaintMargin.Amount / MarginBalance.Amount * 100, 2);
-                Trading.instance.assetsListView.Refresh();
             }
+
+            UpdateAssets();
+        }
+        void UpdateAssets()
+        {
+            var maintMargin = 0m;
+            var unPNL = 0m;
+            var inMargins = 0m;
+            foreach (var p in positions.Values)
+            {
+                maintMargin += p.maintMargin;
+                unPNL += p.PNLa;
+                inMargins += p.InitialMargin;
+            }
+            foreach (var o in orders.Values)
+                inMargins += o.OrderPrice * o.OrderAmount / o.Leverage;
+
+            var marginBalance = Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount + unPNL;
+
+            lock (Trading.instance.assetLocker)
+            {
+                Trading.instance.assetDic[AssetTextMarginBalance].Amount = Math.Round(marginBalance, 4);
+                Trading.instance.assetDic[AssetTextMaintenanceMargin].Amount = Math.Round(maintMargin, 4);
+                Trading.instance.assetDic[AssetTextMarginRatio].Amount = Math.Round(maintMargin / marginBalance * 100, 2);
+                Trading.instance.assetDic[AssetTextAvailableBalance].Amount = marginBalance - inMargins;
+                Trading.instance.assetDic[AssetTextUnrealizedPNL].Amount = Math.Round(unPNL, 2);
+            }
+
+            if (Trading.instance.assetDic[AssetTextMarginRatio].Amount > 50)
+                BaseFunctions.AlertStart("margin ratio 50%!!", true, true);
+
+            if (!InvokeRequired)
+                Trading.instance.assetsListView.Refresh();
+            else
+                BeginInvoke(new Action(() => { Trading.instance.assetsListView.Refresh(); }));
         }
         async void OnAccountUpdates(DataEvent<BinanceFuturesStreamAccountUpdate> data0)
         {
             var data = data0.Data;
             foreach (var balance in data.UpdateData.Balances)
                 if (balance.Asset == "USDT")
-                {
-                    var asset = Trading.instance.assetDic[AssetTextWalletBalance];
-                    asset.Amount = balance.WalletBalance;
-                    Trading.instance.assetsListView.RefreshObject(asset);
-                }
+                    lock (Trading.instance.assetLocker)
+                    {
+                        var asset = Trading.instance.assetDic[Trading.AssetTextWalletBalance];
+                        asset.Amount = balance.WalletBalance;
+                        Trading.instance.assetsListView.RefreshObject(asset);
+                    }
 
             if (data.UpdateData.Reason == AccountUpdateReason.Order)
                 foreach (var position in data.UpdateData.Positions)
@@ -1076,15 +1108,9 @@ namespace BinanceHand
                         Invoke(new Action(() => {
                             Trading.TradingRealExitSetting(itemData);
 
-                            var asset = Trading.instance.assetDic[AssetTextMarginRatio];
-                            asset.Amount = 0;
-                            asset = Trading.instance.assetDic[AssetTextMaintenanceMargin];
-                            asset.Amount = 0;
-                            asset = Trading.instance.assetDic[AssetTextAvailableBalance];
-                            asset.Amount = Trading.instance.assetDic[AssetTextWalletBalance].Amount;
-                            asset = Trading.instance.assetDic[AssetTextMarginBalance];
-                            asset.Amount = Trading.instance.assetDic[AssetTextWalletBalance].Amount;
-                            Trading.instance.assetsListView.Refresh();
+                            positions.Remove(itemData.Code);
+
+                            UpdateAssets();
                         }));
                     }
                     else if (itemData.RealEnter)
@@ -1098,6 +1124,8 @@ namespace BinanceHand
                         itemData.markSub = result.Data;
 
                         Invoke(new Action(() => {
+                            positions.Add(itemData.Code, itemData);
+                            orders.Remove(itemData.Code);
                             itemData.RealEnter = true;
                             itemData.RealEnterPrice = position.EntryPrice;
                             itemData.RealEnterTime = BaseFunctions.NowTime();
@@ -1107,6 +1135,8 @@ namespace BinanceHand
                             itemData.RealEnterN = (int)itemData.RealPosition + 1;
                             Trading.instance.CodeListView.RemoveObject(itemData);
                             Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
+
+                            UpdateAssets();
 
                             if (itemData == Trading.instance.itemDataShowing)
                             {
@@ -1138,9 +1168,9 @@ namespace BinanceHand
 
                 if (!itemData.RealEnter)
                 {
-                    var asset = Trading.instance.assetDic[AssetTextAvailableBalance];
-                    asset.Amount -= itemData.OrderPrice * itemData.OrderAmount / itemData.Leverage;
-                    Trading.instance.assetsListView.RefreshObject(asset);
+                    orders.Add(itemData.Code, itemData);
+                    
+                    UpdateAssets();
                 }
             }
             else if (data.UpdateData.Status == OrderStatus.PartiallyFilled)
@@ -1211,19 +1241,15 @@ namespace BinanceHand
                     (itemData.isAuto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).RefreshObject(resultData);
                 }
 
+                orders.Remove(itemData.Code);
+                UpdateAssets();
+
                 var tradData = itemData.positionWhenOrder ? itemData.ExitTradeData : itemData.EnterTradeData;
                 tradData.Detect_Stick_Time = itemData.DetectTime;
                 tradData.Here_Get_Time = BaseFunctions.NowTime();
                 tradData.Server_Get_Time = data.UpdateData.UpdateTime;
                 tradData.Get_Price = data.UpdateData.AveragePrice;
                 tradData.Get_Qnt = data.UpdateData.AccumulatedQuantityOfFilledTrades;
-
-                if (!itemData.RealEnter && !itemData.positionWhenOrder)
-                {
-                    var asset = Trading.instance.assetDic[AssetTextAvailableBalance];
-                    asset.Amount += itemData.OrderPrice * itemData.OrderAmount / itemData.Leverage;
-                    Trading.instance.assetsListView.RefreshObject(asset);
-                }
             }
         }
 
@@ -1438,9 +1464,9 @@ namespace BinanceHand
                     if (quantity < minQuan)
                         quantity = minQuan;
 
-                    var budget = Trading.instance.assetDic[AssetTextWalletBalance].Amount * limitBalancePercent / 100;
+                    var budget = Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount * limitBalancePercent / 100;
                     if (budget > Trading.instance.assetDic[AssetTextAvailableBalance].Amount)
-                        return false;
+                        budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount;
 
                     var limitAmount = budget < itemData.minNotionalValue ? minQuan : 
                         ((int)(budget / price / itemData.minSize + 1) * itemData.minSize);
