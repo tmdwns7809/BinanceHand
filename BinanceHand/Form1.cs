@@ -28,7 +28,6 @@ namespace BinanceHand
         string AssetTextMarginRatio = "Margin Ratio";
         string AssetTextMaintenanceMargin = "Maintenance Margin";
         string AssetTextMarginBalance = "Margin Balance";
-        string AssetTextAvailableBalance = "Available Balance";
 
         RadioButton GTCRadioButton = new RadioButton();
         RadioButton IOCRadioButton = new RadioButton();
@@ -66,7 +65,7 @@ namespace BinanceHand
         bool klineSecondFinal = true;
 
         decimal autoLimitAvgSecPercent = 1;
-        int autoLimitBalancePercent = 1;
+        int autoLimitBalancePercent = 50;
 
         Dictionary<string, BinanceItemData> positions = new Dictionary<string, BinanceItemData>();
         Dictionary<string, BinanceItemData> orders = new Dictionary<string, BinanceItemData>();
@@ -78,7 +77,7 @@ namespace BinanceHand
             FormClosed += Form1_FormClosed;
             Load += Form1_Load;
 
-            Trading.instance = new Trading(this, false, 1.112m, 20);
+            Trading.instance = new Trading(this, false, 1.11m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -492,8 +491,8 @@ namespace BinanceHand
             Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMaintenanceMargin]);
             Trading.instance.assetDic.Add(AssetTextMarginRatio, new Asset { AssetName = AssetTextMarginRatio });
             Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextMarginRatio]);
-            Trading.instance.assetDic.Add(AssetTextAvailableBalance, new Asset { AssetName = AssetTextAvailableBalance });
-            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[AssetTextAvailableBalance]);
+            Trading.instance.assetDic.Add(Trading.AssetTextAvailableBalance, new Asset { AssetName = Trading.AssetTextAvailableBalance });
+            Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[Trading.AssetTextAvailableBalance]);
 
             var result = client.FuturesUsdt.Account.GetAccountInfoAsync().Result;
             if (!result.Success)
@@ -507,7 +506,7 @@ namespace BinanceHand
                     {
                         Trading.instance.assetDic[AssetTextMaintenanceMargin].Amount = s.MaintMargin;
                         Trading.instance.assetDic[AssetTextMarginBalance].Amount = s.MarginBalance;
-                        Trading.instance.assetDic[AssetTextAvailableBalance].Amount = s.AvailableBalance;
+                        Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount = s.AvailableBalance;
                         Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount = s.WalletBalance;
                         Trading.instance.assetDic[AssetTextMarginRatio].Amount = Math.Round(s.MaintMargin / s.MarginBalance * 100, 2);
                     }
@@ -912,7 +911,7 @@ namespace BinanceHand
                                     var iD = foundItem.itemData as TradeItemData;
                                     Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
-                                    if (!iD.RealEnter && Trading.instance.autoRealTrading && EnterCount[j] < 1)
+                                    if (!iD.RealEnter && Trading.instance.autoRealTrading && CurrentCount[j] < 1)
                                     {
                                         try
                                         {
@@ -1072,7 +1071,7 @@ namespace BinanceHand
                 Trading.instance.assetDic[AssetTextMarginBalance].Amount = Math.Round(marginBalance, 4);
                 Trading.instance.assetDic[AssetTextMaintenanceMargin].Amount = Math.Round(maintMargin, 4);
                 Trading.instance.assetDic[AssetTextMarginRatio].Amount = Math.Round(maintMargin / marginBalance * 100, 2);
-                Trading.instance.assetDic[AssetTextAvailableBalance].Amount = marginBalance - inMargins;
+                Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount = marginBalance - inMargins;
                 Trading.instance.assetDic[AssetTextUnrealizedPNL].Amount = Math.Round(unPNL, 2);
             }
 
@@ -1465,8 +1464,8 @@ namespace BinanceHand
                         quantity = minQuan;
 
                     var budget = Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount * limitBalancePercent / 100;
-                    if (budget > Trading.instance.assetDic[AssetTextAvailableBalance].Amount)
-                        budget = Trading.instance.assetDic[AssetTextAvailableBalance].Amount;
+                    if (budget > Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount)
+                        budget = Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount;
 
                     var limitAmount = budget < itemData.minNotionalValue ? minQuan : 
                         ((int)(budget / price / itemData.minSize + 1) * itemData.minSize);
