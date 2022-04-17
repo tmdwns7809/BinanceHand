@@ -911,7 +911,7 @@ namespace BinanceHand
                                     var iD = foundItem.itemData as TradeItemData;
                                     Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
-                                    if (!iD.RealEnter && Trading.instance.autoRealTrading && CurrentCount[j] < 1)
+                                    if (j == (int)Position.Long && !iD.RealEnter && Trading.instance.autoRealTrading && CurrentCount[j] < 1)
                                     {
                                         try
                                         {
