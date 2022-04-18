@@ -58,7 +58,6 @@ namespace BinanceHand
         Queue<Task> requestTRTaskQueue = new Queue<Task>();
 
         int[] EnterCount = new int[2];
-        int[] CurrentCount = new int[2];
         object CountLocker = new object();
 
         bool klineFirstFinal = true;
@@ -892,9 +891,6 @@ namespace BinanceHand
                                 if (!Trading_PlaceOrder(itemData, (Position)j == Position.Long ? Position.Short : Position.Long, false, true))
                                     BaseFunctions.ShowError(this, "order fail");
 
-                                lock (CountLocker)
-                                    CurrentCount[j]--;
-
                                 Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + positionData.EnterTime.ToString(BaseFunctions.TimeFormat),
                                     DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 매도(자동)", DBHelper.conn1OrderHistoryColumn2, "전송가:" + newStick.Price[3]);
                             }
@@ -911,7 +907,7 @@ namespace BinanceHand
                                     var iD = foundItem.itemData as TradeItemData;
                                     Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick);
 
-                                    if (j == (int)Position.Long && !iD.RealEnter && Trading.instance.autoRealTrading && CurrentCount[j] < 1)
+                                    if (j == (int)Position.Long && !iD.RealEnter && Trading.instance.autoRealTrading && (orders.Count + positions.Count) < 1)
                                     {
                                         try
                                         {
@@ -920,11 +916,12 @@ namespace BinanceHand
                                                 BaseFunctions.ShowError(this, "order fail");
                                             else
                                             {
+                                                orders.Add(itemData.Code, itemData);
+
+                                                UpdateAssets();
+
                                                 lock (CountLocker)
-                                                {
                                                     EnterCount[j]++;
-                                                    CurrentCount[j]++;
-                                                }
 
                                                 Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
                                                     BaseFunctions.NowTime().ToString(BaseFunctions.TimeFormat) + "~" + iD.positionData[j].EnterTime.ToString(BaseFunctions.TimeFormat),
@@ -1164,13 +1161,6 @@ namespace BinanceHand
                 itemData.Condition = data.UpdateData.TimeInForce;
                 itemData.clientOrderID = data.UpdateData.ClientOrderId;
                 itemData.orderID = data.UpdateData.OrderId.ToString();
-
-                if (!itemData.RealEnter)
-                {
-                    orders.Add(itemData.Code, itemData);
-                    
-                    UpdateAssets();
-                }
             }
             else if (data.UpdateData.Status == OrderStatus.PartiallyFilled)
             {
