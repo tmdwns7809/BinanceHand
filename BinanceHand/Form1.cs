@@ -66,7 +66,6 @@ namespace BinanceHand
         bool klineSecondFinal = true;
 
         decimal autoLimitAvgSecPercent = 1;
-        decimal autoLimitBalancePercent = 0.1m;
 
         Dictionary<string, BinanceItemData>[] positions = new Dictionary<string, BinanceItemData>[] { new Dictionary<string, BinanceItemData>(), new Dictionary<string, BinanceItemData>() };
         Dictionary<string, BinanceItemData>[] orders = new Dictionary<string, BinanceItemData>[] { new Dictionary<string, BinanceItemData>(), new Dictionary<string, BinanceItemData>() };
@@ -80,7 +79,7 @@ namespace BinanceHand
 
             Settings.Load(Settings.ProgramBinanceFutures);
 
-            Trading.instance = new Trading(this, false, 1.114111m, 20);
+            Trading.instance = new Trading(this, false, 1.1141113m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -1095,7 +1094,7 @@ namespace BinanceHand
                                         positionData2.Real = BaseFunctions.CheckTrend((Position)j, newStick.Time);
                                     Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick, !BaseFunctions.calSimul || positionData2.Real);
 
-                                    if (!iD.RealEnter && (orders[j].Count + positions[j].Count) < Trading.instance.LimitUpDownButton[j].Value && 
+                                    if (!iD.RealEnter && (orders[j].Count + positions[j].Count) < Trading.instance.LimitUpDownControl[j].Value && 
                                         (!BaseFunctions.calSimul || positionData2.Real))
                                     {
                                         try
@@ -1120,7 +1119,7 @@ namespace BinanceHand
                                                     iD.Code + "\n" +
                                                     newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" +
                                                     iD.positionData[j].foundList[iD.positionData[j].foundList.Count - 1].chartValues.Text + "\n" +
-                                                    "Enter Count: " + EnterCount[j], Settings.settings[Settings.ProgramName].others[Settings.AlertSoundName], true);
+                                                    "Enter Count: " + EnterCount[j], true, true);
                                             }
                                         }
                                         catch (Exception e)
@@ -1288,7 +1287,7 @@ namespace BinanceHand
                         if (!BaseFunctions.calOnlyFullStick)
                             BaseFunctions.SetRSIAandDiff(v.list, v.lastStickForS, v.currentIndex - 1);
 
-                        BaseFunctions.OneChartFindConditionAndAdd(itemData, vc, vm.lastStickForS, v.lastStickForS, v.currentIndex - 1);
+                        BaseFunctions.OneChartFindConditionAndAdd(itemData, vc, vm.lastStickForS, v.lastStickForS, vm.currentIndex - 1, v.currentIndex - 1);
                     }
 
                     for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
@@ -1869,7 +1868,7 @@ namespace BinanceHand
                     if (auto)
                     {
                         limitAvgSecPercent = autoLimitAvgSecPercent;
-                        limitBalancePercent = autoLimitBalancePercent;
+                        limitBalancePercent = Trading.instance.BudgetRateControl.Value;
                     }
 
                     quantity = (int)(limitAvgSecPercent / 100 * tradeData.Last_Min_Qnt / 60 / itemData.minSize + 1) * itemData.minSize;
@@ -1904,8 +1903,6 @@ namespace BinanceHand
                 else
                     orderType = OrderType.Market;
             }
-            else if (!itemData.RealEnter)
-                timeInForce = TimeInForce.ImmediateOrCancel;
             else
                 timeInForce = TimeInForce.GoodTillCancel;
 
