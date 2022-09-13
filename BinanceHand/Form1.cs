@@ -1736,7 +1736,7 @@ namespace BinanceHand
                 itemData.showingStickList.Clear();
 
                 end = 0;
-                start = end - Trading.instance.baseChartViewSticksSize;
+                start = end - Trading.instance.chartViewSticksSize;
             }
             else
                 endTime = DateTime.Parse(chart.Series[0].Points[0].AxisLabel).AddSeconds(-1);
