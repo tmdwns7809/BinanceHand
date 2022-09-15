@@ -79,7 +79,7 @@ namespace BinanceHand
 
             Settings.Load(Settings.ProgramBinanceFutures);
 
-            Trading.instance = new Trading(this, false, 1.1141113m, 20);
+            Trading.instance = new Trading(this, false, 4.2m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -464,13 +464,13 @@ namespace BinanceHand
 
             return stick;
         }
-        List<TradeStick> SetRSIAandGetList(IEnumerable<IBinanceKline> data, DateTime startTime)
+        List<TradeStick> SetRSIAandGetList(IEnumerable<IBinanceKline> data, DateTime startTime, ChartValues vc = null)
         {
             var list = new List<TradeStick>();
             foreach (var stickReal in data)
             {
                 var stick = GetStick(stickReal);
-                BaseFunctions.SetRSIAandDiff(list, stick);
+                BaseFunctions.SetRSIAandDiff(list, stick, int.MinValue, int.MinValue, vc);
                 list.Add(stick);
             }
 
@@ -824,6 +824,12 @@ namespace BinanceHand
 
                 itemData.RSIAHighest = 0;
                 itemData.RSIAHighestChart = "";
+                itemData.dropLongCount = 0;
+                itemData.dropShortCount = 0;
+                itemData.dropLongShortest = TimeSpan.Zero;
+                itemData.dropShortShortest = TimeSpan.Zero;
+                itemData.dropLongText = "";
+                itemData.dropShortText = "";
                 for (int i = BaseChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
                 {
                     var v = itemData.listDic.Values[i];
@@ -853,7 +859,7 @@ namespace BinanceHand
                                     var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
                                         "(" + BaseSticksDB.DBTimeColumnName + "<='" + newStick.Time.ToString(BaseFunctions.DBTimeFormat) + "') AND " +
                                         "(" + BaseSticksDB.DBTimeColumnName + ">='" +
-                                            newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.AddSeconds(-vc2.seconds * (BaseFunctions.TotalNeedDays - 1)).ToString(BaseFunctions.DBTimeFormat) + "')", conn).ExecuteReader();
+                                            newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.AddSeconds(-vc2.seconds * (BaseFunctions.TotalNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(BaseFunctions.DBTimeFormat) + "')", conn).ExecuteReader();
                                     while (reader2.Read())
                                         list.Add(BinanceSticksDB.GetTradeStickFromSQL(reader2));
                                     conn.Close();
@@ -990,13 +996,43 @@ namespace BinanceHand
 
                     if (Trading.loadingDone)
                     {
-                        BaseFunctions.SetRSIAandDiff(v.list, v.lastStick);
+                        BaseFunctions.SetRSIAandDiff(v.list, v.lastStick, int.MinValue, int.MinValue, vc);
                         BaseFunctions.OneChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
 
-                        if (Math.Abs(v.lastStick.indicator.RSIA) > Math.Abs(itemData.RSIAHighest))
+                        if (v.lastStick.indicator != null && !double.IsNaN(v.lastStick.indicator.RSIA) && Math.Abs(v.lastStick.indicator.RSIA) > Math.Abs(itemData.RSIAHighest))
                         {
                             itemData.RSIAHighest = (int)v.lastStick.indicator.RSIA;
                             itemData.RSIAHighestChart = vc.Text;
+                        }
+
+                        if (v.lastStick.lastFoundStick != null)
+                        {
+                            var c = (int)v.lastStick.Time.Subtract(v.lastStick.lastFoundStick.Time).TotalSeconds / vc.seconds;
+                            if (c <= BaseFunctions.BaseLoadNeedDays)
+                            {
+                                var t = vm.lastStick.Time.Subtract(v.lastStick.lastFoundStick.Time);
+                                if (v.lastStick.lastFoundStick.indicator.RSIA > 0)
+                                {
+                                    if (itemData.dropLongShortest == TimeSpan.Zero || t < itemData.dropLongShortest)
+                                        itemData.dropLongShortest = t;
+
+                                    itemData.dropLongCount++;
+                                    itemData.dropLongText += vc.Text + ":" + c + " ";
+                                }
+                                else
+                                {
+                                    if (itemData.dropShortShortest == TimeSpan.Zero || t < itemData.dropShortShortest)
+                                        itemData.dropShortShortest = t;
+
+                                    itemData.dropShortCount++;
+                                    itemData.dropShortText += vc.Text + ":" + c + " ";
+                                }
+
+                                if (vm.lastStick.Time == v.lastStick.Time && vm.lastStick.Time.Subtract(Trading.loadingDoneTime).TotalMinutes > 3 &&
+                                    (v.list[v.list.Count - 1].lastFoundStick == null || v.list[v.list.Count - 1].lastFoundStick.Time != v.lastStick.lastFoundStick.Time))
+                                    BaseFunctions.AlertStart(Math.Round(v.lastStick.lastFoundStick.indicator.RSIA, 2) + "\n" +
+                                        itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + vc.Text, true, true);
+                            }
                         }
                     }
                 }
@@ -1091,7 +1127,7 @@ namespace BinanceHand
                                     var iD = foundItem.itemData as BinanceItemData;
                                     var positionData2 = iD.positionData[j];
                                     if (BaseFunctions.calSimul)
-                                        positionData2.Real = BaseFunctions.CheckTrend((Position)j, newStick.Time);
+                                        positionData2.Real = false;     // checkTrend
                                     Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[BaseFunctions.minCV.index].lastStick, !BaseFunctions.calSimul || positionData2.Real);
 
                                     if (!iD.RealEnter && (orders[j].Count + positions[j].Count) < Trading.instance.LimitUpDownControl[j].Value && 
@@ -1749,7 +1785,16 @@ namespace BinanceHand
 
             BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
 
-            var list = SetRSIAandGetList(result.Data, endTime.AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds).AddSeconds(-(size - 1) * vc.seconds));
+            var list = SetRSIAandGetList(result.Data, endTime.AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds).AddSeconds(-(size - 1) * vc.seconds), vc);
+
+            if (!loadNew)
+            {
+                var firstCount = list.Count;
+                list.AddRange(itemData.showingStickList.GetRange(0, BaseFunctions.NeedDays + 1));
+                for (int i = firstCount; i < list.Count; i++)
+                    BaseFunctions.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
+                list.RemoveRange(firstCount, list.Count - firstCount);
+            }
 
             for (int i = list.Count - 1; i >= 0; i--)
                 Trading.instance.InsertFullChartPoint(chart, list[i]);
@@ -1761,7 +1806,7 @@ namespace BinanceHand
                 list.RemoveAt(list.Count - 1);
             }
             itemData.showingStickList.InsertRange(0, list);
-            BaseFunctions.SetRSIAandDiff(itemData.showingStickList, itemData.showingStick);
+            BaseFunctions.SetRSIAandDiff(itemData.showingStickList, itemData.showingStick, int.MinValue, int.MinValue, vc);
 
             start += list.Count + 1;
             end += list.Count + 1;
