@@ -87,6 +87,7 @@ namespace BinanceHand
             Trading.instance.LoadMoreAdditional += Trading_LoadMoreAdditional;
             Trading.instance.PlaceOrder += Trading_PlaceOrder;
             Trading.instance.CodeListView.Columns.Remove(Trading.instance.CodeListView.GetColumn("Name"));
+            Trading.instance.CodeListView2.Columns.Remove(Trading.instance.CodeListView2.GetColumn("Name"));
             Trading.instance.realHandResultListView.Columns.Remove(Trading.instance.realHandResultListView.GetColumn("Name"));
             Trading.instance.realAutoResultListView.Columns.Remove(Trading.instance.realAutoResultListView.GetColumn("Name"));
             foreach (var listView in Trading.instance.simulResultListView)
@@ -386,6 +387,8 @@ namespace BinanceHand
                         Trading.instance.itemDataDic.Remove(code);
                         Trading.instance.CodeListView.RemoveObject(itemData);
                         Trading.instance.CodeListView.Refresh();
+                        Trading.instance.CodeListView2.RemoveObject(itemData);
+                        Trading.instance.CodeListView2.Refresh();
                         symbolList.Remove(code);
                         Trading.instance.UpdateReqRcv(Trading.instance.KlineReqTextBox, symbolList.Count);
                     }
@@ -577,6 +580,11 @@ namespace BinanceHand
 
                     Trading.instance.CodeListView.RemoveObject(itemData);
                     Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
+                    if (itemData.star)
+                    {
+                        Trading.instance.CodeListView2.RemoveObject(itemData);
+                        Trading.instance.CodeListView2.InsertObjects(0, new List<BinanceItemData> { itemData });
+                    }
                 }
 
             var result2 = client.FuturesUsdt.GetPositionInformationAsync().Result;
@@ -618,6 +626,7 @@ namespace BinanceHand
                     UpdateAssets();
 
                     Trading.instance.CodeListView.RefreshObject(itemData);
+                    Trading.instance.CodeListView2.RefreshObject(itemData);
 
                     var result4 = client.FuturesUsdt.GetBracketsAsync(s.Symbol).Result;
                     if (!result4.Success)
@@ -830,6 +839,9 @@ namespace BinanceHand
                 itemData.dropShortShortest = TimeSpan.Zero;
                 itemData.dropLongText = "";
                 itemData.dropShortText = "";
+                var dropLongFirstVC = BaseFunctions.maxCV.index;
+                var dropShortFirstVC = BaseFunctions.maxCV.index;
+
                 for (int i = BaseChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
                 {
                     var v = itemData.listDic.Values[i];
@@ -1018,6 +1030,8 @@ namespace BinanceHand
 
                                     itemData.dropLongCount++;
                                     itemData.dropLongText += vc.Text + ":" + c + " ";
+                                    if (itemData.dropLongCount == 1)
+                                        dropLongFirstVC = vc.index;
                                 }
                                 else
                                 {
@@ -1026,13 +1040,22 @@ namespace BinanceHand
 
                                     itemData.dropShortCount++;
                                     itemData.dropShortText += vc.Text + ":" + c + " ";
+                                    if (itemData.dropShortCount == 1)
+                                        dropShortFirstVC = vc.index;
                                 }
 
-                                if (vm.lastStick.Time == v.lastStick.Time && vm.lastStick.Time.Subtract(Trading.loadingDoneTime).TotalMinutes > 3 &&
-                                    (v.list[v.list.Count - 1].lastFoundStick == null || v.list[v.list.Count - 1].lastFoundStick.Time != v.lastStick.lastFoundStick.Time))
+                                if ((itemData.Code == "BTCUSDT") && vm.lastStick.Time == v.lastStick.Time && vm.lastStick.Time.Subtract(Trading.loadingDoneTime).TotalMinutes > 3 &&
+                                    (v.list[v.list.Count - 1].lastFoundStick == null || v.list[v.list.Count - 1].lastFoundStick.Time != v.lastStick.lastFoundStick.Time) &&
+                                    vc.index - (v.lastStick.lastFoundStick.indicator.RSIA > 0 ? dropLongFirstVC : dropShortFirstVC) >= 0)
                                     BaseFunctions.AlertStart(Math.Round(v.lastStick.lastFoundStick.indicator.RSIA, 2) + "\n" +
                                         itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + vc.Text, true, true);
                             }
+                        }
+
+                        if (vc == BaseChartTimeSet.OneHour && v.list.Count > 0)
+                        {
+                            var lastStick2 = v.list[v.list.Count - 1];
+                            itemData.LastHour = Math.Round((lastStick2.Price[3] > lastStick2.Price[2] ? (lastStick2.Price[3] / lastStick2.Price[2] - 1) : -(lastStick2.Price[2] / lastStick2.Price[3] - 1)) * 100, 2);
                         }
                     }
                 }
@@ -1588,6 +1611,11 @@ namespace BinanceHand
                             itemData.RealEnter = true;
                             Trading.instance.CodeListView.RemoveObject(itemData);
                             Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
+                            if (itemData.star)
+                            {
+                                Trading.instance.CodeListView2.RemoveObject(itemData);
+                                Trading.instance.CodeListView2.InsertObjects(0, new List<BinanceItemData> { itemData });
+                            }
 
                             UpdateAssets();
 
@@ -1814,6 +1842,8 @@ namespace BinanceHand
             Trading.instance.ZoomX(chart, start, end);
             
             Trading.instance.AdjustChart(chart);
+
+            itemData.showingVC = vc;
         }
         void Trading_AggONandOFF(TradeItemData itemData, bool on)
         {
