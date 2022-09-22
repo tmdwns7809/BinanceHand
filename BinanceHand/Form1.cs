@@ -1044,7 +1044,7 @@ namespace BinanceHand
                                         dropShortFirstVC = vc.index;
                                 }
 
-                                if ((itemData.Code == "BTCUSDT") && vm.lastStick.Time == v.lastStick.Time && vm.lastStick.Time.Subtract(Trading.loadingDoneTime).TotalMinutes > 3 &&
+                                if (itemData.star && vm.lastStick.Time == v.lastStick.Time && vm.lastStick.Time.Subtract(Trading.loadingDoneTime).TotalMinutes > 3 &&
                                     (v.list[v.list.Count - 1].lastFoundStick == null || v.list[v.list.Count - 1].lastFoundStick.Time != v.lastStick.lastFoundStick.Time) &&
                                     vc.index - (v.lastStick.lastFoundStick.indicator.RSIA > 0 ? dropLongFirstVC : dropShortFirstVC) >= 0)
                                     BaseFunctions.AlertStart(Math.Round(v.lastStick.lastFoundStick.indicator.RSIA, 2) + "\n" +
