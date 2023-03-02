@@ -278,6 +278,12 @@ namespace BinanceHand
             var n = 0;
             var newSymbolList = new List<string>();
             var noSymbolList = new List<string>();
+            var lastSymbol = "";
+            
+            foreach (var s in result.Data.Symbols)
+                if (s.Status == SymbolStatus.Trading && s.Name.Contains("USDT"))
+                        lastSymbol = s.Name.Trim().ToUpper();
+
             foreach (var s in result.Data.Symbols)
             {
                 var code = s.Name.Trim().ToUpper();
@@ -286,6 +292,9 @@ namespace BinanceHand
                     noSymbolList.Add(code);
                     continue;
                 }
+
+                if (!s.Name.Contains("USDT") || (s.Name != "BTCUSDT" && s.Name != "ETHUSDT" && s.Name != lastSymbol))
+                    continue;
 
                 n++;
 
@@ -318,7 +327,7 @@ namespace BinanceHand
 
             if (n != Trading.instance.itemDataDic.Count)
             {
-                if (newSymbolList.Count != 0)
+                if (newSymbolList.Count != 0)   // 무조건 noSymbol만 온다고 가정
                     BaseFunctions.ShowError(this);
 
                 foreach (var code in noSymbolList)
@@ -849,7 +858,7 @@ namespace BinanceHand
 
                     if (v.first)
                     {
-                        if (BaseFunctions.maxCV.index > BaseChartTimeSet.OneDay.index)
+                        if (BaseFunctions.maxCV.index > BaseChartTimeSet.OneWeek.index)
                             BaseFunctions.ShowError(this);
                         else if (vc == BaseChartTimeSet.OneMinute)
                         {
@@ -1791,21 +1800,13 @@ namespace BinanceHand
 
             var vc = Trading.instance.mainChart.Tag as ChartValues;
 
-            var start = (int)chart.ChartAreas[0].AxisX.ScaleView.ViewMinimum + 1;
-            var end = (int)chart.ChartAreas[0].AxisX.ScaleView.ViewMaximum - 1;
-
             DateTime endTime = BaseFunctions.NowTime();
             if (loadNew)
-            {
                 itemData.showingStickList.Clear();
-
-                end = 0;
-                start = end - Trading.instance.chartViewSticksSize;
-            }
             else
                 endTime = DateTime.Parse(chart.Series[0].Points[0].AxisLabel).AddSeconds(-1);
 
-            var size = Trading.instance.baseLoadSticksSize;
+            var size = Trading.instance.chartViewSticksSize;
 
             var result = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, endTime, size + BaseFunctions.TotalNeedDays - 1).Result;
             if (!result.Success)
@@ -1835,13 +1836,6 @@ namespace BinanceHand
             }
             itemData.showingStickList.InsertRange(0, list);
             BaseFunctions.SetRSIAandDiff(itemData.showingStickList, itemData.showingStick, int.MinValue, int.MinValue, vc);
-
-            start += list.Count + 1;
-            end += list.Count + 1;
-
-            Trading.instance.ZoomX(chart, start, end);
-            
-            Trading.instance.AdjustChart(chart);
 
             itemData.showingVC = vc;
         }
