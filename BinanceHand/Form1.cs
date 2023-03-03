@@ -1819,7 +1819,7 @@ namespace BinanceHand
             if (!loadNew)
             {
                 var firstCount = list.Count;
-                list.AddRange(itemData.showingStickList.GetRange(0, BaseFunctions.NeedDays + 1));
+                list.AddRange(itemData.showingStickList.GetRange(0, itemData.showingStickList.Count >= BaseFunctions.NeedDays + 1 ? BaseFunctions.NeedDays + 1 : itemData.showingStickList.Count));
                 for (int i = firstCount; i < list.Count; i++)
                     BaseFunctions.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
                 list.RemoveRange(firstCount, list.Count - firstCount);
