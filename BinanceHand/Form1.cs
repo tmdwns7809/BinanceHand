@@ -418,7 +418,7 @@ namespace BinanceHand
         {
             var vc = BaseFunctions.ChartValuesDic[interval];
 
-            var plusStartTime = startTime.AddSeconds(-vc.seconds * (BaseFunctions.TotalNeedDays - 1));
+            var plusStartTime = startTime.AddSeconds(-vc.seconds * (BaseFunctions.IndNeedDays - 1));
             var size = (int)endTime.Subtract(plusStartTime).TotalSeconds / vc.seconds + 1;
             var result2 = client.FuturesUsdt.Market.GetKlinesAsync(Code, interval, plusStartTime, endTime, size).Result;
 
@@ -880,7 +880,7 @@ namespace BinanceHand
                                     var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
                                         "(" + BaseSticksDB.DBTimeColumnName + "<='" + newStick.Time.ToString(BaseFunctions.DBTimeFormat) + "') AND " +
                                         "(" + BaseSticksDB.DBTimeColumnName + ">='" +
-                                            newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.AddSeconds(-vc2.seconds * (BaseFunctions.TotalNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(BaseFunctions.DBTimeFormat) + "')", conn).ExecuteReader();
+                                            newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.AddSeconds(-vc2.seconds * (BaseFunctions.IndNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(BaseFunctions.DBTimeFormat) + "')", conn).ExecuteReader();
                                     while (reader2.Read())
                                         list.Add(BinanceSticksDB.GetTradeStickFromSQL(reader2));
                                     conn.Close();
@@ -1808,7 +1808,7 @@ namespace BinanceHand
 
             var size = Trading.instance.chartViewSticksSize;
 
-            var result = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, endTime, size + BaseFunctions.TotalNeedDays - 1).Result;
+            var result = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, endTime, size + BaseFunctions.IndNeedDays - 1).Result;
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
@@ -1819,7 +1819,7 @@ namespace BinanceHand
             if (!loadNew)
             {
                 var firstCount = list.Count;
-                list.AddRange(itemData.showingStickList.GetRange(0, itemData.showingStickList.Count >= BaseFunctions.NeedDays + 1 ? BaseFunctions.NeedDays + 1 : itemData.showingStickList.Count));
+                list.AddRange(itemData.showingStickList.GetRange(0, itemData.showingStickList.Count >= BaseFunctions.IndNeedDays + 1 ? BaseFunctions.IndNeedDays + 1 : itemData.showingStickList.Count));
                 for (int i = firstCount; i < list.Count; i++)
                     BaseFunctions.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
                 list.RemoveRange(firstCount, list.Count - firstCount);
