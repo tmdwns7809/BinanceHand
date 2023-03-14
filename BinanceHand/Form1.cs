@@ -79,7 +79,7 @@ namespace BinanceHand
 
             Settings.Load(Settings.ProgramBinanceFutures);
 
-            Trading.instance = new Trading(this, false, 7, 20);
+            Trading.instance = new Trading(this, false, 7.34m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -162,7 +162,7 @@ namespace BinanceHand
 
             Trading.instance.SetRadioButton_CheckBox(miniSizeCheckBox, "Min",
                 new Size(50, GTCRadioButton.Height), new Point(orderSizeTextBox1.Location.X + orderSizeTextBox1.Width, orderSizeTextBox0.Location.Y));
-            miniSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
+            miniSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.showingItemData != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
             Trading.instance.SetRadioButton_CheckBox(ROCheckBox, "RO",
                 miniSizeCheckBox.Size, new Point(miniSizeCheckBox.Location.X + miniSizeCheckBox.Width + 5, miniSizeCheckBox.Location.Y));
@@ -170,7 +170,7 @@ namespace BinanceHand
             Trading.instance.SetRadioButton_CheckBox(autoSizeCheckBox, "Auto Size",
                 new Size(50, GTCRadioButton.Height),
                 new Point(orderSizeTextBox0.Location.X + 10, orderSizeTextBox0.Location.Y + orderSizeTextBox0.Size.Height + 5 + (maximumBalanceForSizeTextBox0.Size.Height - autoSizeCheckBox.Size.Height) / 2));
-            autoSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.itemDataShowing != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
+            autoSizeCheckBox.MouseUp += (sender, e) => { if (Trading.instance.showingItemData != null) OrderBoxSetting(autoSizeCheckBox.Checked, miniSizeCheckBox.Checked); };
 
             Trading.instance.SetTextBox(maximumBalanceForSizeTextBox0, "", true);
             maximumBalanceForSizeTextBox0.Size = new Size(50, GTCRadioButton.Height);
@@ -430,7 +430,7 @@ namespace BinanceHand
 
             BaseFunctions.BinanceUpdateWeightNow(result2.ResponseHeaders);
 
-            return SetRSIAandGetList(result2.Data, startTime);
+            return SetRSIAandGetList(result2.Data.ToList(), startTime);
         }
         TradeStick GetStick(IBinanceKline stickReal)
         {
@@ -476,7 +476,7 @@ namespace BinanceHand
 
             return stick;
         }
-        List<TradeStick> SetRSIAandGetList(IEnumerable<IBinanceKline> data, DateTime startTime, ChartValues vc = null)
+        List<TradeStick> SetRSIAandGetList(List<IBinanceKline> data, DateTime startTime, ChartValues vc = null)
         {
             var list = new List<TradeStick>();
             foreach (var stickReal in data)
@@ -665,7 +665,7 @@ namespace BinanceHand
         }
         void OrderBoxSetting(bool autoSize, bool minSize)
         {
-            var itemDataShowing = Trading.instance.itemDataShowing as BinanceItemData;
+            var itemDataShowing = Trading.instance.showingItemData as BinanceItemData;
 
             if (itemDataShowing.RealEnter && autoSize && minSize)
                 BaseFunctions.ShowError(this, "orderBoxError");
@@ -1018,7 +1018,7 @@ namespace BinanceHand
                     if (Trading.loadingDone)
                     {
                         BaseFunctions.SetRSIAandDiff(v.list, v.lastStick, int.MinValue, int.MinValue, vc);
-                        BaseFunctions.OneChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
+                        BaseFunctions.ChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
 
                         if (v.lastStick.indicator != null && !double.IsNaN(v.lastStick.indicator.RSIA) && Math.Abs(v.lastStick.indicator.RSIA) > Math.Abs(itemData.RSIAHighest))
                         {
@@ -1355,7 +1355,7 @@ namespace BinanceHand
                         if (!BaseFunctions.calOnlyFullStick)
                             BaseFunctions.SetRSIAandDiff(v.list, v.lastStickForS, v.currentIndex - 1);
 
-                        BaseFunctions.OneChartFindConditionAndAdd(itemData, vc, vm.lastStickForS, v.lastStickForS, vm.currentIndex - 1, v.currentIndex - 1);
+                        BaseFunctions.ChartFindConditionAndAdd(itemData, vc, vm.lastStickForS, v.lastStickForS, vm.currentIndex - 1, v.currentIndex - 1);
                     }
 
                     for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
@@ -1628,7 +1628,7 @@ namespace BinanceHand
 
                             UpdateAssets();
 
-                            if (itemData == Trading.instance.itemDataShowing)
+                            if (itemData == Trading.instance.showingItemData)
                             {
                                 Trading_ResetOrderView();
 
@@ -1768,7 +1768,7 @@ namespace BinanceHand
                     itemData.maxLeverage = itemData.brackets[0].InitialLeverage;
                     Invoke(new Action(() =>
                     {
-                        if (itemData == Trading.instance.itemDataShowing)
+                        if (itemData == Trading.instance.showingItemData)
                             leverageTextBox1.Text = "/ " + itemData.maxLeverage;
                     }));
                 }
@@ -1776,7 +1776,7 @@ namespace BinanceHand
         }
         void Trading_ResetOrderView()
         {
-            var itemDataShowing = Trading.instance.itemDataShowing as BinanceItemData;
+            var itemDataShowing = Trading.instance.showingItemData as BinanceItemData;
 
             leverageTextBox0.Text = itemDataShowing.Leverage.ToString();
             if (itemDataShowing.RealEnter)
@@ -1796,7 +1796,7 @@ namespace BinanceHand
         }
         void Trading_LoadMoreAdditional(Chart chart, bool loadNew)
         {
-            var itemData = Trading.instance.itemDataShowing as BinanceItemData;
+            var itemData = Trading.instance.showingItemData as BinanceItemData;
 
             var vc = Trading.instance.mainChart.Tag as ChartValues;
 
@@ -1806,15 +1806,28 @@ namespace BinanceHand
             else
                 endTime = DateTime.Parse(chart.Series[0].Points[0].AxisLabel).AddSeconds(-1);
 
+            List<IBinanceKline> blist = new List<IBinanceKline>();
             var size = Trading.instance.chartViewSticksSize;
 
-            var result = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, endTime, size + BaseFunctions.IndNeedDays - 1).Result;
-            if (!result.Success)
-                BaseFunctions.ShowError(this);
+            var loadSize = size + BaseFunctions.IndNeedDays - 1;
+            var loadEndTime = endTime;
 
-            BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+            while (loadSize > 0)
+            {
+                var result = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, loadEndTime, loadSize > 1500 ? 1500 : loadSize).Result;
+                if (!result.Success)
+                    BaseFunctions.ShowError(this);
 
-            var list = SetRSIAandGetList(result.Data, endTime.AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds).AddSeconds(-(size - 1) * vc.seconds), vc);
+                var blist2 = result.Data.ToList();
+                blist.InsertRange(0, blist2);
+
+                BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+
+                loadSize -= blist2.Count;
+                loadEndTime = blist2[0].OpenTime.AddSeconds(-1);
+            }
+
+            var list = SetRSIAandGetList(blist, endTime.AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds).AddSeconds(-(size - 1) * vc.seconds), vc);
 
             if (!loadNew)
             {
