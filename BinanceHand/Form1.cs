@@ -1018,7 +1018,8 @@ namespace BinanceHand
                     if (Trading.loadingDone)
                     {
                         BaseFunctions.SetRSIAandDiff(v.list, v.lastStick, int.MinValue, int.MinValue, vc);
-                        BaseFunctions.ChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
+                        if (i >= BaseFunctions.minCV.index && i <= BaseFunctions.maxCV.index)
+                            BaseFunctions.ChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
 
                         if (v.lastStick.indicator != null && !double.IsNaN(v.lastStick.indicator.RSIA) && Math.Abs(v.lastStick.indicator.RSIA) > Math.Abs(itemData.RSIAHighest))
                         {
@@ -1079,7 +1080,7 @@ namespace BinanceHand
 
                         if (positionData.found)
                         {
-                            //BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text);
+                            BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
 
                             foundCount = positionData.foundList.Count - 1;
                             foundText = positionData.foundList[positionData.foundList.Count - 1].chartValues.Text;
