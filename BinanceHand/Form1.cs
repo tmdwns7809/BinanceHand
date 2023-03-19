@@ -1820,6 +1820,9 @@ namespace BinanceHand
                     BaseFunctions.ShowError(this);
 
                 var blist2 = result.Data.ToList();
+                if (blist2.Count == 0)
+                    break;
+
                 blist.InsertRange(0, blist2);
 
                 BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
