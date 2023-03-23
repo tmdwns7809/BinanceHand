@@ -1080,7 +1080,7 @@ namespace BinanceHand
 
                         if (positionData.found)
                         {
-                            BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
+                            //BaseFunctions.AlertStart(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(BaseFunctions.TimeFormat) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
 
                             foundCount = positionData.foundList.Count - 1;
                             foundText = positionData.foundList[positionData.foundList.Count - 1].chartValues.Text;
