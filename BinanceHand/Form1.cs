@@ -23,6 +23,7 @@ using TradingLibrary.Base.Settings;
 using TradingLibrary.Base.Enum;
 using TradingLibrary.Base.SticksDB;
 using System.Data.SQLite;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace BinanceHand
 {
@@ -101,7 +102,37 @@ namespace BinanceHand
 
             BinanceSticksDB.StartThread();
             BinanceSticksDB.SetDB();
+
+            KeyDown += Form1_KeyDown;
         }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+
+                case Keys.Enter:
+                    var itemData = BaseFunctions.baseInstance.showingItemData as BinanceItemData;
+                    if (itemData != null && leverageTextBox0.Focused)
+                    {
+                        var le = int.Parse(leverageTextBox0.Text);
+                        var data = client.FuturesUsdt.ChangeInitialLeverageAsync(itemData.Code, le).Result;
+                        if (!data.Success)
+                            BaseFunctions.ShowError(this, "leverage change fail");
+                        itemData.Leverage = le;
+
+                        BaseFunctions.AlertStart("change success", false, true);
+                    }
+                    break;
+
+                default:
+                    return;
+            }
+
+            e.SuppressKeyPress = true;
+            e.Handled = true;
+        }
+
         void SetOrderView()
         {
             new List<Control>()
