@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Binance.Net.Objects.Spot.MarketData;
-using Binance.Net.Objects.Futures.MarketData;
+using Binance.Net.Objects.Models.Spot;
+using Binance.Net.Objects.Models.Futures;
 using CryptoExchange.Net.Sockets;
 using BrightIdeasSoftware;
 using Binance.Net.Enums;
@@ -17,7 +17,7 @@ namespace BinanceHand
 
         public bool klineFirst = true;
 
-        public OrderType OrderType;
+        public FuturesOrderType OrderType;
         public OrderSide OrderSide;
         public bool ReduceOnly;
         public TimeInForce Condition;

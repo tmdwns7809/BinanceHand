@@ -8,14 +8,16 @@ using System.Windows.Forms;
 using System.Threading;
 using Binance.Net;
 using Binance.Net.Enums;
+using Binance.Net.Clients;
 using Binance.Net.Objects;
+using Binance.Net.Objects.Models.Futures.Socket;
+using Binance.Net.Objects.Models.Spot.Socket;
 using CryptoExchange.Net.Authentication;
 using CryptoExchange.Net.Sockets;
-using Binance.Net.Objects.Spot.MarketStream;
+using Binance.Net.Objects.Models.Spot;
 using Binance.Net.Interfaces;
 using System.Windows.Forms.DataVisualization.Charting;
-using Binance.Net.Objects.Futures.MarketStream;
-using Binance.Net.Objects.Futures.UserStream;
+using Binance.Net.Objects.Models.Futures;
 using TradingLibrary.Trading;
 using TradingLibrary;
 using TradingLibrary.Base;
@@ -101,6 +103,7 @@ namespace BinanceHand
             SetClientAndKey();
 
             BinanceSticksDB.StartThread();
+            BaseSticksDB.BaseName = BinanceSticksDB.futureBaseName;
             BinanceSticksDB.SetDB();
 
             KeyDown += Form1_KeyDown;
@@ -116,7 +119,7 @@ namespace BinanceHand
                     if (itemData != null && leverageTextBox0.Focused)
                     {
                         var le = int.Parse(leverageTextBox0.Text);
-                        var data = client.FuturesUsdt.ChangeInitialLeverageAsync(itemData.Code, le).Result;
+                        var data = client.UsdFuturesApi.Account.ChangeInitialLeverageAsync(itemData.Code, le).Result;
                         if (!data.Success)
                             BaseFunctions.ShowError(this, "leverage change fail");
                         itemData.Leverage = le;
@@ -246,13 +249,13 @@ namespace BinanceHand
             {
                 if (true)
                 {   /*future*/
-                    clientOption.BaseAddressUsdtFutures = "https://testnet.binancefuture.com";
-                    clientOption.BaseAddressCoinFutures = "https://testnet.binancefuture.com";
-                    clientOption.ApiCredentials = new ApiCredentials(BinanceBase.testnet_API_Key, BinanceBase.testnet_Secret_Key);
-                    socketOption.BaseAddressUsdtFutures = "wss://stream.binancefuture.com";
-                    socketOption.BaseAddressCoinFutures = "wss://stream.binancefuture.com";
-                    socketOption.BaseAddress = "wss://stream.binancefuture.com";
-                    socketOption.ApiCredentials = new ApiCredentials(BinanceBase.testnet_API_Key, BinanceBase.testnet_Secret_Key);
+                    //clientOption.BaseAddressUsdtFutures = "https://testnet.binancefuture.com";
+                    //clientOption.BaseAddressCoinFutures = "https://testnet.binancefuture.com";
+                    //clientOption.ApiCredentials = new ApiCredentials(BinanceBase.testnet_API_Key, BinanceBase.testnet_Secret_Key);
+                    //socketOption.BaseAddressUsdtFutures = "wss://stream.binancefuture.com";
+                    //socketOption.BaseAddressCoinFutures = "wss://stream.binancefuture.com";
+                    //socketOption.BaseAddress = "wss://stream.binancefuture.com";
+                    //socketOption.ApiCredentials = new ApiCredentials(BinanceBase.testnet_API_Key, BinanceBase.testnet_Secret_Key);
                 }
                 else
                 {   /*spot 안됌
@@ -264,12 +267,12 @@ namespace BinanceHand
             }
             else
             {
-                clientOption.ApiCredentials = new ApiCredentials(BinanceBase.future2_API_Key, BinanceBase.future2_Secret_Key);
-                clientOption.AutoTimestamp = false;
-                clientOption.TradeRulesBehaviour = TradeRulesBehaviour.None;
-                socketOption.ApiCredentials = new ApiCredentials(BinanceBase.future2_API_Key, BinanceBase.future2_Secret_Key);
+                clientOption.ApiCredentials = new BinanceApiCredentials(BinanceBase.future2_API_Key, BinanceBase.future2_Secret_Key);
+                clientOption.UsdFuturesApiOptions.AutoTimestamp = false;
+                clientOption.UsdFuturesApiOptions.TradeRulesBehaviour = TradeRulesBehaviour.None;
+                socketOption.ApiCredentials = new BinanceApiCredentials(BinanceBase.future2_API_Key, BinanceBase.future2_Secret_Key);
                 //socketOption.AutoReconnect = true;
-                socketOption.ReconnectInterval = TimeSpan.FromMinutes(1);
+                socketOption.UsdFuturesStreamsOptions.ReconnectInterval = TimeSpan.FromMinutes(1);
                 //clientOption.LogVerbosity = LogVerbosity.Debug;
                 //clientOption.LogWriters = new List<TextWriter> { Console.Out };
             }
@@ -290,7 +293,7 @@ namespace BinanceHand
 
             Trading.instance.LoadSavedItemData();
 
-            var result = socketClient.FuturesUsdt.SubscribeToKlineUpdatesAsync(symbolList, KlineInterval.OneMinute, OnKlineUpdates).Result;
+            var result = socketClient.UsdFuturesStreams.SubscribeToKlineUpdatesAsync(symbolList, KlineInterval.OneMinute, OnKlineUpdates).Result;
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
@@ -298,7 +301,7 @@ namespace BinanceHand
         }
         void SetItemDataList()
         {
-            var result = client.FuturesUsdt.System.GetExchangeInfoAsync().Result;
+            var result = client.UsdFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
@@ -341,14 +344,14 @@ namespace BinanceHand
                 newSymbolList.Add(code);
                 Trading.instance.CodeListView.AddObject(itemData);
                 BinanceSticksDB.requestTRTaskQueue.Enqueue(new Task(() => {
-                    var result1 = client.FuturesUsdt.GetBracketsAsync(itemData.Code).Result;
+                    var result1 = client.UsdFuturesApi.Account.GetBracketsAsync(itemData.Code).Result;
                     if (!result1.Success)
                         BaseFunctions.ShowError(this);
 
                     foreach (var brackets in result1.Data)
                         itemData.brackets = brackets.Brackets.ToList();
 
-                    var data = client.FuturesUsdt.ChangeInitialLeverageAsync(itemData.Code, 1).Result;
+                    var data = client.UsdFuturesApi.Account.ChangeInitialLeverageAsync(itemData.Code, 1).Result;
                     if (!data.Success)
                         BaseFunctions.ShowError(this, "leverage change fail");
                     itemData.Leverage = 1;
@@ -408,8 +411,8 @@ namespace BinanceHand
                             "('" + BaseSticksDB.DBTimeColumnName + "', '" + BaseSticksDB.DBOpenColumnName + "', '" + BaseSticksDB.DBHighColumnName + "', '" +
                                 BaseSticksDB.DBLowColumnName + "', '" + BaseSticksDB.DBCloseColumnName + "', '" + BaseSticksDB.DBBaseVolumeColumnName + "', '" + BaseSticksDB.DBTakerBuyBaseVolumeColumnName + "', '" +
                                 BaseSticksDB.DBQuoteVolumeColumnName + "', '" + BaseSticksDB.DBTakerBuyQuoteVolumeColumnName + "', '" + BaseSticksDB.DBTradeCountColumnName + "') values " +
-                            "('" + stick.OpenTime.ToString(BaseFunctions.DBTimeFormat) + "', '" + stick.Open + "', '" + stick.High + "', '" + stick.Low + "', '" + stick.Close
-                             + "', '" + stick.BaseVolume + "', '" + stick.TakerBuyBaseVolume + "', '" + stick.QuoteVolume + "', '" + stick.TakerBuyQuoteVolume + "', '" + stick.TradeCount + "')", conn).ExecuteNonQuery();
+                            "('" + stick.OpenTime.ToString(BaseFunctions.DBTimeFormat) + "', '" + stick.OpenPrice + "', '" + stick.HighPrice + "', '" + stick.LowPrice + "', '" + stick.ClosePrice
+                             + "', '" + stick.Volume + "', '" + stick.TakerBuyBaseVolume + "', '" + stick.QuoteVolume + "', '" + stick.TakerBuyQuoteVolume + "', '" + stick.TradeCount + "')", conn).ExecuteNonQuery();
                         }
 
                         var stick2 = v.lastStick.original as IBinanceStreamKline;
@@ -417,8 +420,8 @@ namespace BinanceHand
                         "('" + BaseSticksDB.DBTimeColumnName + "', '" + BaseSticksDB.DBOpenColumnName + "', '" + BaseSticksDB.DBHighColumnName + "', '" +
                             BaseSticksDB.DBLowColumnName + "', '" + BaseSticksDB.DBCloseColumnName + "', '" + BaseSticksDB.DBBaseVolumeColumnName + "', '" + BaseSticksDB.DBTakerBuyBaseVolumeColumnName + "', '" +
                             BaseSticksDB.DBQuoteVolumeColumnName + "', '" + BaseSticksDB.DBTakerBuyQuoteVolumeColumnName + "', '" + BaseSticksDB.DBTradeCountColumnName + "') values " +
-                        "('" + stick2.OpenTime.ToString(BaseFunctions.DBTimeFormat) + "', '" + stick2.Open + "', '" + stick2.High + "', '" + stick2.Low + "', '" + stick2.Close
-                         + "', '" + stick2.BaseVolume + "', '" + stick2.TakerBuyBaseVolume + "', '" + stick2.QuoteVolume + "', '" + stick2.TakerBuyQuoteVolume + "', '" + stick2.TradeCount + "')", conn).ExecuteNonQuery();
+                        "('" + stick2.OpenTime.ToString(BaseFunctions.DBTimeFormat) + "', '" + stick2.OpenPrice + "', '" + stick2.HighPrice + "', '" + stick2.LowPrice + "', '" + stick2.ClosePrice
+                         + "', '" + stick2.Volume + "', '" + stick2.TakerBuyBaseVolume + "', '" + stick2.QuoteVolume + "', '" + stick2.TakerBuyQuoteVolume + "', '" + stick2.TradeCount + "')", conn).ExecuteNonQuery();
 
                         new SQLiteCommand("Commit", conn).ExecuteNonQuery();
 
@@ -435,7 +438,7 @@ namespace BinanceHand
             }
             else if (symbolList.Count != newSymbolList.Count)
             {
-                var result2 = socketClient.FuturesUsdt.SubscribeToKlineUpdatesAsync(newSymbolList, KlineInterval.OneMinute, OnKlineUpdates).Result;
+                var result2 = socketClient.UsdFuturesStreams.SubscribeToKlineUpdatesAsync(newSymbolList, KlineInterval.OneMinute, OnKlineUpdates).Result;
                 if (!result2.Success)
                     BaseFunctions.ShowError(this);
 
@@ -451,7 +454,7 @@ namespace BinanceHand
 
             var plusStartTime = startTime.AddSeconds(-vc.seconds * (BaseFunctions.IndNeedDays - 1));
             var size = (int)endTime.Subtract(plusStartTime).TotalSeconds / vc.seconds + 1;
-            var result2 = client.FuturesUsdt.Market.GetKlinesAsync(Code, interval, plusStartTime, endTime, size).Result;
+            var result2 = client.UsdFuturesApi.ExchangeData.GetKlinesAsync(Code, interval, plusStartTime, endTime, size).Result;
 
             if (!result2.Success)
             {
@@ -466,13 +469,13 @@ namespace BinanceHand
         TradeStick GetStick(IBinanceKline stickReal)
         {
             var stick = new TradeStick();
-            stick.Price[0] = stickReal.High;
-            stick.Price[1] = stickReal.Low;
-            stick.Price[2] = stickReal.Open;
-            stick.Price[3] = stickReal.Close;
+            stick.Price[0] = stickReal.HighPrice;
+            stick.Price[1] = stickReal.LowPrice;
+            stick.Price[2] = stickReal.OpenPrice;
+            stick.Price[3] = stickReal.ClosePrice;
 
             stick.Ms = stickReal.TakerBuyBaseVolume;
-            stick.Md = stickReal.BaseVolume - stickReal.TakerBuyBaseVolume;
+            stick.Md = stickReal.Volume - stickReal.TakerBuyBaseVolume;
 
             stick.Time = stickReal.OpenTime;
 
@@ -526,7 +529,7 @@ namespace BinanceHand
 
         void SubscribeToUserStream(bool testnet, bool testnetFutures)
         {
-            var result = ((testnet && !testnetFutures) ? client.Spot.UserStream.StartUserStreamAsync() : client.FuturesUsdt.UserStream.StartUserStreamAsync()).Result;
+            var result = ((testnet && !testnetFutures) ? client.SpotApi.Account.StartUserStreamAsync() : client.UsdFuturesApi.Account.StartUserStreamAsync()).Result;
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
@@ -540,7 +543,7 @@ namespace BinanceHand
                 {
                     Thread.Sleep(29 * 60000);
 
-                    var result1 = ((testnet && !testnetFutures) ? client.Spot.UserStream.KeepAliveUserStreamAsync(listenKey) : client.FuturesUsdt.UserStream.KeepAliveUserStreamAsync(listenKey)).Result;
+                    var result1 = ((testnet && !testnetFutures) ? client.SpotApi.Account.KeepAliveUserStreamAsync(listenKey) : client.UsdFuturesApi.Account.KeepAliveUserStreamAsync(listenKey)).Result;
                     if (!result1.Success)
                         BaseFunctions.ShowError(this);
 
@@ -557,8 +560,8 @@ namespace BinanceHand
             }, BaseFunctions.tokenSource.Token);
 
             var result2 = ((testnet && !testnetFutures) ?
-                socketClient.Spot.SubscribeToUserDataUpdatesAsync(listenKey, null, null, null, null) :
-                socketClient.FuturesUsdt.SubscribeToUserDataUpdatesAsync(listenKey,
+                socketClient.SpotStreams.SubscribeToUserDataUpdatesAsync(listenKey, null, null, null, null) :
+                socketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(listenKey,
                         data => {
                             var a = data;
                         },
@@ -567,6 +570,12 @@ namespace BinanceHand
                         },
                         OnAccountUpdates,
                         OnOrderUpdates,
+                        data => {
+                            var a = data;
+                        },
+                        data => {
+                            var a = data;
+                        },
                         data => {
                             var a = data;
                         })).Result;
@@ -588,7 +597,7 @@ namespace BinanceHand
             Trading.instance.assetDic.Add(Trading.AssetTextAvailableBalance, new Asset { AssetName = Trading.AssetTextAvailableBalance });
             Trading.instance.assetsListView.AddObject(Trading.instance.assetDic[Trading.AssetTextAvailableBalance]);
 
-            var result = client.FuturesUsdt.Account.GetAccountInfoAsync().Result;
+            var result = client.UsdFuturesApi.Account.GetAccountInfoAsync().Result;
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
@@ -609,7 +618,7 @@ namespace BinanceHand
                 {
                     var itemData = (BinanceItemData)Trading.instance.itemDataDic[s.Symbol];
 
-                    var result1 = socketClient.FuturesUsdt.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates).Result;
+                    var result1 = socketClient.UsdFuturesStreams.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates).Result;
                     if (!result1.Success)
                         BaseFunctions.ShowError(this);
 
@@ -627,7 +636,7 @@ namespace BinanceHand
                     }
                 }
 
-            var result2 = client.FuturesUsdt.GetPositionInformationAsync().Result;
+            var result2 = client.UsdFuturesApi.Account.GetPositionInformationAsync().Result;
             if (!result2.Success)
                 BaseFunctions.ShowError(this);
 
@@ -637,7 +646,7 @@ namespace BinanceHand
             {
                 if (s.MarginType == FuturesMarginType.Isolated)
                 {
-                    var result3 = client.FuturesUsdt.ChangeMarginTypeAsync(s.Symbol, FuturesMarginType.Cross).Result;
+                    var result3 = client.UsdFuturesApi.Account.ChangeMarginTypeAsync(s.Symbol, FuturesMarginType.Cross).Result;
                     if (!result3.Success)
                         BaseFunctions.ShowError(this);
 
@@ -668,7 +677,7 @@ namespace BinanceHand
                     Trading.instance.CodeListView.RefreshObject(itemData);
                     Trading.instance.CodeListView2.RefreshObject(itemData);
 
-                    var result4 = client.FuturesUsdt.GetBracketsAsync(s.Symbol).Result;
+                    var result4 = client.UsdFuturesApi.Account.GetBracketsAsync(s.Symbol).Result;
                     if (!result4.Success)
                         BaseFunctions.ShowError(this);
 
@@ -1243,12 +1252,12 @@ namespace BinanceHand
                         }
                     }
 
-                Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.Close);
+                Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.ClosePrice);
             }
             else
             {
                 if (data0.Timestamp.Subtract(itemData.lastReceiveTime).TotalSeconds >= 1)
-                    Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.Close);
+                    Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.ClosePrice);
 
                 itemData.lastReceiveTime = data0.Timestamp;
             }
@@ -1634,7 +1643,7 @@ namespace BinanceHand
                         itemData.Size = position.Quantity;
                     else
                     {
-                        var result = await socketClient.FuturesUsdt.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates);
+                        var result = await socketClient.UsdFuturesStreams.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates);
                         if (!result.Success)
                             BaseFunctions.ShowError(this);
 
@@ -1720,8 +1729,8 @@ namespace BinanceHand
                     if (resultData.Exit_Send_Amount__Diff == default)
                     {
                         resultData.Profit_Rate = resultData.ProfitRate + "%(" + 
-                            Math.Round((resultData.EnterCommision / (itemData.RealEnterPrice * data.UpdateData.AccumulatedQuantityOfFilledTrades) + data.UpdateData.Commission / (data.UpdateData.AveragePrice * data.UpdateData.AccumulatedQuantityOfFilledTrades)) * 100, 2) + "%)";
-                        resultData.Profit_Value = data.UpdateData.RealizedProfit.ToString(BaseFunctions.ForDecimalString) + "$(" + (data.UpdateData.RealizedProfit - resultData.EnterCommision - data.UpdateData.Commission).ToString(BaseFunctions.ForDecimalString) + ")";
+                            Math.Round((resultData.EnterCommision / (itemData.RealEnterPrice * data.UpdateData.AccumulatedQuantityOfFilledTrades) + data.UpdateData.Fee / (data.UpdateData.AveragePrice * data.UpdateData.AccumulatedQuantityOfFilledTrades)) * 100, 2) + "%)";
+                        resultData.Profit_Value = data.UpdateData.RealizedProfit.ToString(BaseFunctions.ForDecimalString) + "$(" + (data.UpdateData.RealizedProfit - resultData.EnterCommision - data.UpdateData.Fee).ToString(BaseFunctions.ForDecimalString) + ")";
                         resultData.Exit_Send_Amount__Diff = itemData.OrderAmount.ToString(BaseFunctions.ForDecimalString) + "(" + Math.Round(data.UpdateData.AccumulatedQuantityOfFilledTrades / itemData.OrderAmount * 100, 0) + "%)";
                         resultData.Exit_Send_Time__Diff = resultData.ExitSendTime.ToString(BaseFunctions.TimeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.ExitSendTime).Milliseconds / 1000D, 1) + "s)";
                     }
@@ -1746,7 +1755,7 @@ namespace BinanceHand
                         if (data.UpdateData.AveragePrice != 0)
                         {
                             itemData.RealEnterPrice = data.UpdateData.AveragePrice;
-                            resultData.EnterCommision = data.UpdateData.Commission;
+                            resultData.EnterCommision = data.UpdateData.Fee;
                             resultData.Enter_Send_Price__Diff = itemData.OrderPrice.ToString(BaseFunctions.ForDecimalString) + "(" + Math.Round(data.UpdateData.AveragePrice / itemData.OrderPrice * 100, 2) + "%)";
                         }
                         resultData.Enter_Send_Time__Diff = resultData.EnterSendTime.ToString(BaseFunctions.TimeFormat) + "(" + Math.Round((data.UpdateData.UpdateTime - resultData.EnterSendTime).Milliseconds / 1000D, 1) + "s)";
@@ -1774,7 +1783,7 @@ namespace BinanceHand
             var itemData = itemData0 as BinanceItemData;
             if (itemData.Leverage == 0)
             {
-                var result = client.FuturesUsdt.GetPositionInformationAsync(itemData.Code).Result;
+                var result = client.UsdFuturesApi.Account.GetPositionInformationAsync(itemData.Code).Result;
                 if (!result.Success)
                     BaseFunctions.ShowError(this);
 
@@ -1788,7 +1797,7 @@ namespace BinanceHand
                     itemData.Leverage = data.Leverage;
                     itemData.maxNotionalValue = data.MaxNotional;
 
-                    var result1 = client.FuturesUsdt.GetBracketsAsync(itemData.Code).Result;
+                    var result1 = client.UsdFuturesApi.Account.GetBracketsAsync(itemData.Code).Result;
                     if (!result1.Success)
                         BaseFunctions.ShowError(this);
 
@@ -1846,7 +1855,7 @@ namespace BinanceHand
 
             while (loadSize > 0)
             {
-                var result = client.FuturesUsdt.Market.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, loadEndTime, loadSize > 1500 ? 1500 : loadSize).Result;
+                var result = client.UsdFuturesApi.ExchangeData.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, loadEndTime, loadSize > 1500 ? 1500 : loadSize).Result;
                 if (!result.Success)
                     BaseFunctions.ShowError(this);
 
@@ -1893,7 +1902,7 @@ namespace BinanceHand
             {
                 Task.Run(new Action(() =>
                 {
-                    var result = socketClient.FuturesUsdt.SubscribeToAggregatedTradeUpdatesAsync(itemData.Code, OnAggregatedTradeUpdates).Result;
+                    var result = socketClient.UsdFuturesStreams.SubscribeToAggregatedTradeUpdatesAsync(itemData.Code, OnAggregatedTradeUpdates).Result;
                     if (!result.Success)
                         BaseFunctions.ShowError(this);
 
@@ -1916,7 +1925,7 @@ namespace BinanceHand
             {
                 Task.Run(new Action(() =>
                 {
-                    var result = socketClient.FuturesUsdt.SubscribeToPartialOrderBookUpdatesAsync(itemData.Code, (int)Trading.instance.hoChart.Tag, 500, OnHoUpdates).Result;
+                    var result = socketClient.UsdFuturesStreams.SubscribeToPartialOrderBookUpdatesAsync(itemData.Code, (int)Trading.instance.hoChart.Tag, 500, OnHoUpdates).Result;
                     if (!result.Success)
                         Trading.ShowError(this);
 
@@ -2004,7 +2013,7 @@ namespace BinanceHand
                 }
             }
 
-            var orderType = OrderType.Limit;
+            var orderType = FuturesOrderType.Limit;
             TimeInForce? timeInForce = null;
             if (!auto)
             {
@@ -2015,13 +2024,13 @@ namespace BinanceHand
                     else if (IOCRadioButton.Checked)
                         timeInForce = TimeInForce.ImmediateOrCancel;
                     else
-                        timeInForce = TimeInForce.GoodTillCancel;
+                        timeInForce = TimeInForce.GoodTillCanceled;
                 }
                 else
-                    orderType = OrderType.Market;
+                    orderType = FuturesOrderType.Market;
             }
             else
-                timeInForce = TimeInForce.GoodTillCancel;
+                timeInForce = TimeInForce.GoodTillCrossing;
 
 
             if (!itemData.RealEnter && price * quantity < itemData.minNotionalValue)
@@ -2030,7 +2039,7 @@ namespace BinanceHand
                 return false;
             }
 
-            if (orderType == OrderType.Market)
+            if (orderType == FuturesOrderType.Market)
                 price = null;
 
             if (!auto)
@@ -2055,15 +2064,15 @@ namespace BinanceHand
                 }
             }
 
-            var result = client.FuturesUsdt.Order.PlaceOrderAsync(
+            var result = client.UsdFuturesApi.Trading.PlaceOrderAsync(
                 itemData.Code
                 , position == Position.Long ? OrderSide.Buy : OrderSide.Sell
                 , orderType
                 , quantity
+                , price
                 , PositionSide.Both
                 , timeInForce
-                , itemData.positionWhenOrder && (auto || ROCheckBox.Checked)
-                , price).Result;
+                , itemData.positionWhenOrder && (auto || ROCheckBox.Checked)).Result;
             if (!result.Success)
             {
                 BaseFunctions.ShowError(this, "order fail");
@@ -2075,7 +2084,7 @@ namespace BinanceHand
             tradeData.Send_Qnt = quantity;
             tradeData.Position = position;
 
-            var result2 = client.FuturesUsdt.Order.CancelAllOrdersAfterTimeoutAsync(itemData.Code, TimeSpan.FromSeconds(1)).Result;
+            var result2 = client.UsdFuturesApi.Trading.CancelAllOrdersAfterTimeoutAsync(itemData.Code, TimeSpan.FromSeconds(1)).Result;
             if (!result2.Success)
                 BaseFunctions.ShowError(this, "timeout cancel order fail");
 
