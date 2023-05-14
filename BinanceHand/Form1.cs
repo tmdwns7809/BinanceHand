@@ -291,7 +291,7 @@ namespace BinanceHand
 
             GetAccountInfo();
 
-            Trading.instance.LoadSavedItemData();
+            Trading.instance.LoadItemData();
 
             var result = socketClient.UsdFuturesStreams.SubscribeToKlineUpdatesAsync(symbolList, KlineInterval.OneMinute, OnKlineUpdates).Result;
             if (!result.Success)
