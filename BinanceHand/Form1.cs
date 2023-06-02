@@ -920,7 +920,8 @@ namespace BinanceHand
                                     var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
                                         "(" + BaseSticksDB.DBTimeColumnName + "<='" + newStick.Time.ToString(BaseFunctions.DBTimeFormat) + "') AND " +
                                         "(" + BaseSticksDB.DBTimeColumnName + ">='" +
-                                            newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.AddSeconds(-vc2.seconds * (BaseFunctions.IndNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(BaseFunctions.DBTimeFormat) + "')", conn).ExecuteReader();
+                                            newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.
+                                            AddSeconds(-vc2.seconds * (BaseFunctions.IndNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(BaseFunctions.DBTimeFormat) + "')", conn).ExecuteReader();
                                     while (reader2.Read())
                                         list.Add(BinanceSticksDB.GetTradeStickFromSQL(reader2));
                                     conn.Close();
