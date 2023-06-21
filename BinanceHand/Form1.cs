@@ -82,7 +82,7 @@ namespace BinanceHand
 
             Settings.Load(Settings.ProgramBinanceFutures);
 
-            Trading.instance = new Trading(this, false, 8.3m, 20);
+            Trading.instance = new Trading(this, false, 8.4m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
