@@ -351,10 +351,10 @@ namespace BinanceHand
                     foreach (var brackets in result1.Data)
                         itemData.brackets = brackets.Brackets.ToList();
 
-                    var data = client.UsdFuturesApi.Account.ChangeInitialLeverageAsync(itemData.Code, 1).Result;
-                    if (!data.Success)
-                        BaseFunctions.ShowError(this, "leverage change fail");
-                    itemData.Leverage = 1;
+                    //var data = client.UsdFuturesApi.Account.ChangeInitialLeverageAsync(itemData.Code, 1).Result;
+                    //if (!data.Success)
+                    //    BaseFunctions.ShowError(this, "leverage change fail");
+                    //itemData.Leverage = 1;
                 }));
             }
             BinanceSticksDB.codesCount = Trading.instance.itemDataDic.Count;
