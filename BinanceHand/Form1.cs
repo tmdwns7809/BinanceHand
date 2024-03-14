@@ -345,7 +345,11 @@ namespace BinanceHand
                     continue;
                 }
 
-                if (!s.Name.Contains("USDT") || (s.Name != "BTCUSDT" && s.Name != "ETHUSDT" && s.Name != lastSymbol))
+                if (!s.Name.Contains("USDT") || 
+                    (s.Name != "BTCUSDT" && s.Name != "ETHUSDT"
+                    //&& s.Name != lastSymbol
+                    && s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
+                    && s.Name != "MYROUSDT"))
                     continue;
 
                 n++;
@@ -631,7 +635,8 @@ namespace BinanceHand
                         Trading.instance.assetDic[AssetTextMarginBalance].Amount = s.MarginBalance;
                         Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount = s.AvailableBalance;
                         Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount = s.WalletBalance;
-                        Trading.instance.assetDic[AssetTextMarginRatio].Amount = Math.Round(s.MaintMargin / s.MarginBalance * 100, 2);
+                        if (s.MarginBalance > 0)
+                            Trading.instance.assetDic[AssetTextMarginRatio].Amount = Math.Round(s.MaintMargin / s.MarginBalance * 100, 2);
                     }
             foreach (var s in result.Data.Positions)
                 if (s.EntryPrice != 0m)
