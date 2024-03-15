@@ -345,11 +345,13 @@ namespace BinanceHand
                     continue;
                 }
 
-                if (!s.Name.Contains("USDT") || 
-                    (s.Name != "BTCUSDT" && s.Name != "ETHUSDT"
-                    //&& s.Name != lastSymbol
-                    && s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
-                    && s.Name != "MYROUSDT"))
+                if (!s.Name.Contains("USDT") 
+                    //|| 
+                    //(s.Name != "BTCUSDT" && s.Name != "ETHUSDT"
+                    ////&& s.Name != lastSymbol
+                    //&& s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
+                    //&& s.Name != "MYROUSDT")
+                    )
                     continue;
 
                 n++;
