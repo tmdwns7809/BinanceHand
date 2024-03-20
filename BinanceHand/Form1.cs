@@ -345,12 +345,13 @@ namespace BinanceHand
                     continue;
                 }
 
-                if (!s.Name.Contains("USDT") 
-                    //|| 
-                    //(s.Name != "BTCUSDT" && s.Name != "ETHUSDT"
-                    ////&& s.Name != lastSymbol
+                if (!s.Name.Contains("USDT")
+                    ||
+                    (s.Name != "BTCUSDT" && s.Name != "ETHUSDT"
+                    //&& s.Name != lastSymbol
                     //&& s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
-                    //&& s.Name != "MYROUSDT")
+                    //&& s.Name != "MYROUSDT"
+                    )
                     )
                     continue;
 
@@ -671,14 +672,14 @@ namespace BinanceHand
 
             foreach (var s in result2.Data)
             {
-                if (s.MarginType == FuturesMarginType.Isolated)
-                {
-                    var result3 = client.UsdFuturesApi.Account.ChangeMarginTypeAsync(s.Symbol, FuturesMarginType.Cross).Result;
-                    if (!result3.Success)
-                        BaseFunctions.ShowError(this);
+                //if (s.MarginType == FuturesMarginType.Isolated)
+                //{
+                //    var result3 = client.UsdFuturesApi.Account.ChangeMarginTypeAsync(s.Symbol, FuturesMarginType.Cross).Result;
+                //    if (!result3.Success)
+                //        BaseFunctions.ShowError(this);
 
-                    BaseFunctions.BinanceUpdateWeightNow(result3.ResponseHeaders);
-                }
+                //    BaseFunctions.BinanceUpdateWeightNow(result3.ResponseHeaders);
+                //}
 
                 if (s.EntryPrice != 0m)
                 {
