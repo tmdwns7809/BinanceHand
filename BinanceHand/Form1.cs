@@ -24,6 +24,7 @@ using TradingLibrary.Base;
 using TradingLibrary.Base.Enum;
 using TradingLibrary.Base.DB;
 using TradingLibrary.Base.Values;
+using TradingLibrary.Base.Weight;
 using System.Data.SQLite;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Binance.Net.Objects.Options;
@@ -323,9 +324,9 @@ namespace BinanceHand
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
-            BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
 
-            BaseFunctions.BinanceUpdateWeightLimit(result.Data.RateLimits, this);
+            BinanceWeightManager.UpdateLimit(result.Data.RateLimits);
 
             var n = 0;
             var newSymbolList = new List<string>();
@@ -505,7 +506,7 @@ namespace BinanceHand
                 return default;
             }
 
-            BaseFunctions.BinanceUpdateWeightNow(result2.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(result2.ResponseHeaders);
 
             return SetRSIAandGetList(result2.Data.ToList(), startTime);
         }
@@ -576,7 +577,7 @@ namespace BinanceHand
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
-            BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
 
             var listenKey = result.Data;
 
@@ -590,7 +591,7 @@ namespace BinanceHand
                     if (!result1.Success)
                         BaseFunctions.ShowError(this);
 
-                    BaseFunctions.BinanceUpdateWeightNow(result1.ResponseHeaders);
+                    BinanceWeightManager.UpdateWeightNow(result1.ResponseHeaders);
 
                     var count = 0;
                     foreach (TradeItemData item in Trading.instance.itemDataDic.Values)
@@ -646,7 +647,7 @@ namespace BinanceHand
             if (!result.Success)
                 BaseFunctions.ShowError(this);
 
-            BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
 
             foreach (var s in result.Data.Assets)
                 if (s.Asset == "USDT")
@@ -686,7 +687,7 @@ namespace BinanceHand
             if (!result2.Success)
                 BaseFunctions.ShowError(this);
 
-            BaseFunctions.BinanceUpdateWeightNow(result2.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(result2.ResponseHeaders);
 
             foreach (var s in result2.Data)
             {
@@ -727,7 +728,7 @@ namespace BinanceHand
                     if (!result4.Success)
                         BaseFunctions.ShowError(this);
 
-                    BaseFunctions.BinanceUpdateWeightNow(result4.ResponseHeaders);
+                    BinanceWeightManager.UpdateWeightNow(result4.ResponseHeaders);
 
                     foreach (var brackets in result4.Data)
                         itemData.brackets = brackets.Brackets.ToList();
@@ -952,7 +953,7 @@ namespace BinanceHand
 
                             TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() =>
                             {
-                                TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code, newStick.Time, client);
+                                TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code, newStick.Time, client, this, BaseFunctions.loadingListBox);
 
                                 var vm2 = itemData.listDic[BaseChartTimeSet.OneMinute];
                                 for (int j = BaseFunctions.minCV.index; j <= BaseFunctions.maxCV.index; j++)
@@ -967,7 +968,7 @@ namespace BinanceHand
                                         "(" + Columns.TIME + "<='" + newStick.Time.ToString(Formats.TIME) + "') AND " +
                                         "(" + Columns.TIME + ">='" +
                                             newStick.Time.Subtract(BaseFunctions.ReadyTimeToCheckBeforeStart).Date.
-                                            AddSeconds(-vc2.seconds * (BaseFunctions.IndNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(Formats.TIME) + "')", conn).ExecuteReader();
+                                            AddSeconds(-vc2.seconds * (BaseFunctions.IndNeedDays + BaseFunctions.BaseLoadNeedDays - 1)).ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
                                     while (reader2.Read())
                                         list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader2));
                                     conn.Close();
@@ -1834,7 +1835,7 @@ namespace BinanceHand
                 if (!result.Success)
                     BaseFunctions.ShowError(this);
 
-                BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+                BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
 
                 foreach (var data in result.Data)
                 {
@@ -1848,7 +1849,7 @@ namespace BinanceHand
                     if (!result1.Success)
                         BaseFunctions.ShowError(this);
 
-                    BaseFunctions.BinanceUpdateWeightNow(result1.ResponseHeaders);
+                    BinanceWeightManager.UpdateWeightNow(result1.ResponseHeaders);
 
                     foreach (var brackets in result1.Data)
                         itemData.brackets = brackets.Brackets.ToList();
@@ -1912,7 +1913,7 @@ namespace BinanceHand
 
                 blist.InsertRange(0, blist2);
 
-                BaseFunctions.BinanceUpdateWeightNow(result.ResponseHeaders);
+                BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
 
                 loadSize -= blist2.Count;
                 loadEndTime = blist2[0].OpenTime.AddSeconds(-1);
