@@ -24,6 +24,7 @@ using TradingLibrary.Base;
 using TradingLibrary.Base.Enum;
 using TradingLibrary.Base.DB;
 using TradingLibrary.Base.Values;
+using TradingLibrary.Base.Values.Chart;
 using TradingLibrary.Base.Weight;
 using System.Data.SQLite;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
@@ -393,7 +394,7 @@ namespace BinanceHand
                 foreach (var code in noSymbolList)
                     if (Trading.instance.itemDataDic.ContainsKey(code))
                     {
-                        var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[BaseChartTimeSet.OneMinute];
+                        var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[ChartTimeSet.OneMinute];
                         conn.Close();
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
@@ -421,7 +422,7 @@ namespace BinanceHand
                         }
 
                         var itemData = Trading.instance.itemDataDic[code];
-                        var v = itemData.listDic[BaseChartTimeSet.OneMinute];
+                        var v = itemData.listDic[ChartTimeSet.OneMinute];
                         var first = true;
                         
                         foreach (var tradeStick in v.list)
@@ -554,7 +555,7 @@ namespace BinanceHand
 
             return stick;
         }
-        List<TradeStick> SetRSIAandGetList(List<IBinanceKline> data, DateTime startTime, ChartValues vc = null)
+        List<TradeStick> SetRSIAandGetList(List<IBinanceKline> data, DateTime startTime, TradingLibrary.Base.ChartValues vc = null)
         {
             var list = new List<TradeStick>();
             foreach (var stickReal in data)
@@ -748,7 +749,7 @@ namespace BinanceHand
         decimal GetCurrentPrice(TradeItemData itemData)
         {
             return itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : 
-                (itemData.listDic[BaseChartTimeSet.OneMinute].lastStick == default ? default : itemData.listDic[BaseChartTimeSet.OneMinute].lastStick.Price[3]);
+                (itemData.listDic[ChartTimeSet.OneMinute].lastStick == default ? default : itemData.listDic[ChartTimeSet.OneMinute].lastStick.Price[3]);
         }
         void OrderBoxSetting(bool autoSize, bool minSize)
         {
@@ -886,7 +887,7 @@ namespace BinanceHand
 
             if (data.Data.Final)
             {
-                var vm = itemData.listDic[BaseChartTimeSet.OneMinute];
+                var vm = itemData.listDic[ChartTimeSet.OneMinute];
                 var newStick = GetStick(data.Data);
 
                 lock (Trading.minLocker)
@@ -904,10 +905,10 @@ namespace BinanceHand
                         Trading.instance.KlineRcv = 0;
                         Trading.instance.UpdateFoundInText(default, true);
                         if (Trading.loadingDone)
-                            BaseFunctions.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>[]
+                            BaseFunctions.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)> foundList)>[]
                             {
-                                new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>(),
-                                new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>()
+                                new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)> foundList)>(),
+                                new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)> foundList)>()
                             };
                     }
 
@@ -923,7 +924,7 @@ namespace BinanceHand
                 if (Trading.loadingDone)
                     for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
                     {
-                        itemData.positionData[j].foundList = new List<(DateTime foundTime, ChartValues chartValues)>();
+                        itemData.positionData[j].foundList = new List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)>();
                         itemData.positionData[j].found = false;
                     }
 
@@ -938,16 +939,16 @@ namespace BinanceHand
                 var dropLongFirstVC = BaseFunctions.maxCV.index;
                 var dropShortFirstVC = BaseFunctions.maxCV.index;
 
-                for (int i = BaseChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
+                for (int i = ChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
                 {
                     var v = itemData.listDic.Values[i];
                     var vc = itemData.listDic.Keys[i];
 
                     if (v.first)
                     {
-                        if (BaseFunctions.maxCV.index > BaseChartTimeSet.OneWeek.index)
+                        if (BaseFunctions.maxCV.index > ChartTimeSet.OneWeek.index)
                             BaseFunctions.ShowError(this);
-                        else if (vc == BaseChartTimeSet.OneMinute)
+                        else if (vc == ChartTimeSet.OneMinute)
                         {
                             v.lastStick = new TradeStick() { Time = newStick.Time, original = data.Data };
 
@@ -955,7 +956,7 @@ namespace BinanceHand
                             {
                                 TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code, newStick.Time, client, this, BaseFunctions.loadingListBox);
 
-                                var vm2 = itemData.listDic[BaseChartTimeSet.OneMinute];
+                                var vm2 = itemData.listDic[ChartTimeSet.OneMinute];
                                 for (int j = BaseFunctions.minCV.index; j <= BaseFunctions.maxCV.index; j++)
                                 {
                                     var list = new List<TradeStick>();
@@ -988,7 +989,7 @@ namespace BinanceHand
                                         list.RemoveAt(list.Count - 1);
                                     }
 
-                                    if (j > BaseChartTimeSet.OneMinute.index)
+                                    if (j > ChartTimeSet.OneMinute.index)
                                     {
                                         lock (itemData.listDicLocker)
                                             for (int k = 0; k < vm2.list.Count; k++)
@@ -1076,7 +1077,7 @@ namespace BinanceHand
                             v.list.Add(v.lastStick);
                         v.lastStick = new TradeStick() { Time = newStick.Time };
 
-                        if (vc == BaseChartTimeSet.OneMinute)
+                        if (vc == ChartTimeSet.OneMinute)
                             v.lastStick.original = data.Data;
 
                         if ((int)v.lastStick.Time.Subtract(v.list[v.list.Count - 1].Time).TotalSeconds != vc.seconds)
@@ -1150,7 +1151,7 @@ namespace BinanceHand
                             }
                         }
 
-                        if (vc == BaseChartTimeSet.OneHour && v.list.Count > 0)
+                        if (vc == ChartTimeSet.OneHour && v.list.Count > 0)
                         {
                             var lastStick2 = v.list[v.list.Count - 1];
                             itemData.LastHour = Math.Round((lastStick2.Price[3] > lastStick2.Price[2] ? (lastStick2.Price[3] / lastStick2.Price[2] - 1) : -(lastStick2.Price[2] / lastStick2.Price[3] - 1)) * 100, 2);
@@ -1324,7 +1325,7 @@ namespace BinanceHand
                 if (currentTime == loadStartTime)
                     foreach (var itemData in Trading.instance.itemDataDic.Values)
                         lock (itemData.listDicLocker)
-                            for (int i = BaseChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
+                            for (int i = ChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
                             {
                                 var v = itemData.listDic.Values[i];
                                 for (int j = 0; j < v.list.Count; j++)
@@ -1333,7 +1334,7 @@ namespace BinanceHand
                                         v.currentIndex = j;
                                         break;
                                     }
-                                v.lastStickForS = i == BaseChartTimeSet.OneMinute.index ?
+                                v.lastStickForS = i == ChartTimeSet.OneMinute.index ?
                                     (v.list.Count > 0 ? v.list[v.currentIndex] : v.lastStick) :
                                     new TradeStick() { Time = (v.list.Count > 0 ? v.list[v.currentIndex] : v.lastStick).Time };
                             }
@@ -1365,31 +1366,31 @@ namespace BinanceHand
                 else if (beforeFinal)
                     Final = true;
 
-                BaseFunctions.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>[]
+                BaseFunctions.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)> foundList)>[]
                 {
-                    new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>(),
-                    new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>()
+                    new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)> foundList)>(),
+                    new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)> foundList)>()
                 };
 
                 foreach (var itemData in Trading.instance.itemDataDic.Values)
                 {
-                    var vm = itemData.listDic[BaseChartTimeSet.OneMinute];
+                    var vm = itemData.listDic[ChartTimeSet.OneMinute];
 
                     if (vm.lastStickForS.Time > currentTime)
                         continue;
 
                     for (int i = (int)Position.Long; i <= (int)Position.Short; i++)
                     {
-                        itemData.positionData[i].foundList = new List<(DateTime foundTime, ChartValues chartValues)>();
+                        itemData.positionData[i].foundList = new List<(DateTime foundTime, TradingLibrary.Base.ChartValues chartValues)>();
                         itemData.positionData[i].found = false;
                     }
 
-                    for (int i = BaseChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
+                    for (int i = ChartTimeSet.OneMinute.index; i <= BaseFunctions.maxCV.index; i++)
                     {
                         var v = itemData.listDic.Values[i];
                         var vc = itemData.listDic.Keys[i];
 
-                        if (i != BaseChartTimeSet.OneMinute.index)
+                        if (i != ChartTimeSet.OneMinute.index)
                         {
                             var timeDiff = currentTime.Subtract(v.lastStickForS.Time).TotalSeconds;
                             if (timeDiff == vc.seconds)
@@ -1500,7 +1501,7 @@ namespace BinanceHand
                             if (conditionResult.position[j])
                                 foreach (var foundItem in BaseFunctions.foundItemList[j].Values)
                                 {
-                                    var minV = foundItem.itemData.listDic[BaseChartTimeSet.OneMinute];
+                                    var minV = foundItem.itemData.listDic[ChartTimeSet.OneMinute];
                                     var positionData = foundItem.itemData.positionData[j];
                                     BaseFunctions.EnterSetting(positionData, minV.lastStickForS);
 
@@ -1887,7 +1888,7 @@ namespace BinanceHand
         {
             var itemData = Trading.instance.showingItemData as BinanceItemData;
 
-            var vc = Trading.instance.mainChart.Tag as ChartValues;
+            var vc = Trading.instance.mainChart.Tag as TradingLibrary.Base.ChartValues;
 
             DateTime endTime = BaseFunctions.NowTime();
             if (loadNew)
@@ -2005,7 +2006,7 @@ namespace BinanceHand
             itemData.autoCancel = autoCancel;
 
             var tradeData = new TradeData();
-            var minList = itemData.listDic[BaseChartTimeSet.OneMinute];
+            var minList = itemData.listDic[ChartTimeSet.OneMinute];
 
             tradeData.Send_Close_Price = itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : minList.lastStick.Price[3];
             tradeData.Last_Min_Qnt = minList.lastStick.Ms + minList.lastStick.Md;
