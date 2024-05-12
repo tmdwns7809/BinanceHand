@@ -84,7 +84,7 @@ namespace BinanceHand
             Load += Form1_Load;
 
             //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.4m, 20);
-            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41m, 20);
+            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.43m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
@@ -567,6 +567,17 @@ namespace BinanceHand
             var startIndex = BaseFunctions.GetStartIndex(list, startTime);
             if (startIndex > 0)
                 list.RemoveRange(0, startIndex);
+
+            return list;
+        }
+        List<TradeStick> GetList(List<IBinanceKline> data)
+        {
+            var list = new List<TradeStick>();
+            foreach (var stickReal in data)
+            {
+                var stick = GetStick(stickReal);
+                list.Add(stick);
+            }
 
             return list;
         }
@@ -1888,6 +1899,7 @@ namespace BinanceHand
             var itemData = Trading.instance.showingItemData as BinanceItemData;
 
             var vc = BaseFunctions.mainChart.Tag as ChartValues;
+            itemData.showingVC = vc;
 
             DateTime endTime = Trading.instance.NowTime();
             if (loadNew)
@@ -1907,42 +1919,52 @@ namespace BinanceHand
                 if (!result.Success)
                     Error.Show();
 
+                BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+
                 var blist2 = result.Data.ToList();
                 if (blist2.Count == 0)
                     break;
 
                 blist.InsertRange(0, blist2);
 
-                BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
-
                 loadSize -= blist2.Count;
                 loadEndTime = blist2[0].OpenTime.AddSeconds(-1);
             }
 
-            var list = SetRSIAandGetList(blist, endTime.AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds).AddSeconds(-(size - 1) * vc.seconds), vc);
+            var list = GetList(blist);
+
+            if (list.Count == 0)
+                return;
+
 
             if (!loadNew)
-            {
-                var firstCount = list.Count;
-                list.AddRange(itemData.showingStickList.GetRange(0, itemData.showingStickList.Count >= Strategy.IndNeedDays + 1 ? Strategy.IndNeedDays + 1 : itemData.showingStickList.Count));
-                for (int i = firstCount; i < list.Count; i++)
-                    Strategy.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
-                list.RemoveRange(firstCount, list.Count - firstCount);
-            }
-
-            for (int i = list.Count - 1; i >= 0; i--)
-                Trading.instance.InsertFullChartPoint(chart, list[i]);
-
-            if (loadNew)
+                list.AddRange(itemData.showingStickList);
+            else
             {
                 itemData.showingStick = list[list.Count - 1];
                 itemData.currentPriceWhenLoaded = itemData.showingStick.Price[3];
                 list.RemoveAt(list.Count - 1);
             }
-            itemData.showingStickList.InsertRange(0, list);
-            Strategy.SetRSIAandDiff(itemData.showingStickList, itemData.showingStick, int.MinValue, int.MinValue, vc);
 
-            itemData.showingVC = vc;
+            var startTime = endTime
+                    .AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds)
+                    .AddSeconds(-(size - 1) * vc.seconds);
+            var startIndex = BaseFunctions.GetStartIndex(list, startTime);
+
+            for (int i = startIndex; i < list.Count; i++)
+                Strategy.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
+            Strategy.SetRSIAandDiff(list, itemData.showingStick, list.Count - 1, int.MinValue, vc);
+
+            if (startIndex > 0)
+                list.RemoveRange(0, startIndex);
+
+            BaseFunctions.baseInstance.ClearChart(chart);
+
+            for (int i = 0; i < list.Count; i++)
+                Trading.instance.AddFullChartPoint(chart, list[i]);
+            Trading.instance.AddFullChartPoint(chart, itemData.showingStick);
+
+            itemData.showingStickList = list;
         }
         void Trading_AggONandOFF(TradeItemData itemData, bool on)
         {
