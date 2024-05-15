@@ -1946,12 +1946,27 @@ namespace BinanceHand
                 list.RemoveAt(list.Count - 1);
             }
 
-            var startTime = endTime
+            DateTime startTime = default;
+            if (vc.index <= ChartTimeSet.OneDay.index)
+            {
+                startTime = endTime
                     .AddSeconds(-(int)endTime.TimeOfDay.TotalSeconds % vc.seconds)
                     .AddSeconds(-(size - 1) * vc.seconds);
+            } 
+            else if (vc.index < ChartTimeSet.OneMonth.index)
+            {
+                startTime = endTime
+                    .AddSeconds(-(size - 1) * vc.seconds);
+            }
+            else
+            {
+                startTime = endTime
+                    .AddMonths(-(size - 1));
+            }
+
             var startIndex = BaseFunctions.GetStartIndex(list, startTime);
 
-            for (int i = startIndex; i < list.Count; i++)
+            for (int i = 0; i < list.Count; i++)
                 Strategy.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
             Strategy.SetRSIAandDiff(list, itemData.showingStick, list.Count - 1, int.MinValue, vc);
 
