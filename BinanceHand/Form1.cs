@@ -1977,7 +1977,6 @@ namespace BinanceHand
 
             for (int i = 0; i < list.Count; i++)
                 Trading.instance.AddFullChartPoint(chart, list[i]);
-            Trading.instance.AddFullChartPoint(chart, itemData.showingStick);
 
             itemData.showingStickList = list;
         }
