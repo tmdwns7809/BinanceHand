@@ -1899,7 +1899,6 @@ namespace BinanceHand
             var itemData = Trading.instance.showingItemData as BinanceItemData;
 
             var vc = BaseFunctions.mainChart.Tag as ChartValues;
-            itemData.showingVC = vc;
 
             DateTime endTime = Trading.instance.NowTime();
             if (loadNew)
@@ -1934,15 +1933,16 @@ namespace BinanceHand
             var list = GetList(blist);
 
             if (list.Count == 0)
+            {
                 return;
+            }
 
-
+            var nowStick = itemData.showingStick;
             if (!loadNew)
                 list.AddRange(itemData.showingStickList);
             else
             {
-                itemData.showingStick = list[list.Count - 1];
-                itemData.currentPriceWhenLoaded = itemData.showingStick.Price[3];
+                nowStick = list[list.Count - 1];
                 list.RemoveAt(list.Count - 1);
             }
 
@@ -1968,7 +1968,7 @@ namespace BinanceHand
 
             for (int i = 0; i < list.Count; i++)
                 Strategy.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
-            Strategy.SetRSIAandDiff(list, itemData.showingStick, list.Count - 1, int.MinValue, vc);
+            Strategy.SetRSIAandDiff(list, nowStick, list.Count - 1, int.MinValue, vc);
 
             if (startIndex > 0)
                 list.RemoveRange(0, startIndex);
@@ -1977,8 +1977,12 @@ namespace BinanceHand
 
             for (int i = 0; i < list.Count; i++)
                 Trading.instance.AddFullChartPoint(chart, list[i]);
+            Trading.instance.AddFullChartPoint(chart, nowStick);
 
+            itemData.showingVC = vc;
             itemData.showingStickList = list;
+            itemData.showingStick = nowStick;
+            itemData.currentPriceWhenLoaded = itemData.showingStick.Price[3];
         }
         void Trading_AggONandOFF(TradeItemData itemData, bool on)
         {
