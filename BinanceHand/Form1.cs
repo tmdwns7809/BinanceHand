@@ -83,8 +83,8 @@ namespace BinanceHand
             FormClosed += Form1_FormClosed;
             Load += Form1_Load;
 
-            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.412m, 20);
-            //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.4101m, 20);
+            //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.412m, 20);
+            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.4101m, 20);
             Trading.instance.HoONandOFF += Trading_HoONandOFF;
             Trading.instance.AggONandOFF += Trading_AggONandOFF;
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
