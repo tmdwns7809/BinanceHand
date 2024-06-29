@@ -492,24 +492,24 @@ namespace BinanceHand
             if (newSymbolList.Count != 0 && TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Count == 0)
                 Error.Show();
         }
-        List<TradeStick> LoadSticks(string Code, KlineInterval interval, DateTime startTime, DateTime endTime)
-        {
-            var vc = CandleBaseFunctions.ChartValuesDic[interval];
+        //List<TradeStick> LoadSticks(string Code, KlineInterval interval, DateTime startTime, DateTime endTime)
+        //{
+        //    var vc = CandleBaseFunctions.ChartValuesDic[interval];
 
-            var plusStartTime = startTime.AddSeconds(-vc.seconds * (Strategy.IndNeedDays - 1));
-            var size = (int)endTime.Subtract(plusStartTime).TotalSeconds / vc.seconds + 1;
-            var result2 = client.UsdFuturesApi.ExchangeData.GetKlinesAsync(Code, interval, plusStartTime, endTime, size).Result;
+        //    var plusStartTime = startTime.AddSeconds(-vc.seconds * (Strategy.IndNeedDays - 1));
+        //    var size = (int)endTime.Subtract(plusStartTime).TotalSeconds / vc.seconds + 1;
+        //    var result2 = client.UsdFuturesApi.ExchangeData.GetKlinesAsync(Code, interval, plusStartTime, endTime, size).Result;
 
-            if (!result2.Success)
-            {
-                Error.Show();
-                return default;
-            }
+        //    if (!result2.Success)
+        //    {
+        //        Error.Show();
+        //        return default;
+        //    }
 
-            BinanceWeightManager.UpdateWeightNow(result2.ResponseHeaders);
+        //    BinanceWeightManager.UpdateWeightNow(result2.ResponseHeaders);
 
-            return SetRSIAandGetList(result2.Data.ToList(), startTime, vc);
-        }
+        //    return SetRSIAandGetList(result2.Data.ToList(), startTime, vc);
+        //}
         TradeStick GetStick(IBinanceKline stickReal, ChartValues cv)
         {
             var stick = new TradeStick(cv);
@@ -554,13 +554,13 @@ namespace BinanceHand
 
             return stick;
         }
-        List<TradeStick> SetRSIAandGetList(List<IBinanceKline> data, DateTime startTime, ChartValues vc)
+        List<TradeStick> SetRSIAandGetList(BaseItemData itemData, List<IBinanceKline> data, DateTime startTime, ChartValues vc)
         {
             var list = new List<TradeStick>();
             foreach (var stickReal in data)
             {
                 var stick = GetStick(stickReal, vc);
-                Strategy.SetRSIAandDiff(list, stick, int.MinValue, int.MinValue, vc);
+                Strategy.SetRSIAandDiff(itemData, list, stick, int.MinValue, int.MinValue, vc);
                 list.Add(stick);
             }
 
@@ -1116,7 +1116,7 @@ namespace BinanceHand
 
                     if (Trading.loadingDone)
                     {
-                        Strategy.SetRSIAandDiff(v.list, v.lastStick, int.MinValue, int.MinValue, vc);
+                        Strategy.SetRSIAandDiff(itemData, v.list, v.lastStick, int.MinValue, int.MinValue, vc);
                         if (i >= Strategy.minCV.index && i <= Strategy.maxCV.index)
                             Strategy.ChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
 
@@ -1411,7 +1411,7 @@ namespace BinanceHand
                                     CompareSticks(v.lastStickForS, v.list[v.currentIndex]);
                                 }
 
-                                Strategy.SetRSIAandDiff(v.list, v.list[v.currentIndex], v.currentIndex - 1);
+                                Strategy.SetRSIAandDiff(itemData, v.list, v.list[v.currentIndex], v.currentIndex - 1);
 
                                 v.currentIndex++;
 
@@ -1453,7 +1453,7 @@ namespace BinanceHand
                         }
 
                         if (!Strategy.calOnlyFullStick)
-                            Strategy.SetRSIAandDiff(v.list, v.lastStickForS, v.currentIndex - 1);
+                            Strategy.SetRSIAandDiff(itemData, v.list, v.lastStickForS, v.currentIndex - 1);
 
                         Strategy.ChartFindConditionAndAdd(itemData, vc, vm.lastStickForS, v.lastStickForS, vm.currentIndex - 1, v.currentIndex - 1);
                     }
@@ -1967,8 +1967,8 @@ namespace BinanceHand
             var startIndex = BaseFunctions.GetStartIndex(list, startTime);
 
             for (int i = 0; i < list.Count; i++)
-                Strategy.SetRSIAandDiff(list, list[i], i - 1, int.MinValue, vc);
-            Strategy.SetRSIAandDiff(list, nowStick, list.Count - 1, int.MinValue, vc);
+                Strategy.SetRSIAandDiff(itemData, list, list[i], i - 1, int.MinValue, vc);
+            Strategy.SetRSIAandDiff(itemData, list, nowStick, list.Count - 1, int.MinValue, vc);
 
             if (startIndex > 0)
                 list.RemoveRange(0, startIndex);
