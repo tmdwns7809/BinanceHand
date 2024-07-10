@@ -29,6 +29,7 @@ using TradingLibrary.Base.Weight;
 using System.Data.SQLite;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Binance.Net.Objects.Options;
+using System.Security.Cryptography;
 
 namespace BinanceHand
 {
@@ -84,13 +85,18 @@ namespace BinanceHand
             Load += Form1_Load;
 
             //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.412m, 20);
-            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.4103m, 20);
-            Trading.instance.HoONandOFF += Trading_HoONandOFF;
-            Trading.instance.AggONandOFF += Trading_AggONandOFF;
+            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.4104m, 20);
+
+            if (Trading.instance.showSec)
+            {
+                Trading.instance.HoONandOFF += Trading_HoONandOFF;
+                Trading.instance.AggONandOFF += Trading_AggONandOFF;
+            }
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
             Trading.instance.ResetOrderView += Trading_ResetOrderView;
             Trading.instance.LoadMoreAdditional += Trading_LoadMoreAdditional;
             Trading.instance.PlaceOrder += Trading_PlaceOrder;
+
             Trading.instance.CodeListView.Columns.Remove(Trading.instance.CodeListView.GetColumn("Name"));
             Trading.instance.CodeListView2.Columns.Remove(Trading.instance.CodeListView2.GetColumn("Name"));
             Trading.instance.realHandResultListView.Columns.Remove(Trading.instance.realHandResultListView.GetColumn("Name"));
@@ -346,14 +352,18 @@ namespace BinanceHand
                     continue;
                 }
 
-                if (!s.Name.Contains("USDT")
+                if 
+                (
+                    !s.Name.Contains("USDT")
                     ||
-                    (s.Name != "BTCUSDT" && s.Name != "EOSUSDT"
-                    //&& s.Name != lastSymbol
-                    //&& s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
-                    //&& s.Name != "MYROUSDT"
+                    (
+                        s.Name != "BTCUSDT"
+                        //&& s.Name != "EOSUSDT"
+                        //&& s.Name != lastSymbol
+                        //&& s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
+                        //s.Name != "MYROUSDT"
                     )
-                    )
+                )
                     continue;
 
                 n++;
@@ -949,92 +959,97 @@ namespace BinanceHand
                 var dropLongFirstVC = Strategy.maxIndex;
                 var dropShortFirstVC = Strategy.maxIndex;
 
-                for (int i = ChartTimeSet.chartValues.IndexOf(ChartTimeSet.Minute1); i <= Strategy.maxIndex; i++)
+                var lastIndex = ChartTimeSet.chartValues.Count;
+                for (int i = 0; i < lastIndex; i++)
                 {
+                    if (i == 0 && ChartTimeSet.chartValues[i] != ChartTimeSet.Minute1)
+                        Error.Show();
+
                     var v = itemData.listDic.Values[i];
                     var vc = itemData.listDic.Keys[i];
 
                     if (v.first)
                     {
-                        if (Strategy.maxCV.minutes > ChartTimeSet.Day1.minutes)
-                            Error.Show();
-                        else if (vc == ChartTimeSet.Minute1)
+                        if (vc == ChartTimeSet.Minute1)
                         {
                             v.lastStick = new TradeStick(vc) { Time = newStick.Time, original = data.Data };
 
                             TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() =>
                             {
-                                TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code, newStick.Time, client, this, BaseFunctions.loadingListBox);
+                                var lastMin = newStick.Time.AddMinutes(-1);
 
-                                var vm2 = itemData.listDic[ChartTimeSet.Minute1];
-                                for (int j = Strategy.minIndex; j <= Strategy.maxIndex; j++)
+                                TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code
+                                    , lastMin, client, this, BaseFunctions.loadingListBox);
+
+                                // 1분봉 직전까지 다운 완료 확인
+                                while (true)
                                 {
-                                    var list = new List<TradeStick>();
+                                    if (vc != ChartTimeSet.Minute1)
+                                        Error.Show();
 
-                                    var vc2 = itemData.listDic.Keys[j];
-
-                                    var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[itemData.listDic.Keys[j]];
+                                    var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[vc];
                                     conn.Open();
+
                                     var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
-                                        "(" + Columns.TIME + "<='" + newStick.Time.ToString(Formats.TIME) + "') AND " +
-                                        "(" + Columns.TIME + ">='" +
-                                            ChartTimeSet.AddSeconds(newStick.Time.Subtract(Strategy.ReadyTimeToCheckBeforeStart).Date
-                                                , -vc2.seconds * (Strategy.IndNeedDays + Strategy.BaseLoadNeedDays - 1)).ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
+                                        Columns.TIME + "=='" + lastMin.ToString(Formats.DB_TIME) + "'", conn).ExecuteReader();
+
+                                    var list = new List<TradeStick>();
                                     while (reader2.Read())
                                         list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader2, vc));
                                     conn.Close();
+                                    GC.Collect();
+                                    GC.WaitForPendingFinalizers();
 
+                                    if (list.Count == 1)
+                                        break;
+
+                                    Thread.Sleep(1000);
+                                }
+
+                                for (int j = 1; j < lastIndex; j++)
+                                {
                                     var v2 = itemData.listDic.Values[j];
+                                    var vc2 = itemData.listDic.Keys[j];
 
-                                    TradeStick firstStick = default;
-                                    TradeStick lastStick = default;
                                     lock (itemData.listDicLocker)
-                                        firstStick = v2.list.Count == 0 ? v2.lastStick : v2.list[0];
-
-                                    if (list[list.Count - 1].Time != firstStick.Time)
-                                        Error.Show();
-                                    else
                                     {
-                                        lastStick = list.Last();
-                                        list.RemoveAt(list.Count - 1);
-                                    }
+                                        var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[vc2];
+                                        conn.Open();
 
-                                    if (ChartTimeSet.chartValues[j].minutes > ChartTimeSet.Minute1.minutes)
-                                    {
-                                        lock (itemData.listDicLocker)
-                                            for (int k = 0; k < vm2.list.Count; k++)
-                                                if (vm2.list[k].Time < firstStick.Time)
-                                                    continue;
-                                                else
-                                                {
-                                                    if (vm2.list[k].Time >= newStick.Time)
-                                                    {
-                                                        if (vm2.list[k].Time > newStick.Time)
-                                                            Error.Show();
+                                        var bv = itemData.listDic[CandleBaseFunctions.GetBeforeCV(j)];
+                                        var bvFirstStick = v2.list.Count == 0 ? v2.lastStick : v2.list[0];
+                                        var startTime = ChartTimeSet.AddMinutes(bvFirstStick.Time
+                                                , -(int)bvFirstStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % (int)vc2.minutes);
 
-                                                        break;
-                                                    }
-
-                                                    if (vm2.list[k].Time == firstStick.Time)
-                                                        firstStick.Price[2] = vm2.list[k].Price[2];
-
-                                                    if (vm2.list[k].Price[0] > firstStick.Price[0])
-                                                        firstStick.Price[0] = vm2.list[k].Price[0];
-                                                    if (vm2.list[k].Price[1] < firstStick.Price[1])
-                                                        firstStick.Price[1] = vm2.list[k].Price[1];
-
-                                                    firstStick.Ms += vm2.list[k].Ms;
-                                                    firstStick.Md += vm2.list[k].Md;
-
-                                                    firstStick.TCount += vm2.list[k].TCount;
-                                                }
-
-                                        if (lastStick.Time != firstStick.Time)
+                                        if (startTime > lastMin)
+                                            continue;
+                                        else if (startTime == lastMin)
                                             Error.Show();
-                                    }
 
-                                    lock (itemData.listDicLocker)
-                                        v2.list.InsertRange(0, list);
+                                        var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
+                                            "(" + Columns.TIME + "<='" + lastMin.ToString(Formats.DB_TIME) + "') AND " +
+                                            "(" + Columns.TIME + ">='" + startTime.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
+
+                                        var list = new List<TradeStick>();
+                                        while (reader2.Read())
+                                            list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader2, vc2));
+                                        conn.Close();
+                                        GC.Collect();
+                                        GC.WaitForPendingFinalizers();
+
+                                        if (list.Count != 1)
+                                            Error.Show();
+
+                                        var firstStick = v2.list.Count == 0 ? v2.lastStick : v2.list[0];
+
+                                        if (list[0].Time != firstStick.Time)
+                                            Error.Show();
+
+                                        if (v2.list.Count == 0)
+                                            v2.lastStick = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.lastStick);
+                                        else
+                                            v2.list[0] = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.list[0]);
+                                    }
                                 }
 
                                 if (TradingLibrary.Base.DB.Binance.FuturesUSD.doneCount == TradingLibrary.Base.DB.Binance.FuturesUSD.codesCount)
@@ -1073,7 +1088,15 @@ namespace BinanceHand
                             }));
                         }
                         else
-                            v.lastStick = new TradeStick(vc) { Time = ChartTimeSet.AddSeconds(newStick.Time, -(int)newStick.Time.TimeOfDay.TotalSeconds % vc.seconds) };
+                        {
+                            var bv = itemData.listDic[CandleBaseFunctions.GetBeforeCV(i)];
+                            v.lastStick = new TradeStick(vc) 
+                            { 
+                                Time = ChartTimeSet.AddMinutes(bv.lastStick.Time
+                                    , -(int)bv.lastStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % (int)vc.minutes)
+                                //Time = ChartTimeSet.AddSeconds(newStick.Time, -(int)newStick.Time.TimeOfDay.TotalSeconds % vc.seconds)
+                            };
+                        }
 
                         v.first = false;
                     }
@@ -1201,8 +1224,7 @@ namespace BinanceHand
                         if (!itemData.positionData[(int)Position.Long].Enter && !itemData.positionData[(int)Position.Short].Enter && positionData.found)
                             lock (Trading.minLocker)
                                 Strategy.foundItemList[j].Add(itemData.number, (itemData, positionData.foundList));
-                        else
-                        if (positionData.Enter)
+                        else if (positionData.Enter)
                         {
                             var v = itemData.listDic[positionData.EnterFoundForExit.chartValues];
                             if (Strategy.ExitConditionFinal(itemData, (Position)j, vm.lastStick, v.lastStick, v.list.Count - 1))
