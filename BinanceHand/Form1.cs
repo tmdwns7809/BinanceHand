@@ -948,17 +948,6 @@ namespace BinanceHand
                         itemData.positionData[j].found = false;
                     }
 
-                itemData.RSIAHighest = 0;
-                itemData.RSIAHighestChart = "";
-                itemData.dropLongCount = 0;
-                itemData.dropShortCount = 0;
-                itemData.dropLongShortest = TimeSpan.Zero;
-                itemData.dropShortShortest = TimeSpan.Zero;
-                itemData.dropLongText = "";
-                itemData.dropShortText = "";
-                var dropLongFirstVC = Strategy.maxIndex;
-                var dropShortFirstVC = Strategy.maxIndex;
-
                 var lastIndex = ChartTimeSet.chartValues.Count;
                 for (int i = 0; i < lastIndex; i++)
                 {
@@ -1107,231 +1096,29 @@ namespace BinanceHand
                     else if (timeDiff == vc.seconds)
                     {
                         lock (itemData.listDicLocker)
+                        {
                             v.list.Add(v.lastStick);
-                        v.lastStick = new TradeStick(vc) { Time = newStick.Time };
+                            v.lastStick = new TradeStick(vc) { Time = newStick.Time };
 
-                        if (vc == ChartTimeSet.Minute1)
-                            v.lastStick.original = data.Data;
+                            if (vc == ChartTimeSet.Minute1)
+                                v.lastStick.original = data.Data;
 
-                        if ((int)v.lastStick.Time.Subtract(v.list[v.list.Count - 1].Time).TotalSeconds != vc.seconds)
-                            Error.Show();
-                    }
-
-                    if (v.lastStick.Price[1] == 0)
-                    {
-                        v.lastStick.Price[1] = newStick.Price[1];
-                        v.lastStick.Price[2] = newStick.Price[2];
+                            if ((int)v.lastStick.Time.Subtract(v.list[v.list.Count - 1].Time).TotalSeconds != vc.seconds)
+                                Error.Show();
+                        }
                     }
 
                     lock (itemData.listDicLocker)
                     {
-                        if (newStick.Price[0] > v.lastStick.Price[0])
-                            v.lastStick.Price[0] = newStick.Price[0];
-                        if (newStick.Price[1] < v.lastStick.Price[1])
+                        if (v.lastStick.Price[1] == 0)
+                        {
                             v.lastStick.Price[1] = newStick.Price[1];
-                        v.lastStick.Price[3] = newStick.Price[3];
-
-                        v.lastStick.Ms += newStick.Ms;
-                        v.lastStick.Md += newStick.Md;
-
-                        v.lastStick.TCount += newStick.TCount;
-                    }
-
-                    if (Trading.loadingDone)
-                    {
-                        Strategy.SetRSIAandDiff(itemData, v.list, v.lastStick, int.MinValue, int.MinValue, vc);
-                        if (i >= Strategy.minIndex && i <= Strategy.maxIndex)
-                            Strategy.ChartFindConditionAndAdd(itemData, vc, vm.lastStick, v.lastStick);
-
-                        if (v.lastStick.indicator != null && !double.IsNaN(v.lastStick.indicator.RSIA) && Math.Abs(v.lastStick.indicator.RSIA) > Math.Abs(itemData.RSIAHighest))
-                        {
-                            itemData.RSIAHighest = (int)v.lastStick.indicator.RSIA;
-                            itemData.RSIAHighestChart = vc.Text;
+                            v.lastStick.Price[2] = newStick.Price[2];
                         }
 
-                        if (v.lastStick.lastFoundStick != null)
-                        {
-                            var c = (int)v.lastStick.Time.Subtract(v.lastStick.lastFoundStick.Time).TotalSeconds / vc.seconds;
-                            if (c <= Strategy.BaseLoadNeedDays)
-                            {
-                                var t = vm.lastStick.Time.Subtract(v.lastStick.lastFoundStick.Time);
-                                if (v.lastStick.lastFoundStick.indicator.RSIA > 0)
-                                {
-                                    if (itemData.dropLongShortest == TimeSpan.Zero || t < itemData.dropLongShortest)
-                                        itemData.dropLongShortest = t;
-
-                                    itemData.dropLongCount++;
-                                    itemData.dropLongText += vc.Text + ":" + c + " ";
-                                    if (itemData.dropLongCount == 1)
-                                        dropLongFirstVC = ChartTimeSet.chartValues.IndexOf(vc);
-                                }
-                                else
-                                {
-                                    if (itemData.dropShortShortest == TimeSpan.Zero || t < itemData.dropShortShortest)
-                                        itemData.dropShortShortest = t;
-
-                                    itemData.dropShortCount++;
-                                    itemData.dropShortText += vc.Text + ":" + c + " ";
-                                    if (itemData.dropShortCount == 1)
-                                        dropShortFirstVC = ChartTimeSet.chartValues.IndexOf(vc);
-                                }
-
-                                if (itemData.star && vm.lastStick.Time == v.lastStick.Time && vm.lastStick.Time.Subtract(Trading.loadingDoneTime).TotalMinutes > 3 &&
-                                    (v.list[v.list.Count - 1].lastFoundStick == null || v.list[v.list.Count - 1].lastFoundStick.Time != v.lastStick.lastFoundStick.Time) &&
-                                    ChartTimeSet.chartValues.IndexOf(vc) - (v.lastStick.lastFoundStick.indicator.RSIA > 0 ? dropLongFirstVC : dropShortFirstVC) >= 0)
-                                    Alert.Start(Math.Round(v.lastStick.lastFoundStick.indicator.RSIA, 2) + "\n" +
-                                        itemData.Code + "\n" + newStick.Time.ToString(Formats.TIME) + "\n" + vc.Text, true, true);
-                            }
-                        }
-
-                        if (vc == ChartTimeSet.Hour1 && v.list.Count > 0)
-                        {
-                            var lastStick2 = v.list[v.list.Count - 1];
-                            itemData.LastHour = Math.Round((lastStick2.Price[3] > lastStick2.Price[2] ? (lastStick2.Price[3] / lastStick2.Price[2] - 1) : -(lastStick2.Price[2] / lastStick2.Price[3] - 1)) * 100, 2);
-                        }
+                        CandleBaseFunctions.CompareAndUpdateTradeStick(v.lastStick, newStick);
                     }
                 }
-
-                if (Trading.loadingDone)
-                    for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
-                    {
-                        var positionData = itemData.positionData[j];
-
-                        var foundCount = 0;
-                        var foundText = "";
-
-                        if (positionData.found)
-                        {
-                            //Alert.Start(Enum.GetName(typeof(Position), j) + "\n" + itemData.Code + "\n" + newStick.Time.ToString(Formats.TIME) + "\n" + positionData.foundList[positionData.foundList.Count - 1].chartValues.Text, true);
-
-                            foundCount = positionData.foundList.Count - 1;
-                            foundText = positionData.foundList[positionData.foundList.Count - 1].chartValues.Text;
-                            Trading.instance.UpdateFoundInText(true);
-                        }
-
-                        if (j == (int)Position.Long)
-                        {
-                            itemData.foundListCountLong = foundCount;
-                            itemData.foundListLongHighestText = foundText;
-                        }
-                        else
-                        {
-                            itemData.foundListCount = foundCount + itemData.foundListCountLong;
-                            itemData.foundListCountShort = foundCount;
-                            itemData.foundListShortHighestText = foundText;
-                        }
-
-                        if (!itemData.positionData[(int)Position.Long].Enter && !itemData.positionData[(int)Position.Short].Enter && positionData.found)
-                            lock (Trading.minLocker)
-                                Strategy.foundItemList[j].Add(itemData.number, (itemData, positionData.foundList));
-                        else if (positionData.Enter)
-                        {
-                            var v = itemData.listDic[positionData.EnterFoundForExit.chartValues];
-                            if (Strategy.ExitConditionFinal(itemData, (Position)j, vm.lastStick, v.lastStick, v.list.Count - 1))
-                            {
-                                Trading.TradingSimulExitSetting(itemData, positionData, !Strategy.calSimul || positionData.Real);
-
-                                if (itemData.isAuto && itemData.RealEnter)
-                                {
-                                    itemData.DetectTime = newStick.Time;
-                                    if (!Trading_PlaceOrder(itemData, (Position)j == Position.Long ? Position.Short : Position.Long, false, true))
-                                        Error.Show(this, "order fail");
-
-                                    Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, Trading.instance.NowTime().ToString(Formats.TIME) + "~" + positionData.EnterTime.ToString(Formats.TIME),
-                                        DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 매도(자동)", DBHelper.conn1OrderHistoryColumn2, "전송가:" + newStick.Price[3]);
-                                }
-
-                                var profitRow = (double)((Position)j == Position.Long ? vm.lastStick.Price[3] / positionData.EnterPrice : positionData.EnterPrice / vm.lastStick.Price[3]);
-                                var resultData = new BackResultData()
-                                {
-                                    Code = itemData.Code,
-                                    EnterTime = positionData.EnterTime,
-                                    ExitTime = vm.lastStick.Time,
-                                    ProfitRate = Math.Round((profitRow - 1) * 100, 2),
-                                    LorS = (Position)j
-                                };
-
-                                if (itemData.resultDataForMetric[j] != null)
-                                {
-                                    if (itemData.resultDataForMetric[j].Code == itemData.Code)
-                                        itemData.resultDataForMetric[j].ExitTime = resultData.ExitTime;
-                                    lock (itemData.resultDataForMetric[j].locker)
-                                    {
-                                        itemData.resultDataForMetric[j].Count++;
-                                        itemData.resultDataForMetric[j].ProfitRate += profitRow;
-                                        if ((profitRow - 1) * 100 > BaseFunctions.commisionRate + BaseFunctions.slippage)
-                                        {
-                                            itemData.resultDataForMetric[j].WinCount++;
-                                            itemData.resultDataForMetric[j].WinProfitRateSum += profitRow;
-                                        }
-                                        itemData.resultDataForMetric[j].doneResults.Add(resultData);
-                                        itemData.resultDataForMetric[j].ingItems.Remove(itemData.Code);
-                                    }
-                                    itemData.resultDataForMetric[j] = null;
-                                }
-                            }
-                        }
-
-                        if (Trading.instance.KlineRcv == Trading.instance.KlineReq)
-                        {
-                            var conditionResult2 = Strategy.AllItemFindCondition();
-                            if (conditionResult2.found && conditionResult2.position[j])
-                                foreach (var foundItem in Strategy.foundItemList[j].Values)
-                                {
-                                    var iD = foundItem.itemData as BinanceItemData;
-                                    var positionData2 = iD.positionData[j];
-                                    if (Strategy.calSimul)
-                                        positionData2.Real = false;     // checkTrend
-                                    Trading.TradingSimulEnterSetting(iD, iD.positionData[j], iD.listDic.Values[Strategy.minIndex].lastStick, !Strategy.calSimul || positionData2.Real);
-
-                                    if (!iD.RealEnter && (orders[j].Count + positions[j].Count) < Trading.instance.LimitUpDownControl[j].Value && 
-                                        (!Strategy.calSimul || positionData2.Real))
-                                    {
-                                        try
-                                        {
-                                            iD.DetectTime = newStick.Time;
-                                            if (!Trading_PlaceOrder(iD, (Position)j, false, true))
-                                                Error.Show(this, "order fail");
-                                            else
-                                            {
-                                                orders[j].Add(iD.Code, iD);
-
-                                                UpdateAssets();
-
-                                                lock (CountLocker)
-                                                    EnterCount[j]++;
-
-                                                Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0,
-                                                    Trading.instance.NowTime().ToString(Formats.TIME) + "~" + iD.positionData[j].EnterTime.ToString(Formats.TIME),
-                                                    DBHelper.conn1OrderHistoryColumn1, iD.Code + "~1 매수(자동)", DBHelper.conn1OrderHistoryColumn2, "종가:" + iD.positionData[j].EnterPrice);
-                                                Alert.Start("Real Enter\n" +
-                                                    Enum.GetName(typeof(Position), j) + "\n" +
-                                                    iD.Code + "\n" +
-                                                    newStick.Time.ToString(Formats.TIME) + "\n" +
-                                                    iD.positionData[j].foundList[iD.positionData[j].foundList.Count - 1].chartValues.Text + "\n" +
-                                                    "Enter Count: " + EnterCount[j], true, true);
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Error.Show(this, e.Message);
-                                            throw;
-                                        }
-                                    }
-
-                                    if (Strategy.lastResultDataForCheckTrend[j] == null || Strategy.lastResultDataForCheckTrend[j].ExitTime != default)
-                                    {
-                                        var backResultData = new BackResultData() { EnterTime = newStick.Time, Code = foundItem.itemData.Code };
-                                        backResultData.beforeResultData = Strategy.lastResultDataForCheckTrend[j];
-                                        Strategy.lastResultDataForCheckTrend[j] = backResultData;
-                                    }
-
-                                    var resultData = Strategy.lastResultDataForCheckTrend[j];
-                                    foundItem.itemData.resultDataForMetric[j] = resultData;
-                                    resultData.ingItems.Add(foundItem.itemData.Code, foundItem.itemData.Code);
-                                }
-                        }
-                    }
 
                 Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.ClosePrice);
             }
