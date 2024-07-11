@@ -111,7 +111,7 @@ namespace BinanceHand
             SetClientAndKey();
 
             TradingLibrary.Base.DB.Binance.FuturesUSD.StartThread();
-            DBManager.BaseName = TradingLibrary.Base.DB.Binance.FuturesUSD.BASE_NAME;
+            SticksDBManager.BaseName = TradingLibrary.Base.DB.Binance.FuturesUSD.BASE_NAME;
             TradingLibrary.Base.DB.Binance.FuturesUSD.SetDB();
 
             KeyDown += Form1_KeyDown;
@@ -619,8 +619,8 @@ namespace BinanceHand
                         if (item.Last30minStickFluc > 3)
                             count++;
 
-                    Trading.instance.dbHelper.SaveData1(DBHelper.conn1DetectHistoryName, DBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Formats.TIME),
-                        DBHelper.conn1DetectHistoryColumn1, "직전 1시간 이내 3% 이상 변동 종목 개수", DBHelper.conn1DetectHistoryColumn2, count.ToString());
+                    Trading.instance.dbHelper.SaveData1(DataDBHelper.conn1DetectHistoryName, DataDBHelper.conn1DetectHistoryColumn0, Trading.instance.NowTime().ToString(Formats.TIME),
+                        DataDBHelper.conn1DetectHistoryColumn1, "직전 1시간 이내 3% 이상 변동 종목 개수", DataDBHelper.conn1DetectHistoryColumn2, count.ToString());
                 }
             }, BaseFunctions.tokenSource.Token);
 
@@ -965,6 +965,8 @@ namespace BinanceHand
 
                             TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() =>
                             {
+                                return;
+
                                 var lastMin = newStick.Time.AddMinutes(-1);
 
                                 TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code
@@ -1119,6 +1121,9 @@ namespace BinanceHand
                         CandleBaseFunctions.CompareAndUpdateTradeStick(v.lastStick, newStick);
                     }
                 }
+
+                lock (itemData.listDicLocker)
+                    Trading.instance.UpdateChart(itemData);
 
                 Trading.instance.CheckAndUpdateClosePNL(itemData, data.Data.ClosePrice);
             }
@@ -1708,89 +1713,89 @@ namespace BinanceHand
             var itemData = Trading.instance.showingItemData as BinanceItemData;
 
             var vc = BaseFunctions.mainChart.Tag as ChartValues;
+            var v = itemData.listDic[vc];
 
-            DateTime endTime = Trading.instance.NowTime();
-            if (loadNew)
-                itemData.showingStickList.Clear();
-            else
-                endTime = ChartTimeSet.AddSeconds(DateTime.Parse(chart.Series[0].Points[0].AxisLabel), -1);
-
-            List<IBinanceKline> blist = new List<IBinanceKline>();
-            var size = Trading.instance.chartViewSticksSize;
-
-            var loadSize = size + Strategy.IndNeedDays - 1;
-            var loadEndTime = endTime;
-
-            while (loadSize > 0)
-            {
-                var result = client.UsdFuturesApi.ExchangeData.GetKlinesAsync(itemData.Code, (KlineInterval)vc.original, null, loadEndTime, loadSize > 1500 ? 1500 : loadSize).Result;
-                if (!result.Success)
-                    Error.Show();
-
-                BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
-
-                var blist2 = result.Data.ToList();
-                if (blist2.Count == 0)
-                    break;
-
-                blist.InsertRange(0, blist2);
-
-                loadSize -= blist2.Count;
-                loadEndTime = ChartTimeSet.AddSeconds(blist2[0].OpenTime, -1);
-            }
-
-            var list = GetList(blist, vc);
-
-            if (list.Count == 0)
-            {
+            if (v.lastStick == null)
                 return;
-            }
 
-            var nowStick = itemData.showingStick;
-            if (!loadNew)
-                list.AddRange(itemData.showingStickList);
-            else
+            var size = Trading.instance.chartViewSticksSize;
+            var loadSize = size + Strategy.IndNeedDays - 1;
+
+            lock (itemData.listDicLocker)
             {
-                nowStick = list[list.Count - 1];
-                list.RemoveAt(list.Count - 1);
+                var endTime2 = loadNew ? v.lastStick.Time : itemData.showingStickList[0].Time.AddMinutes(-vc.minutes);
+
+                var loadStartTime2 = ChartTimeSet.AddMinutes(endTime2, -vc.minutes * loadSize);
+                var showStartTime2 = ChartTimeSet.AddMinutes(endTime2, -vc.minutes * size);
+
+                itemData.showingStickList.Clear();
+
+                if (v.list.Count > 0 && loadStartTime2 >= v.list[0].Time)   // 로드 사이즈가 그냥 리스트 내에 존재한다면
+                {
+                    // 그만큼의 양을 쇼리스트로 옮기기
+                    for (int i = 0; i < v.list.Count; i++)
+                    {
+                        if (v.list[i].Time == loadStartTime2)
+                        {
+                            itemData.showingStickList.AddRange(v.list.GetRange(i, v.list.Count - i));
+                            itemData.showingStickList.Add(v.lastStick);
+
+                            break;
+                        }
+                        else if (i == v.list.Count - 1)
+                        {
+                            if (loadStartTime2 != v.lastStick.Time)
+                                Error.Show();
+
+                            itemData.showingStickList.Add(v.lastStick);
+                        }
+                        else if (v.list[i].Time > loadStartTime2)
+                            Error.Show();
+                    }
+                }
+                else  // 존재하지 않는다면
+                {
+                    // 우선 그냥 리스트에 있는 양 전부를 쇼리스트에 옮기기
+                    itemData.showingStickList.AddRange(v.list);
+                    itemData.showingStickList.Add(v.lastStick);
+
+                    if (Trading.loadingDone) // 로드가 끝났다면
+                    {
+                        // 남은 양만큼 DB에서 로드해서 쇼리스트에 붙히기
+                        var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[vc];
+                        conn.Open();
+
+                        var reader = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
+                            "(" + Columns.TIME + "<='" + itemData.showingStickList[0].Time.AddMinutes(vc.minutes).ToString(Formats.DB_TIME) + "') AND " +
+                            "(" + Columns.TIME + ">='" + loadStartTime2.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
+
+                        var list = new List<TradeStick>();
+                        while (reader.Read())
+                            list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader, vc));
+
+                        conn.Close();
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+
+                        itemData.showingStickList.InsertRange(0, list);
+                    }
+                }
+
+                for (int i = 0; i < itemData.showingStickList.Count; i++)
+                    Strategy.SetRSIAandDiff(itemData, itemData.showingStickList, itemData.showingStickList[i], i - 1, cv: vc);
+
+                var startIndex = BaseFunctions.GetStartIndex(itemData.showingStickList, showStartTime2);
+                if (startIndex > 0)
+                    itemData.showingStickList.RemoveRange(0, startIndex);
+
+                BaseFunctions.baseInstance.ClearChart(chart);
+
+                // 쇼리스트에 있는 걸 차트 추가
+                for (int i = 0; i < itemData.showingStickList.Count; i++)
+                    Trading.instance.AddFullChartPoint(chart, itemData.showingStickList[i]);
+
+                itemData.currentPriceWhenLoaded = itemData.showingStickList.Last().Price[3];
             }
-
-            // 이해 필요
-            DateTime startTime = default;
-            if (vc.minutes <= ChartTimeSet.Day1.minutes)
-            {
-                startTime = ChartTimeSet.AddSeconds(endTime, -(int)(endTime.TimeOfDay.TotalSeconds % vc.seconds) - (size - 1) * vc.seconds);
-            } 
-            //else if (vc.minutes < ChartTimeSet.OneMonth.index)
-            //{
-            //    startTime = endTime
-            //        .AddSeconds(-(size - 1) * vc.seconds);
-            //}
-            //else
-            //{
-            //    startTime = endTime
-            //        .AddMonths(-(size - 1));
-            //}
-
-            var startIndex = BaseFunctions.GetStartIndex(list, startTime);
-
-            for (int i = 0; i < list.Count; i++)
-                Strategy.SetRSIAandDiff(itemData, list, list[i], i - 1, int.MinValue, vc);
-            Strategy.SetRSIAandDiff(itemData, list, nowStick, list.Count - 1, int.MinValue, vc);
-
-            if (startIndex > 0)
-                list.RemoveRange(0, startIndex);
-
-            BaseFunctions.baseInstance.ClearChart(chart);
-
-            for (int i = 0; i < list.Count; i++)
-                Trading.instance.AddFullChartPoint(chart, list[i]);
-            Trading.instance.AddFullChartPoint(chart, nowStick);
-
-            itemData.showingVC = vc;
-            itemData.showingStickList = list;
-            itemData.showingStick = nowStick;
-            itemData.currentPriceWhenLoaded = itemData.showingStick.Price[3];
         }
         void Trading_AggONandOFF(TradeItemData itemData, bool on)
         {
@@ -2022,8 +2027,8 @@ namespace BinanceHand
                 itemData.Size = 0;
             }
 
-            Trading.instance.dbHelper.SaveData1(DBHelper.conn1OrderHistoryName, DBHelper.conn1OrderHistoryColumn0, Trading.instance.NowTime().ToString(Formats.TIME) + "~" + tradeData.Here_Send_Time.ToString(Formats.TIME),
-                DBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 " + (position == Position.Long ? "매수" : "매도") + "주문전송", DBHelper.conn1OrderHistoryColumn2, "주문가격:" + price + " 주문수량:" + quantity);
+            Trading.instance.dbHelper.SaveData1(DataDBHelper.conn1OrderHistoryName, DataDBHelper.conn1OrderHistoryColumn0, Trading.instance.NowTime().ToString(Formats.TIME) + "~" + tradeData.Here_Send_Time.ToString(Formats.TIME),
+                DataDBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 " + (position == Position.Long ? "매수" : "매도") + "주문전송", DataDBHelper.conn1OrderHistoryColumn2, "주문가격:" + price + " 주문수량:" + quantity);
 
             return true;
         }
