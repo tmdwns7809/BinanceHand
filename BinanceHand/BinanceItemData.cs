@@ -15,6 +15,8 @@ namespace BinanceHand
         public UpdateSubscription aggSub;
         public UpdateSubscription hoSub;
 
+        public MakerOrderData makerOrderData = new MakerOrderData();
+
         public bool klineFirst = true;
 
         public FuturesOrderType OrderType;
@@ -63,5 +65,16 @@ namespace BinanceHand
             hoDiff = fu.PriceFilter.TickSize;
             minNotionalValue = fu.MinNotionalFilter.MinNotional;
         }
+    }
+
+    public class MakerOrderData
+    {
+        public bool HoOn = false;
+        public UpdateSubscription hoSub = null;
+
+        public decimal ask;
+        public decimal bid;
+        public DateTime abUpdatedTime;
+
     }
 }
