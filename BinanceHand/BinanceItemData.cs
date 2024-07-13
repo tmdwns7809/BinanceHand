@@ -7,6 +7,7 @@ using BrightIdeasSoftware;
 using Binance.Net.Enums;
 using TradingLibrary;
 using TradingLibrary.Base;
+using TradingLibrary.Base.Enum;
 
 namespace BinanceHand
 {
@@ -72,9 +73,10 @@ namespace BinanceHand
         public bool HoOn = false;
         public UpdateSubscription hoSub = null;
 
-        public decimal ask;
-        public decimal bid;
-        public DateTime abUpdatedTime;
+        public bool orderStart = false;
+        public Position orderPosition;
+        public bool orderEnd = true;
+        public long orderId;
 
     }
 }

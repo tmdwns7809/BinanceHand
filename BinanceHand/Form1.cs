@@ -30,6 +30,12 @@ using System.Data.SQLite;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Binance.Net.Objects.Options;
 using System.Security.Cryptography;
+using CryptoExchange.Net.CommonObjects;
+using System.Diagnostics;
+//using Position = CryptoExchange.Net.CommonObjects.Position;
+using Position = TradingLibrary.Base.Enum.Position;
+using System.Security.Policy;
+using Binance.Net.Objects.Models;
 
 namespace BinanceHand
 {
@@ -95,7 +101,8 @@ namespace BinanceHand
             Trading.instance.ShowChartAdditional += Trading_ShowChartAdditional;
             Trading.instance.ResetOrderView += Trading_ResetOrderView;
             Trading.instance.LoadMoreAdditional += Trading_LoadMoreAdditional;
-            Trading.instance.PlaceOrder += Trading_PlaceTakerOrder;
+            //Trading.instance.PlaceOrder += Trading_PlaceTakerOrder;
+            Trading.instance.PlaceOrder += Trading_PlaceMakerOrder;
 
             Trading.instance.CodeListView.Columns.Remove(Trading.instance.CodeListView.GetColumn("Name"));
             Trading.instance.CodeListView2.Columns.Remove(Trading.instance.CodeListView2.GetColumn("Name"));
@@ -542,7 +549,7 @@ namespace BinanceHand
                             var a = data;
                         },
                         OnAccountUpdates,
-                        OnOrderUpdates,
+                        OnOrderUpdatesForMakerOrder,
                         data => {
                             var a = data;
                         },
@@ -708,42 +715,42 @@ namespace BinanceHand
                     }
                     else if (itemData.RealEnter)
                         itemData.Size = position.Quantity;
-                    else
-                    {
-                        var result = await socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates);
-                        if (!result.Success)
-                            Error.Show();
+                    //else
+                    //{
+                    //    var result = await socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates);
+                    //    if (!result.Success)
+                    //        Error.Show();
 
-                        itemData.markSub = result.Data;
+                    //    itemData.markSub = result.Data;
 
-                        Invoke(new Action(() => {
-                            itemData.RealEnterPrice = position.EntryPrice;
-                            itemData.RealEnterTime = Trading.instance.NowTime();
-                            itemData.Size = position.Quantity;
-                            itemData.PNL = position.UnrealizedPnl;
-                            itemData.RealPosition = itemData.Size > 0 ? Position.Long : Position.Short;
-                            itemData.RealEnterN = (int)itemData.RealPosition + 1;
-                            positions[(int)itemData.RealPosition].Add(itemData.Code, itemData);
-                            orders[(int)itemData.RealPosition].Remove(itemData.Code);
-                            itemData.RealEnter = true;
-                            Trading.instance.CodeListView.RemoveObject(itemData);
-                            Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
-                            if (itemData.star)
-                            {
-                                Trading.instance.CodeListView2.RemoveObject(itemData);
-                                Trading.instance.CodeListView2.InsertObjects(0, new List<BinanceItemData> { itemData });
-                            }
+                    //    Invoke(new Action(() => {
+                    //        itemData.RealEnterPrice = position.EntryPrice;
+                    //        itemData.RealEnterTime = Trading.instance.NowTime();
+                    //        itemData.Size = position.Quantity;
+                    //        itemData.PNL = position.UnrealizedPnl;
+                    //        itemData.RealPosition = itemData.Size > 0 ? Position.Long : Position.Short;
+                    //        itemData.RealEnterN = (int)itemData.RealPosition + 1;
+                    //        positions[(int)itemData.RealPosition].Add(itemData.Code, itemData);
+                    //        orders[(int)itemData.RealPosition].Remove(itemData.Code);
+                    //        itemData.RealEnter = true;
+                    //        Trading.instance.CodeListView.RemoveObject(itemData);
+                    //        Trading.instance.CodeListView.InsertObjects(0, new List<BinanceItemData> { itemData });
+                    //        if (itemData.star)
+                    //        {
+                    //            Trading.instance.CodeListView2.RemoveObject(itemData);
+                    //            Trading.instance.CodeListView2.InsertObjects(0, new List<BinanceItemData> { itemData });
+                    //        }
 
-                            UpdateAssets();
+                    //        UpdateAssets();
 
-                            if (itemData == Trading.instance.showingItemData)
-                            {
-                                Trading_ResetOrderView();
+                    //        if (itemData == Trading.instance.showingItemData)
+                    //        {
+                    //            Trading_ResetOrderView();
 
-                                Trading.instance.ChangeChartAreaBorderColor(itemData.RealPosition == Position.Long ? ColorSet.VolumeTaker : ColorSet.VolumeMaker, false);
-                            }
-                        }));
-                    }
+                    //            Trading.instance.ChangeChartAreaBorderColor(itemData.RealPosition == Position.Long ? ColorSet.VolumeTaker : ColorSet.VolumeMaker, false);
+                    //        }
+                    //    }));
+                    //}
                 }
         }
         void OnOrderUpdates(DataEvent<BinanceFuturesStreamOrderUpdate> data0)
@@ -2024,176 +2031,16 @@ namespace BinanceHand
         {
             var itemData = itemData0 as BinanceItemData;
 
-            if (itemData.RealEnter && itemData.RealPosition == position)
+            if (itemData.makerOrderData.orderStart || (itemData.RealEnter && itemData.RealPosition == position))
                 return false;
 
-            itemData.autoCancel = autoCancel;
+            if (!itemData.makerOrderData.orderEnd || itemData.makerOrderData.HoOn)
+                Error.Show(message: "order logic error");
 
-            var tradeData = new TradeData();
-            var minList = itemData.listDic[ChartTimeSet.Minute1];
+            itemData.makerOrderData.orderStart = true;
+            itemData.makerOrderData.orderPosition = position;
 
-            tradeData.Send_Close_Price = itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : itemData.newPrice;
-            tradeData.Last_Min_Qnt = minList.lastStick.Ms + minList.lastStick.Md;
-
-            decimal? price = position == Position.Long ?
-                    (int)(tradeData.Send_Close_Price * (1 + priceRate / 100) / itemData.hoDiff + 1) * itemData.hoDiff :
-                    (int)(tradeData.Send_Close_Price * (1 - priceRate / 100) / itemData.hoDiff) * itemData.hoDiff;
-
-            decimal quantity = itemData.RealEnter ? Math.Abs(itemData.Size) : default;
-            decimal limitBalancePercent = default;
-            decimal limitAvgSecPercent = default;
-            if (!auto && ((orderSizeTextBox1.Enabled && (!decimal.TryParse(orderSizeTextBox1.Text, out quantity) || quantity <= 0))
-                    || (!itemData.RealEnter && autoSizeCheckBox.AutoCheck && autoSizeCheckBox.Checked &&
-                        (!decimal.TryParse(maximumBalanceForSizeTextBox0.Text, out limitBalancePercent) || limitBalancePercent <= 0) &&
-                        (!decimal.TryParse(maximumPercentOfAvgSecForSizeTextBox0.Text, out limitAvgSecPercent) || limitAvgSecPercent <= 0))))
-            {
-                Error.Show(this, "order input error");
-                return false;
-            }
-            else if (!itemData.RealEnter && (auto || miniSizeCheckBox.Checked || autoSizeCheckBox.Checked))
-            {
-                var minQuan = GetMinQuan(itemData, (decimal)price);
-                if (!auto && miniSizeCheckBox.Checked)
-                    quantity = minQuan;
-                else
-                {
-                    if (auto)
-                    {
-                        limitAvgSecPercent = autoLimitAvgSecPercent;
-                        limitBalancePercent = Trading.instance.BudgetRateControl.Value;
-                    }
-
-                    quantity = (int)(limitAvgSecPercent / 100 * tradeData.Last_Min_Qnt / 60 / itemData.minSize + 1) * itemData.minSize;
-                    if (quantity < minQuan)
-                        quantity = minQuan;
-
-                    var budget = Trading.instance.assetDic[Trading.AssetTextWalletBalance].Amount * limitBalancePercent / 100;
-                    if (budget > Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount)
-                        budget = Trading.instance.assetDic[Trading.AssetTextAvailableBalance].Amount;
-
-                    var limitAmount = budget < itemData.minNotionalValue ? minQuan :
-                        ((int)(budget / price / itemData.minSize + 1) * itemData.minSize);
-
-                    if (limitAmount < quantity)
-                        quantity = limitAmount;
-                }
-            }
-
-            var orderType = FuturesOrderType.Limit;
-            TimeInForce? timeInForce = null;
-            if (!auto)
-            {
-                if (!marketRadioButton.Checked && !market)
-                {
-                    if (PORadioButton.Checked)
-                        timeInForce = TimeInForce.GoodTillCrossing;
-                    else if (IOCRadioButton.Checked)
-                        timeInForce = TimeInForce.ImmediateOrCancel;
-                    else
-                        timeInForce = TimeInForce.GoodTillCanceled;
-                }
-                else
-                    orderType = FuturesOrderType.Market;
-            }
-            else
-                timeInForce = TimeInForce.GoodTillCrossing;
-
-
-            if (!itemData.RealEnter && price * quantity < itemData.minNotionalValue)
-            {
-                Error.Show(this, "prcie quantity error");
-                return false;
-            }
-
-            if (orderType == FuturesOrderType.Market)
-                price = null;
-
-            if (!auto)
-                orderSizeTextBox1.Text = quantity.ToString(Formats.FOR_DECIMAL_STRING);
-
-            itemData.positionWhenOrder = itemData.RealEnter;
-            if (!itemData.positionWhenOrder)
-                itemData.isAuto = auto;
-            else
-            {
-                itemData.ExitCanceledTradeData = null;
-
-                if (itemData.isAuto)
-                {
-                    if (itemData.EnterTradeData.Detect_Stick_Time == itemData.DetectTime)
-                    {
-                        itemData.isAutoHandOut = true;
-                        itemData.DetectTime = Trading.instance.NowTime();
-                    }
-                    else
-                        itemData.isAutoHandOut = false;
-                }
-            }
-
-            var result = client.UsdFuturesApi.Trading.PlaceOrderAsync(
-                itemData.Code
-                , position == Position.Long ? OrderSide.Buy : OrderSide.Sell
-                , orderType
-                , quantity
-                , price
-                , PositionSide.Both
-                , timeInForce
-                , itemData.positionWhenOrder && (auto || ROCheckBox.Checked)).Result;
-            if (!result.Success)
-            {
-                Error.Show(this, "order fail");
-                return false;
-            }
-
-            tradeData.Here_Send_Time = Trading.instance.NowTime();
-            tradeData.Send_Price = price == null ? 0 : (decimal)price;
-            tradeData.Send_Qnt = quantity;
-            tradeData.Position = position;
-
-            var result2 = client.UsdFuturesApi.Trading.CancelAllOrdersAfterTimeoutAsync(itemData.Code, TimeSpan.FromSeconds(1)).Result;
-            if (!result2.Success)
-                Error.Show(this, "timeout cancel order fail");
-
-            if (itemData.positionWhenOrder)
-            {
-                itemData.ExitTradeData = tradeData;
-
-                if (itemData.resultData == default)
-                {
-                    itemData.resultData = new TradeResultData { Code = itemData.Code };
-                    itemData.resultData.Position = position == Position.Long ? "Short" : "Long";
-
-                    if (InvokeRequired)
-                        BeginInvoke(new Action(() => {
-                            (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
-                        }));
-                    else
-                        (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
-                }
-
-                itemData.resultData.ExitSendTime = Trading.instance.NowTime();
-            }
-            else
-            {
-                itemData.EnterTradeData = tradeData;
-
-                itemData.RealPosition = position == Position.Long ? Position.Long : Position.Short;
-
-                itemData.resultData = new TradeResultData { Code = itemData.Code };
-                itemData.resultData.Position = position == Position.Long ? "Long" : "Short";
-                itemData.resultData.EnterSendTime = Trading.instance.NowTime();
-                if (InvokeRequired)
-                    BeginInvoke(new Action(() => {
-                        (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
-                    }));
-                else
-                    (auto ? Trading.instance.realAutoResultListView : Trading.instance.realHandResultListView).InsertObjects(0, new List<TradeResultData> { itemData.resultData });
-
-                itemData.Size = 0;
-            }
-
-            Trading.instance.dbHelper.SaveData1(DataDBHelper.conn1OrderHistoryName, DataDBHelper.conn1OrderHistoryColumn0, Trading.instance.NowTime().ToString(Formats.TIME) + "~" + tradeData.Here_Send_Time.ToString(Formats.TIME),
-                DataDBHelper.conn1OrderHistoryColumn1, itemData.Code + "~2 " + (position == Position.Long ? "매수" : "매도") + "주문전송", DataDBHelper.conn1OrderHistoryColumn2, "주문가격:" + price + " 주문수량:" + quantity);
+            HoONandOFFForMakerOrder(itemData, true);
 
             return true;
         }
@@ -2201,7 +2048,11 @@ namespace BinanceHand
         {
             if (on)  //100, 500
             {
-                var result = socketClient.UsdFuturesApi.SubscribeToOrderBookUpdatesAsync(itemData.Code, 100, OnHoUpdatesForMakerOrder).Result;
+                var result = socketClient.UsdFuturesApi.SubscribeToPartialOrderBookUpdatesAsync(
+                    symbol: itemData.Code
+                    , levels: 5
+                    , updateInterval: 100
+                    , onMessage: OnHoUpdatesForMakerOrder).Result;
                 if (!result.Success)
                     Error.Show();
 
@@ -2212,8 +2063,7 @@ namespace BinanceHand
             {
                 socketClient.UnsubscribeAsync(itemData.makerOrderData.hoSub).Wait();
 
-                itemData.makerOrderData.hoSub = null;
-                itemData.makerOrderData.HoOn = false;
+                itemData.makerOrderData = new MakerOrderData();
             }
         }
         void OnHoUpdatesForMakerOrder(DataEvent<IBinanceFuturesEventOrderBook> data0)
@@ -2231,12 +2081,104 @@ namespace BinanceHand
             var asks = data.Asks.ToList();
             var bids = data.Bids.ToList();
 
-            if (asks.Count != 1 || bids.Count != 1 || asks[0].Price <= bids[0].Price)
+            if (asks[0].Price <= bids[0].Price)
                 Error.Show();
 
-            itemData.makerOrderData.ask = asks[0].Price;
-            itemData.makerOrderData.bid = bids[0].Price;
-            itemData.makerOrderData.abUpdatedTime = Trading.instance.NowTime();
+            if (itemData.makerOrderData.orderStart)
+            {
+                if (itemData.makerOrderData.orderEnd) // 첫 주문
+                {
+                    var sp = GetSideAndPriceOfMakerOrder(itemData, asks, bids);
+
+                    var result = client.UsdFuturesApi.Trading.PlaceOrderAsync(
+                        symbol: itemData.Code
+                        , side: sp.side
+                        , type: FuturesOrderType.Limit
+                        , quantity: itemData.RealEnter ? Math.Abs(itemData.Size) : GetMinQuan(itemData, sp.price)
+                        , price: sp.price
+                        , positionSide: PositionSide.Both
+                        , timeInForce: TimeInForce.GoodTillCrossing
+                        , reduceOnly: itemData.RealEnter).Result;
+
+                    if (!result.Success)
+                    {
+                        if (result.Error.Code != -5022)
+                            Error.Show(this, "order fail");
+
+                        // 에러 메세지
+                        //// Due to the order could not be executed as maker, the Post Only order will be rejected. 
+                        //// The order will not be recorded in the order history
+
+                        return;
+                    }
+
+                    itemData.makerOrderData.orderEnd = false;
+                    itemData.makerOrderData.orderId = result.Data.Id;
+                }
+                else  // 첫 주문 이후 주문
+                {
+                    var queryOrder = client.UsdFuturesApi.Trading.GetOrderAsync(
+                        symbol: itemData.Code
+                        , orderId: itemData.makerOrderData.orderId).Result;
+
+                    if (!queryOrder.Success)
+                        Error.Show();
+
+                    var remainQuantity = queryOrder.Data.Quantity - queryOrder.Data.QuantityFilled;
+
+                    if (remainQuantity == 0)
+                        Error.Show();
+
+                    var sp = GetSideAndPriceOfMakerOrder(itemData, asks, bids);
+
+                    if (queryOrder.Data.Price == (sp.side == OrderSide.Buy ? bids : asks)[0].Price
+                        || queryOrder.Data.Price == sp.price)
+                        return;
+
+                    var changeOrder = client.UsdFuturesApi.Trading.EditOrderAsync(
+                        symbol: itemData.Code
+                        , side: sp.side
+                        , quantity: remainQuantity
+                        , price: sp.price
+                        , orderId: itemData.makerOrderData.orderId).Result;
+
+                    if (!changeOrder.Success || changeOrder.Error.Code == -5027) // -5027 : No need to modify the order.
+                        Error.Show();
+                }
+            }
+        }
+        (OrderSide side, decimal price) GetSideAndPriceOfMakerOrder(
+            BinanceItemData itemData
+            , List<BinanceOrderBookEntry> asks
+            , List<BinanceOrderBookEntry> bids)
+        {
+            (OrderSide side, decimal price) sp;
+
+            if (itemData.makerOrderData.orderPosition == Position.Long)
+            {
+                sp.side = OrderSide.Buy;
+                sp.price = asks[0].Price - itemData.hoDiff;
+            }
+            else
+            {
+                sp.side = OrderSide.Sell;
+                sp.price = bids[0].Price + itemData.hoDiff;
+            }
+
+            return sp;
+        }
+        void OnOrderUpdatesForMakerOrder(DataEvent<BinanceFuturesStreamOrderUpdate> data0)
+        {
+            var data = data0.Data;
+            var itemData = BaseFunctions.itemDataDic[data.UpdateData.Symbol] as BinanceItemData;
+
+            if (data.UpdateData.AccumulatedQuantityOfFilledTrades != data.UpdateData.Quantity)
+                return;
+
+            if (data.UpdateData.Status != OrderStatus.Filled || !itemData.makerOrderData.HoOn)
+                Error.Show();
+
+            HoONandOFFForMakerOrder(itemData, false);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
