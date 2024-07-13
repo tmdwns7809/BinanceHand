@@ -639,7 +639,7 @@ namespace BinanceHand
                     itemData.Leverage = s.Leverage;
                     itemData.maxNotionalValue = s.MaxNotional;
 
-                    BinanceEnterSetting(itemData, s.EntryPrice, s.Quantity, Trading.instance.NowTime().AddMinutes(-5));
+                    BinanceEnterSetting(itemData, s.EntryPrice, s.Quantity, s.UpdateTime);
                 }
             }
         }
@@ -756,7 +756,16 @@ namespace BinanceHand
 
             Trading_ResetOrderView();
 
-            Trading.instance.ChangeChartAreaBorderColor(itemData.RealPosition == Position.Long ? ColorSet.VolumeTaker : ColorSet.VolumeMaker, false);
+            Color color;
+
+            if (itemData.RealPosition == Position.Long)
+                color = ColorSet.VolumeTaker;
+            else if (itemData.RealPosition == Position.Short)
+                color = ColorSet.VolumeMaker;
+            else
+                color = default;
+
+            Trading.instance.ChangeChartAreaBorderColor(color, false);
         }
         void OnOrderUpdates(DataEvent<BinanceFuturesStreamOrderUpdate> data0)
         {
@@ -2220,7 +2229,7 @@ namespace BinanceHand
 
             var startX = 0D;
             var startY = axisY.ValueToPixelPosition((double)itemData.RealEnterPrice);
-            var endX = priceArea.AxisX.ValueToPixelPosition(priceSeries.Points.Count - 1);
+            var endX = priceArea.AxisX.ValueToPixelPosition(priceSeries.Points.Count);
             var endY = axisY.ValueToPixelPosition((double)itemData.showingStickList.Last().Price[3]);
 
             for (int i = 0; i < itemData.showingStickList.Count; i++)
