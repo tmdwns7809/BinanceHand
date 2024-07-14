@@ -317,8 +317,6 @@ namespace BinanceHand
 
         void Form1_Load(object sender, EventArgs e)
         {
-            //GetOrdersHistory();
-
             SetItemDataList();
 
             SubscribeToUserStream(testnet, true);
@@ -555,16 +553,6 @@ namespace BinanceHand
             if (!result2.Success)
                 Error.Show();
         }
-        void GetOrdersHistory()
-        {
-            var result = client.UsdFuturesApi.Trading.GetOrdersAsync("BTCUSDT"
-                , startTime: DateTime.Parse("2024-01-10")
-                , endTime: DateTime.Parse("2024-01-16")).Result;
-            if (!result.Success)
-                Error.Show();
-
-            BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
-        }
         void GetAccountInfo()
         {
             Trading.instance.assetDic.Add(Trading.AssetTextWalletBalance, new Asset { AssetName = Trading.AssetTextWalletBalance });
@@ -640,7 +628,45 @@ namespace BinanceHand
                     itemData.maxNotionalValue = s.MaxNotional;
 
                     BinanceEnterSetting(itemData, s.EntryPrice, s.Quantity, s.UpdateTime);
+
+                    GetEnterTime(itemData);
                 }
+            }
+        }
+        void GetEnterTime(BinanceItemData itemData)
+        {
+            var searchStartTime = itemData.RealEnterTime.AddMinutes(1);
+            var searchLimitTime = trading.NowTime().AddDays(-89);
+
+            while (true)
+            {
+                var nextSearchStartTime = searchStartTime.AddDays(-7);
+
+                if (nextSearchStartTime < searchLimitTime)
+                    searchLimitTime = nextSearchStartTime;
+
+                var result = client.UsdFuturesApi.Trading.GetOrdersAsync(itemData.Code
+                    , startTime: nextSearchStartTime
+                    , endTime: searchStartTime).Result;
+                if (!result.Success)
+                    Error.Show();
+
+                BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+
+                var found = false;
+                foreach (var order in result.Data)
+                {
+                    if (!order.ReduceOnly && order.Status == OrderStatus.Filled)
+                    {
+                        found = true;
+                        itemData.RealEnterTime = order.CreateTime; 
+                    }
+                }
+
+                if (found || nextSearchStartTime == searchLimitTime)
+                    break;
+                else
+                    searchStartTime = nextSearchStartTime;
             }
         }
         void OnAccountUpdates(DataEvent<BinanceFuturesStreamAccountUpdate> data0)
@@ -660,12 +686,13 @@ namespace BinanceHand
                 {
                     var itemData = BaseFunctions.itemDataDic[position.Symbol] as BinanceItemData;
 
-                    if (position.Quantity == 0)
-                        BinanceExitSetting(itemData);
-                    else if (itemData.RealEnter)
-                        itemData.Size = position.Quantity;
-                    else
-                        BinanceEnterSetting(itemData, position.EntryPrice, position.Quantity);
+                    if (position.Quantity != 0)
+                    {
+                        if (itemData.RealEnter)
+                            itemData.Size = position.Quantity;
+                        else
+                            BinanceEnterSetting(itemData, position.EntryPrice, position.Quantity);
+                    }
                 }
         }
         public void BinanceEnterSetting(
@@ -711,7 +738,7 @@ namespace BinanceHand
                 itemData.maxLeverage = itemData.brackets[0].InitialLeverage;
             }
 
-            var result = socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 3000, OnMarkPriceUpdates).Result;
+            var result = socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 1000, OnMarkPriceUpdates).Result;
             if (!result.Success)
                 Error.Show();
 
@@ -719,24 +746,33 @@ namespace BinanceHand
 
             ResetOrderAndBorderView(itemData);
         }
-        public void BinanceExitSetting(BinanceItemData itemData)
+        public void BinanceExitSetting(
+            BinanceItemData itemData
+            , DateTime exitTime
+            , decimal exitPrice)
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => { BinanceExitSetting(itemData); }));
+                Invoke(new Action(() => { BinanceExitSetting(itemData, exitTime, exitPrice); }));
                 return;
             }
 
             if (!itemData.RealEnter)
                 Error.Show();
 
-            itemData.RealEnter = false;
-            itemData.codeListColumnData.Position = Position.None;
-            itemData.codeListColumnData.PNL = 0;
-
             positions[(int)itemData.RealPosition].Remove(itemData.Code);
 
-            itemData.markSub.CloseAsync().Wait();
+            trading.dbHelper.SavePositionHistory(DBNameConstants.TYPE_NAME_BINANCE_HAND
+                , itemData.Code, itemData.RealPosition
+                , itemData.RealEnterTime, itemData.RealEnterPrice
+                , exitTime, exitPrice);
+
+            itemData.RealEnter = false;
+            itemData.RealPosition = Position.None;
+            itemData.codeListColumnData.Position = itemData.RealPosition;
+            itemData.codeListColumnData.PNL = 0;
+
+            socketClient.UnsubscribeAsync(itemData.markSub).Wait();
 
             UpdateAssets();
 
@@ -2198,6 +2234,8 @@ namespace BinanceHand
 
             if (data.UpdateData.Status != OrderStatus.Filled || !itemData.makerOrderData.HoOn)
                 Error.Show();
+
+            BinanceExitSetting(itemData, data.UpdateData.UpdateTime, data.UpdateData.AveragePrice);
 
             HoONandOFFForMakerOrder(itemData, false);
         }
