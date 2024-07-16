@@ -330,6 +330,11 @@ namespace BinanceHand
                 Error.Show();
 
             Trading.instance.UpdateReqRcv(Trading.instance.KlineReqTextBox, symbolList.Count);
+
+            //HoONandOFFForMakerOrder(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, true);
+            //HoONandOFFForMakerOrder(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, false);
+            //MarkPriceONandOFF(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, true);
+            //MarkPriceONandOFF(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, false);
         }
         void SetItemDataList()
         {
@@ -738,11 +743,7 @@ namespace BinanceHand
                 itemData.maxLeverage = itemData.brackets[0].InitialLeverage;
             }
 
-            var result = socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 1000, OnMarkPriceUpdates).Result;
-            if (!result.Success)
-                Error.Show();
-
-            itemData.markSub = result.Data;
+            MarkPriceONandOFF(itemData, true);
 
             ResetOrderAndBorderView(itemData);
         }
@@ -772,7 +773,7 @@ namespace BinanceHand
             itemData.codeListColumnData.Position = itemData.RealPosition;
             itemData.codeListColumnData.PNL = 0;
 
-            socketClient.UnsubscribeAsync(itemData.markSub).Wait();
+            MarkPriceONandOFF(itemData, false);
 
             UpdateAssets();
 
@@ -1623,7 +1624,21 @@ namespace BinanceHand
 
             Trading.instance.HoMain1(itemData);
         }
+        void MarkPriceONandOFF(BinanceItemData itemData, bool on)
+        {
+            if (on)  //100, 500
+            {
+                var result = socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 1000, OnMarkPriceUpdates).Result;
+                if (!result.Success)
+                    Error.Show();
 
+                itemData.markSub = result.Data;
+            }
+            else
+            {
+                socketClient.UnsubscribeAsync(itemData.markSub).Wait();
+            }
+        }
         void OnMarkPriceUpdates(DataEvent<BinanceFuturesUsdtStreamMarkPrice> data0)
         {
             if (Trading.instance.assetsListView.InvokeRequired)
@@ -2188,8 +2203,7 @@ namespace BinanceHand
 
                     var sp = GetSideAndPriceOfMakerOrder(itemData, asks, bids);
 
-                    if (queryOrder.Data.Price == (sp.side == OrderSide.Buy ? bids : asks)[0].Price
-                        || queryOrder.Data.Price == sp.price)
+                    if (queryOrder.Data.Price == sp.price)
                         return;
 
                     var changeOrder = client.UsdFuturesApi.Trading.EditOrderAsync(
