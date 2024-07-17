@@ -2254,7 +2254,8 @@ namespace BinanceHand
             if (data.UpdateData.Status != OrderStatus.Filled || !itemData.makerOrderData.HoOn)
                 Error.Show();
 
-            BinanceExitSetting(itemData, data.UpdateData.UpdateTime, data.UpdateData.AveragePrice);
+            if (itemData.RealPosition == Position.Long ? data.UpdateData.Side == OrderSide.Sell : data.UpdateData.Side == OrderSide.Buy)
+                BinanceExitSetting(itemData, data.UpdateData.UpdateTime, data.UpdateData.AveragePrice);
 
             HoONandOFFForMakerOrder(itemData, false);
         }
