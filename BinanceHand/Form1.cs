@@ -72,6 +72,8 @@ namespace BinanceHand
 
         static BinanceRestClient client;
         static BinanceSocketClient socketClient;
+        static BinanceSocketClient socketClientHo;
+        static BinanceSocketClient socketClientMark;
 
         List<string> symbolList = new List<string>();
 
@@ -274,6 +276,14 @@ namespace BinanceHand
                     options.ReconnectInterval = TimeSpan.FromMinutes(1);
                 }
             });
+            socketClientHo = new BinanceSocketClient(delegate (BinanceSocketOptions options)
+            {
+                options.ReconnectInterval = TimeSpan.FromMinutes(1);
+            });
+            socketClientMark = new BinanceSocketClient(delegate (BinanceSocketOptions options)
+            {
+                options.ReconnectInterval = TimeSpan.FromMinutes(1);
+            });
 
             if (testnet)       //testnet
             {
@@ -330,11 +340,6 @@ namespace BinanceHand
                 Error.Show();
 
             Trading.instance.UpdateReqRcv(Trading.instance.KlineReqTextBox, symbolList.Count);
-
-            //HoONandOFFForMakerOrder(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, true);
-            //HoONandOFFForMakerOrder(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, false);
-            //MarkPriceONandOFF(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, true);
-            //MarkPriceONandOFF(BaseFunctions.itemDataDic["BTCUSDT"] as BinanceItemData, false);
         }
         void SetItemDataList()
         {
@@ -1628,7 +1633,7 @@ namespace BinanceHand
         {
             if (on)  //100, 500
             {
-                var result = socketClient.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 1000, OnMarkPriceUpdates).Result;
+                var result = socketClientMark.UsdFuturesApi.SubscribeToMarkPriceUpdatesAsync(itemData.Code, 1000, OnMarkPriceUpdates).Result;
                 if (!result.Success)
                     Error.Show();
 
@@ -1636,7 +1641,7 @@ namespace BinanceHand
             }
             else
             {
-                socketClient.UnsubscribeAsync(itemData.markSub).Wait();
+                socketClientMark.UnsubscribeAsync(itemData.markSub).Wait();
             }
         }
         void OnMarkPriceUpdates(DataEvent<BinanceFuturesUsdtStreamMarkPrice> data0)
@@ -2120,7 +2125,7 @@ namespace BinanceHand
         {
             if (on)  //100, 500
             {
-                var result = socketClient.UsdFuturesApi.SubscribeToPartialOrderBookUpdatesAsync(
+                var result = socketClientHo.UsdFuturesApi.SubscribeToPartialOrderBookUpdatesAsync(
                     symbol: itemData.Code
                     , levels: 5
                     , updateInterval: 100
@@ -2133,7 +2138,7 @@ namespace BinanceHand
             }
             else
             {
-                socketClient.UnsubscribeAsync(itemData.makerOrderData.hoSub).Wait();
+                socketClientHo.UnsubscribeAsync(itemData.makerOrderData.hoSub).Wait();
 
                 itemData.makerOrderData = new MakerOrderData();
             }
