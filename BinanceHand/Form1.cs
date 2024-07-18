@@ -2198,6 +2198,9 @@ namespace BinanceHand
                         symbol: itemData.Code
                         , orderId: itemData.makerOrderData.orderId).Result;
 
+                    if (queryOrder.Data.Status == OrderStatus.Filled)
+                        return;
+
                     if (!queryOrder.Success)
                         Error.Show();
 
@@ -2219,7 +2222,14 @@ namespace BinanceHand
                         , orderId: itemData.makerOrderData.orderId).Result;
 
                     if (!changeOrder.Success && changeOrder.Error.Code != -5027) // -5027 : No need to modify the order.
+                    {
+                        if (changeOrder.Error.Code != -2013) // order does not exist
+                        {
+
+                        }
+
                         Error.Show();
+                    }
                 }
             }
         }
