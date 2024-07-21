@@ -37,6 +37,8 @@ using Position = TradingLibrary.Base.Enum.Position;
 using System.Security.Policy;
 using Binance.Net.Objects.Models;
 using static System.Windows.Forms.AxHost;
+using System.Reflection.Emit;
+using TradingLibrary.Base.DB.Binance;
 
 namespace BinanceHand
 {
@@ -372,15 +374,7 @@ namespace BinanceHand
                 if 
                 (
                     !s.Name.Contains("USDT")
-                    ||
-                    (
-                        s.Name != "BTCUSDT"
-                        //&& s.Name != "EOSUSDT"
-                        //&& s.Name != lastSymbol
-                        //&& s.Name != "WLDUSDT" && s.Name != "EOSUSDT"
-                        //s.Name != "MYROUSDT"
-                    )
-                )
+                || (!FuturesUSD.allCode && !FuturesUSD.codes.Contains(code)) )
                     continue;
 
                 n++;
