@@ -119,13 +119,18 @@ namespace BinanceHand
 
             SetClientAndKey();
 
-            TradingLibrary.Base.DB.Binance.FuturesUSD.StartThread();
-            SticksDBManager.BaseName = TradingLibrary.Base.DB.Binance.FuturesUSD.BASE_NAME;
-            TradingLibrary.Base.DB.Binance.FuturesUSD.SetDB();
+            FuturesUSD.StartThread();
+            SticksDBManager.BaseName = FuturesUSD.BASE_NAME;
+            FuturesUSD.SetDB();
 
             KeyDown += Form1_KeyDown;
 
             BaseFunctions.mainChart.Paint += Chart_Paint;
+        }
+        protected override void WndProc(ref Message m)
+        {
+            BaseFunctions.VerticalWheel(m);
+            base.WndProc(ref m);
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -365,17 +370,14 @@ namespace BinanceHand
             foreach (var s in result.Data.Symbols)
             {
                 var code = s.Name.Trim().ToUpper();
-                if (s.Status != SymbolStatus.Trading)
+
+                if (FuturesUSD.SkipCode(s, code))
                 {
-                    noSymbolList.Add(code);
+                    if (s.Status != SymbolStatus.Trading)
+                        noSymbolList.Add(code);
+
                     continue;
                 }
-
-                if 
-                (
-                    !s.Name.Contains("USDT")
-                || (!FuturesUSD.allCode && !FuturesUSD.codes.Contains(code)) )
-                    continue;
 
                 n++;
 
@@ -390,7 +392,7 @@ namespace BinanceHand
                 symbolList.Add(code);
                 newSymbolList.Add(code);
                 Trading.instance.CodeListView.AddObject(itemData.codeListColumnData);
-                TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() => {
+                FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() => {
                     var result1 = client.UsdFuturesApi.Account.GetBracketsAsync(itemData.Code).Result;
                     if (!result1.Success)
                         Error.Show();
@@ -404,7 +406,7 @@ namespace BinanceHand
                     //itemData.Leverage = 1;
                 }));
             }
-            TradingLibrary.Base.DB.Binance.FuturesUSD.codesCount = BaseFunctions.itemDataDic.Count;
+            FuturesUSD.codesCount = BaseFunctions.itemDataDic.Count;
 
             if (n != BaseFunctions.itemDataDic.Count)
             {
@@ -414,7 +416,7 @@ namespace BinanceHand
                 foreach (var code in noSymbolList)
                     if (BaseFunctions.itemDataDic.ContainsKey(code))
                     {
-                        var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[ChartTimeSet.Minute1];
+                        var conn = SticksDBManager.DBDic[ChartTimeSet.Minute1];
                         SticksDBManager.OpenConnection(conn);
 
                         new SQLiteCommand("Begin", conn).ExecuteNonQuery();
@@ -505,7 +507,7 @@ namespace BinanceHand
                 Trading.instance.UpdateReqRcv(Trading.instance.KlineReqTextBox, symbolList.Count);
             }
 
-            if (newSymbolList.Count != 0 && TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Count == 0)
+            if (newSymbolList.Count != 0 && FuturesUSD.requestTRTaskQueue.Count == 0)
                 Error.Show();
         }
         void SubscribeToUserStream(bool testnet, bool testnetFutures)
@@ -1178,12 +1180,13 @@ namespace BinanceHand
                         {
                             v.lastStick = new TradeStick(vc) { Time = newStick.Time, original = data.Data };
 
-                            TradingLibrary.Base.DB.Binance.FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() =>
+                            FuturesUSD.requestTRTaskQueue.Enqueue(new Task(() =>
                             {
-                                var lastMin = newStick.Time.AddMinutes(-1).AddMilliseconds(1);
+                                var lastMin = newStick.Time.AddMinutes(-1); // 바이낸스에서 1분 뒤로하면 1분 뒤까지 못가져옴 그래서 1미리 추가
+                                var lastMinForBinance = lastMin.AddMilliseconds(1); // 바이낸스에서 1분 뒤로하면 1분 뒤까지 못가져옴 그래서 1미리 추가
 
-                                TradingLibrary.Base.DB.Binance.FuturesUSD.UpdateDB(itemData.Code
-                                    , lastMin, client, this, BaseFunctions.loadingListBox);
+                                FuturesUSD.UpdateDB(itemData.Code
+                                    , lastMinForBinance, client, this, BaseFunctions.loadingListBox);
 
                                 // 1분봉 직전까지 다운 완료 확인
                                 while (true)
@@ -1191,7 +1194,7 @@ namespace BinanceHand
                                     if (vc != ChartTimeSet.Minute1)
                                         Error.Show();
 
-                                    var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[vc];
+                                    var conn = SticksDBManager.DBDic[vc];
                                     SticksDBManager.OpenConnection(conn);
 
                                     var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
@@ -1199,7 +1202,7 @@ namespace BinanceHand
 
                                     var list = new List<TradeStick>();
                                     while (reader2.Read())
-                                        list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader2, vc));
+                                        list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, vc));
 
                                     SticksDBManager.CloseConnection(conn);
 
@@ -1212,49 +1215,60 @@ namespace BinanceHand
                                 for (int j = 1; j < lastIndex; j++)
                                 {
                                     var v2 = itemData.listDic.Values[j];
-                                    var vc2 = itemData.listDic.Keys[j];
+                                    var cv2 = itemData.listDic.Keys[j];
 
                                     lock (itemData.listDicLocker)
                                     {
                                         var bv = itemData.listDic[CandleBaseFunctions.GetBeforeCV(j)];
                                         var bvFirstStick = bv.list.Count == 0 ? bv.lastStick : bv.list[0];
                                         var startTime = ChartTimeSet.AddMinutes(bvFirstStick.Time
-                                                , -(int)bvFirstStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % (int)vc2.minutes);
+                                                , -(long)bvFirstStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % cv2.minutes);
+                                        var lastFullTime = ChartTimeSet.AddMinutes(startTime, -cv2.minutes);
+                                        var loadStartTime = ChartTimeSet.AddMinutes(lastFullTime, -cv2.minutes * (Strategy.IndNeedDays - 1));
 
-                                        if (startTime > lastMin)
-                                            continue;
-                                        else if (startTime == lastMin)
-                                            Error.Show();
-
-                                        var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[vc2];
+                                        var conn = SticksDBManager.DBDic[cv2];
                                         SticksDBManager.OpenConnection(conn);
 
                                         var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
-                                            "(" + Columns.TIME + "<='" + lastMin.ToString(Formats.DB_TIME) + "') AND " +
-                                            "(" + Columns.TIME + ">='" + startTime.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
+                                            "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "') AND " +
+                                            "(" + Columns.TIME + "<='" + lastMin.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
 
                                         var list = new List<TradeStick>();
                                         while (reader2.Read())
-                                            list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader2, vc2));
+                                            list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, cv2));
 
                                         SticksDBManager.CloseConnection(conn);
 
-                                        if (list.Count != 1)
-                                            Error.Show();
-
                                         var firstStick = v2.list.Count == 0 ? v2.lastStick : v2.list[0];
 
-                                        if (list[0].Time != firstStick.Time)
+                                        if (startTime != newStick.Time)
+                                        {
+                                            if (list.Last().Time != firstStick.Time)
+                                                Error.Show();
+
+                                            if (v2.list.Count == 0)
+                                                v2.lastStick = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.lastStick);
+                                            else
+                                                v2.list[0] = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.list[0]);
+
+                                            list.RemoveAt(list.Count - 1);
+                                        }
+                                        else if (startTime > newStick.Time)
                                             Error.Show();
 
-                                        if (v2.list.Count == 0)
-                                            v2.lastStick = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.lastStick);
-                                        else
-                                            v2.list[0] = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.list[0]);
+                                        if ((int)firstStick.Time.Subtract(list.Last().Time).TotalMinutes != cv2.minutes)
+                                            Error.Show();
+
+                                        v2.list.InsertRange(0, list);
+
+                                        for (int k = 0; k < v2.list.Count; k++)
+                                            Strategy.SetRSIAandDiff(itemData, v2.list, v2.list[k], k - 1, cv: cv2);
+
+
                                     }
                                 }
 
-                                if (TradingLibrary.Base.DB.Binance.FuturesUSD.doneCount == TradingLibrary.Base.DB.Binance.FuturesUSD.codesCount)
+                                if (FuturesUSD.doneCount == FuturesUSD.codesCount)
                                     Task.Run(() =>
                                     {
                                         var startTime = Trading.firstFinalMin;
@@ -1310,6 +1324,9 @@ namespace BinanceHand
                     {
                         lock (itemData.listDicLocker)
                         {
+                            // 보조지표 계산
+                            // 진입 확인
+
                             v.list.Add(v.lastStick);
                             v.lastStick = new TradeStick(vc) { Time = newStick.Time };
 
@@ -1830,7 +1847,7 @@ namespace BinanceHand
                         : trading.NowTime()).AddMinutes(-vc.minutes);
 
                     // 남은 양만큼 DB에서 로드해서 쇼리스트에 붙히기
-                    var conn = TradingLibrary.Base.DB.Binance.FuturesUSD.DBDic[vc];
+                    var conn = SticksDBManager.DBDic[vc];
                     SticksDBManager.OpenConnection(conn);
 
                     var reader = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
@@ -1839,7 +1856,7 @@ namespace BinanceHand
 
                     var list = new List<TradeStick>();
                     while (reader.Read())
-                        list.Add(TradingLibrary.Base.DB.Binance.FuturesUSD.GetTradeStickFromSQL(reader, vc));
+                        list.Add(FuturesUSD.GetTradeStickFromSQL(reader, vc));
 
                     SticksDBManager.CloseConnection(conn);
 
