@@ -418,7 +418,7 @@ namespace BinanceHand
                     {
                         var itemData = BaseFunctions.itemDataDic[code] as TradeItemData;
 
-                        lock (SticksDBManager.dbLocker)
+                        //lock (SticksDBManager.dbLocker)
                         {
                             var conn = SticksDBManager.DBDic[ChartTimeSet.Minute1];
                             SticksDBManager.OpenConnection(conn);
@@ -1198,7 +1198,7 @@ namespace BinanceHand
                                     if (vc != ChartTimeSet.Minute1)
                                         Error.Show();
 
-                                    lock (SticksDBManager.dbLocker)
+                                    //lock (SticksDBManager.dbLocker)
                                     {
                                         var conn = SticksDBManager.DBDic[vc];
                                         SticksDBManager.OpenConnection(conn);
@@ -1233,7 +1233,7 @@ namespace BinanceHand
 
                                         var list = new List<TradeStick>();
 
-                                        lock (SticksDBManager.dbLocker)
+                                        //lock (SticksDBManager.dbLocker)
                                         {
                                             var conn = SticksDBManager.DBDic[cv2];
                                             SticksDBManager.OpenConnection(conn);
@@ -1813,17 +1813,17 @@ namespace BinanceHand
             lock (itemData.listDicLocker)
             {
                 var endTime = loadNew
-                    ? (v.lastStick == null
-                        ? trading.NowTime().AddMinutes(-vc.minutes) : v.lastStick.Time)
+                    ? ((v.lastStick != null && itemData.loadingDone)
+                        ? v.lastStick.Time : trading.NowTime().AddMinutes(-vc.minutes))
                     : itemData.showingStickList[0].Time.AddMinutes(-vc.minutes);
 
                 var loadStartTime = ChartTimeSet.AddMinutes(endTime, -vc.minutes * loadSize);
                 var showStartTime = ChartTimeSet.AddMinutes(endTime, -vc.minutes * size);
 
-                itemData.showingStickList.Clear();
-
                 if (v.list.Count > 0 && loadStartTime >= v.list[0].Time)   // 로드 사이즈가 그냥 리스트 내에 존재한다면
                 {
+                    itemData.showingStickList.Clear();
+
                     // 그만큼의 양을 쇼리스트로 옮기기
                     for (int i = 0; i < v.list.Count; i++)
                     {
@@ -1847,25 +1847,29 @@ namespace BinanceHand
                 }
                 else  // 존재하지 않는다면
                 {
-                    // 우선 그냥 리스트에 있는 양 전부를 쇼리스트에 옮기기
-                    itemData.showingStickList.AddRange(v.list);
+                    if (loadNew)
+                    {
+                        itemData.showingStickList.Clear();
 
-                    if (v.lastStick != null)
-                        itemData.showingStickList.Add(v.lastStick);
+                        // 우선 그냥 리스트에 있는 양 전부를 쇼리스트에 옮기기
+                        itemData.showingStickList.AddRange(v.list);
 
-                    var loadEndTime = (itemData.showingStickList.Count > 0
-                        ? itemData.showingStickList[0].Time
-                        : trading.NowTime()).AddMinutes(-vc.minutes);
+                        if (v.lastStick != null && itemData.loadingDone)
+                        {
+                            itemData.showingStickList.Add(v.lastStick);
+                            endTime = itemData.showingStickList[0].Time.AddMinutes(-vc.minutes);
+                        }
+                    }
 
                     // 남은 양만큼 DB에서 로드해서 쇼리스트에 붙히기
                     var list = new List<TradeStick>();
-                    lock (SticksDBManager.dbLocker)
+                    //lock (SticksDBManager.dbLocker)
                     {
                         var conn = SticksDBManager.DBDic[vc];
                         SticksDBManager.OpenConnection(conn);
 
                         var reader = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
-                            "(" + Columns.TIME + "<='" + loadEndTime.ToString(Formats.DB_TIME) + "') AND " +
+                            "(" + Columns.TIME + "<='" + endTime.ToString(Formats.DB_TIME) + "') AND " +
                             "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
 
                         while (reader.Read())
