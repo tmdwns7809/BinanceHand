@@ -416,47 +416,66 @@ namespace BinanceHand
                 foreach (var code in noSymbolList)
                     if (BaseFunctions.itemDataDic.ContainsKey(code))
                     {
-                        var conn = SticksDBManager.DBDic[ChartTimeSet.Minute1];
-                        SticksDBManager.OpenConnection(conn);
-
-                        new SQLiteCommand("Begin", conn).ExecuteNonQuery();
-
-                        new SQLiteCommand("CREATE TABLE IF NOT EXISTS '" + code + "'" +
-                            " ('" + Columns.TIME + "' INTEGER" +
-                            ", '" + Columns.OPEN + "' TEXT, '" + Columns.HIGH + "' TEXT" +
-                            ", '" + Columns.LOW + "' TEXT, '" + Columns.CLOSE + "' TEXT" +
-                            ", '" + Columns.BASE_VOLUME + "' TEXT, '" + Columns.TAKER_BUY_BASE_VOLUME + "' TEXT" +
-                            ", '" + Columns.QUOTE_VOLUME + "' TEXT, '" + Columns.TAKER_BUY_QUOTE_VOLUME + "' TEXT" +
-                            ", '" + Columns.TRADE_COUNT + "' INTEGER)", conn).ExecuteNonQuery();
-
-                        new SQLiteCommand("CREATE UNIQUE INDEX IF NOT EXISTS '" + code + "_index'" +
-                            " ON '" + code + "' ('" + Columns.TIME + "')", conn).ExecuteNonQuery();
-
-                        var reader = new SQLiteCommand("SELECT *, rowid FROM '" + code + "' ORDER BY rowid DESC LIMIT 1", conn).ExecuteReader();
-                        DateTime startTime = default;
-                        if (reader.Read())
-                        {
-                            startTime = DateTime.ParseExact(reader[Columns.TIME].ToString(), Formats.TIME, null);
-                            new SQLiteCommand("DELETE FROM '" + code + "' WHERE rowid='" + reader["rowid"].ToString() + "'", conn).ExecuteNonQuery();
-                        }
-
                         var itemData = BaseFunctions.itemDataDic[code] as TradeItemData;
-                        var v = itemData.listDic[ChartTimeSet.Minute1];
-                        var first = true;
-                        
-                        foreach (var tradeStick in v.list)
-                        {
-                            if (tradeStick.Time < startTime)
-                                continue;
-                            else if (first)
-                            {
-                                if (tradeStick.Time != startTime)
-                                    Error.Show();
 
-                                first = false;
+                        lock (SticksDBManager.dbLocker)
+                        {
+                            var conn = SticksDBManager.DBDic[ChartTimeSet.Minute1];
+                            SticksDBManager.OpenConnection(conn);
+
+                            new SQLiteCommand("Begin", conn).ExecuteNonQuery();
+
+                            new SQLiteCommand("CREATE TABLE IF NOT EXISTS '" + code + "'" +
+                                " ('" + Columns.TIME + "' INTEGER" +
+                                ", '" + Columns.OPEN + "' TEXT, '" + Columns.HIGH + "' TEXT" +
+                                ", '" + Columns.LOW + "' TEXT, '" + Columns.CLOSE + "' TEXT" +
+                                ", '" + Columns.BASE_VOLUME + "' TEXT, '" + Columns.TAKER_BUY_BASE_VOLUME + "' TEXT" +
+                                ", '" + Columns.QUOTE_VOLUME + "' TEXT, '" + Columns.TAKER_BUY_QUOTE_VOLUME + "' TEXT" +
+                                ", '" + Columns.TRADE_COUNT + "' INTEGER)", conn).ExecuteNonQuery();
+
+                            new SQLiteCommand("CREATE UNIQUE INDEX IF NOT EXISTS '" + code + "_index'" +
+                                " ON '" + code + "' ('" + Columns.TIME + "')", conn).ExecuteNonQuery();
+
+                            var reader = new SQLiteCommand("SELECT *, rowid FROM '" + code + "' ORDER BY rowid DESC LIMIT 1", conn).ExecuteReader();
+                            DateTime startTime = default;
+                            if (reader.Read())
+                            {
+                                startTime = DateTime.ParseExact(reader[Columns.TIME].ToString(), Formats.TIME, null);
+                                new SQLiteCommand("DELETE FROM '" + code + "' WHERE rowid='" + reader["rowid"].ToString() + "'", conn).ExecuteNonQuery();
                             }
 
-                            var stick = tradeStick.original as IBinanceStreamKline;
+                            var v = itemData.listDic[ChartTimeSet.Minute1];
+                            var first = true;
+
+                            foreach (var tradeStick in v.list)
+                            {
+                                if (tradeStick.Time < startTime)
+                                    continue;
+                                else if (first)
+                                {
+                                    if (tradeStick.Time != startTime)
+                                        Error.Show();
+
+                                    first = false;
+                                }
+
+                                var stick = tradeStick.original as IBinanceStreamKline;
+                                new SQLiteCommand("INSERT INTO '" + code + "'" +
+                                    " ('" + Columns.TIME + "'" +
+                                    ", '" + Columns.OPEN + "', '" + Columns.HIGH + "'" +
+                                    ", '" + Columns.LOW + "', '" + Columns.CLOSE + "'" +
+                                    ", '" + Columns.BASE_VOLUME + "', '" + Columns.TAKER_BUY_BASE_VOLUME + "'" +
+                                    ", '" + Columns.QUOTE_VOLUME + "', '" + Columns.TAKER_BUY_QUOTE_VOLUME + "'" +
+                                    ", '" + Columns.TRADE_COUNT + "') values" +
+                                    " ('" + stick.OpenTime.ToString(Formats.DB_TIME) + "'" +
+                                    ", '" + stick.OpenPrice + "', '" + stick.HighPrice + "'" +
+                                    ", '" + stick.LowPrice + "', '" + stick.ClosePrice + "'" +
+                                    ", '" + stick.Volume + "', '" + stick.TakerBuyBaseVolume + "'" +
+                                    ", '" + stick.QuoteVolume + "', '" + stick.TakerBuyQuoteVolume + "'" +
+                                    ", '" + stick.TradeCount + "')", conn).ExecuteNonQuery();
+                            }
+
+                            var stick2 = v.lastStick.original as IBinanceStreamKline;
                             new SQLiteCommand("INSERT INTO '" + code + "'" +
                                 " ('" + Columns.TIME + "'" +
                                 ", '" + Columns.OPEN + "', '" + Columns.HIGH + "'" +
@@ -464,32 +483,17 @@ namespace BinanceHand
                                 ", '" + Columns.BASE_VOLUME + "', '" + Columns.TAKER_BUY_BASE_VOLUME + "'" +
                                 ", '" + Columns.QUOTE_VOLUME + "', '" + Columns.TAKER_BUY_QUOTE_VOLUME + "'" +
                                 ", '" + Columns.TRADE_COUNT + "') values" +
-                                " ('" + stick.OpenTime.ToString(Formats.DB_TIME) + "'" +
-                                ", '" + stick.OpenPrice + "', '" + stick.HighPrice + "'" +
-                                ", '" + stick.LowPrice + "', '" + stick.ClosePrice + "'" +
-                                ", '" + stick.Volume + "', '" + stick.TakerBuyBaseVolume + "'" +
-                                ", '" + stick.QuoteVolume + "', '" + stick.TakerBuyQuoteVolume + "'" +
-                                ", '" + stick.TradeCount + "')", conn).ExecuteNonQuery();
+                                " ('" + stick2.OpenTime.ToString(Formats.DB_TIME) + "'" +
+                                ", '" + stick2.OpenPrice + "', '" + stick2.HighPrice + "'" +
+                                ", '" + stick2.LowPrice + "', '" + stick2.ClosePrice + "'" +
+                                ", '" + stick2.Volume + "', '" + stick2.TakerBuyBaseVolume + "'" +
+                                ", '" + stick2.QuoteVolume + "', '" + stick2.TakerBuyQuoteVolume + "'" +
+                                ", '" + stick2.TradeCount + "')", conn).ExecuteNonQuery();
+
+                            new SQLiteCommand("Commit", conn).ExecuteNonQuery();
+
+                            SticksDBManager.CloseConnection(conn);
                         }
-
-                        var stick2 = v.lastStick.original as IBinanceStreamKline;
-                        new SQLiteCommand("INSERT INTO '" + code + "'" +
-                            " ('" + Columns.TIME + "'" +
-                            ", '" + Columns.OPEN + "', '" + Columns.HIGH + "'" +
-                            ", '" + Columns.LOW + "', '" + Columns.CLOSE + "'" +
-                            ", '" + Columns.BASE_VOLUME + "', '" + Columns.TAKER_BUY_BASE_VOLUME + "'" +
-                            ", '" + Columns.QUOTE_VOLUME + "', '" + Columns.TAKER_BUY_QUOTE_VOLUME + "'" +
-                            ", '" + Columns.TRADE_COUNT + "') values" +
-                            " ('" + stick2.OpenTime.ToString(Formats.DB_TIME) + "'" +
-                            ", '" + stick2.OpenPrice + "', '" + stick2.HighPrice + "'" +
-                            ", '" + stick2.LowPrice + "', '" + stick2.ClosePrice + "'" +
-                            ", '" + stick2.Volume + "', '" + stick2.TakerBuyBaseVolume + "'" +
-                            ", '" + stick2.QuoteVolume + "', '" + stick2.TakerBuyQuoteVolume + "'" +
-                            ", '" + stick2.TradeCount + "')", conn).ExecuteNonQuery();
-
-                        new SQLiteCommand("Commit", conn).ExecuteNonQuery();
-
-                        SticksDBManager.CloseConnection(conn);
 
                         BaseFunctions.itemDataDic.Remove(code);
                         Trading.instance.CodeListView.RemoveObject(itemData.codeListColumnData);
@@ -954,7 +958,7 @@ namespace BinanceHand
             foreach (var stickReal in data)
             {
                 var stick = GetStick(stickReal, vc);
-                Strategy.SetRSIAandDiff(itemData, list, stick, int.MinValue, int.MinValue, vc);
+                Strategy.SetRSIAandDiff(itemData, list, stick, int.MinValue, int.MinValue);
                 list.Add(stick);
             }
 
@@ -1194,50 +1198,55 @@ namespace BinanceHand
                                     if (vc != ChartTimeSet.Minute1)
                                         Error.Show();
 
-                                    var conn = SticksDBManager.DBDic[vc];
-                                    SticksDBManager.OpenConnection(conn);
+                                    lock (SticksDBManager.dbLocker)
+                                    {
+                                        var conn = SticksDBManager.DBDic[vc];
+                                        SticksDBManager.OpenConnection(conn);
 
-                                    var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
-                                        Columns.TIME + "=='" + lastMin.ToString(Formats.DB_TIME) + "'", conn).ExecuteReader();
+                                        var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
+                                            Columns.TIME + "=='" + lastMin.ToString(Formats.DB_TIME) + "'", conn).ExecuteReader();
 
-                                    var list = new List<TradeStick>();
-                                    while (reader2.Read())
-                                        list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, vc));
+                                        var list = new List<TradeStick>();
+                                        while (reader2.Read())
+                                            list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, vc));
 
-                                    SticksDBManager.CloseConnection(conn);
+                                        SticksDBManager.CloseConnection(conn);
 
-                                    if (list.Count == 1)
-                                        break;
+                                        if (list.Count == 1)
+                                            break;
+                                    }
 
                                     Thread.Sleep(1000);
                                 }
 
-                                for (int j = 1; j < lastIndex; j++)
+                                for (int j = 0; j < lastIndex; j++)
                                 {
                                     var v2 = itemData.listDic.Values[j];
                                     var cv2 = itemData.listDic.Keys[j];
 
                                     lock (itemData.listDicLocker)
                                     {
-                                        var bv = itemData.listDic[CandleBaseFunctions.GetBeforeCV(j)];
-                                        var bvFirstStick = bv.list.Count == 0 ? bv.lastStick : bv.list[0];
-                                        var startTime = ChartTimeSet.AddMinutes(bvFirstStick.Time
-                                                , -(long)bvFirstStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % cv2.minutes);
+                                        var startTime = ChartTimeSet.AddMinutes(newStick.Time
+                                                , -(long)newStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % cv2.minutes);
                                         var lastFullTime = ChartTimeSet.AddMinutes(startTime, -cv2.minutes);
                                         var loadStartTime = ChartTimeSet.AddMinutes(lastFullTime, -cv2.minutes * (Strategy.IndNeedDays - 1));
 
-                                        var conn = SticksDBManager.DBDic[cv2];
-                                        SticksDBManager.OpenConnection(conn);
-
-                                        var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
-                                            "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "') AND " +
-                                            "(" + Columns.TIME + "<='" + lastMin.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
-
                                         var list = new List<TradeStick>();
-                                        while (reader2.Read())
-                                            list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, cv2));
 
-                                        SticksDBManager.CloseConnection(conn);
+                                        lock (SticksDBManager.dbLocker)
+                                        {
+                                            var conn = SticksDBManager.DBDic[cv2];
+                                            SticksDBManager.OpenConnection(conn);
+
+                                            var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
+                                                "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "') AND " +
+                                                "(" + Columns.TIME + "<='" + lastMin.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
+
+                                            while (reader2.Read())
+                                                list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, cv2));
+
+                                            SticksDBManager.CloseConnection(conn);
+                                        }
 
                                         var firstStick = v2.list.Count == 0 ? v2.lastStick : v2.list[0];
 
@@ -1247,9 +1256,9 @@ namespace BinanceHand
                                                 Error.Show();
 
                                             if (v2.list.Count == 0)
-                                                v2.lastStick = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.lastStick);
+                                                v2.lastStick = CandleBaseFunctions.CompareAndUpdateTradeStick(list.Last(), v2.lastStick);
                                             else
-                                                v2.list[0] = CandleBaseFunctions.CompareAndUpdateTradeStick(list[0], v2.list[0]);
+                                                v2.list[0] = CandleBaseFunctions.CompareAndUpdateTradeStick(list.Last(), v2.list[0]);
 
                                             list.RemoveAt(list.Count - 1);
                                         }
@@ -1262,11 +1271,13 @@ namespace BinanceHand
                                         v2.list.InsertRange(0, list);
 
                                         for (int k = 0; k < v2.list.Count; k++)
-                                            Strategy.SetRSIAandDiff(itemData, v2.list, v2.list[k], k - 1, cv: cv2);
+                                            Strategy.SetRSIAandDiff(itemData, v2.list, v2.list[k], k - 1);
 
 
                                     }
                                 }
+
+                                itemData.loadingDone = true;
 
                                 if (FuturesUSD.doneCount == FuturesUSD.codesCount)
                                     Task.Run(() =>
@@ -1847,24 +1858,27 @@ namespace BinanceHand
                         : trading.NowTime()).AddMinutes(-vc.minutes);
 
                     // 남은 양만큼 DB에서 로드해서 쇼리스트에 붙히기
-                    var conn = SticksDBManager.DBDic[vc];
-                    SticksDBManager.OpenConnection(conn);
-
-                    var reader = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
-                        "(" + Columns.TIME + "<='" + loadEndTime.ToString(Formats.DB_TIME) + "') AND " +
-                        "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
-
                     var list = new List<TradeStick>();
-                    while (reader.Read())
-                        list.Add(FuturesUSD.GetTradeStickFromSQL(reader, vc));
+                    lock (SticksDBManager.dbLocker)
+                    {
+                        var conn = SticksDBManager.DBDic[vc];
+                        SticksDBManager.OpenConnection(conn);
 
-                    SticksDBManager.CloseConnection(conn);
+                        var reader = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
+                            "(" + Columns.TIME + "<='" + loadEndTime.ToString(Formats.DB_TIME) + "') AND " +
+                            "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
+
+                        while (reader.Read())
+                            list.Add(FuturesUSD.GetTradeStickFromSQL(reader, vc));
+
+                        SticksDBManager.CloseConnection(conn);
+                    }
 
                     itemData.showingStickList.InsertRange(0, list);
                 }
 
                 for (int i = 0; i < itemData.showingStickList.Count; i++)
-                    Strategy.SetRSIAandDiff(itemData, itemData.showingStickList, itemData.showingStickList[i], i - 1, cv: vc);
+                    Strategy.SetRSIAandDiff(itemData, itemData.showingStickList, itemData.showingStickList[i], i - 1);
 
                 var startIndex = BaseFunctions.GetStartIndex(itemData.showingStickList, showStartTime);
                 if (startIndex > 0)
