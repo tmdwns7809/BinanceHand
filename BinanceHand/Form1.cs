@@ -1273,7 +1273,7 @@ namespace BinanceHand
                                         for (int k = 0; k < v2.list.Count; k++)
                                             Strategy.SetRSIAandDiff(itemData, v2.list, v2.list[k], k - 1);
 
-
+                                        //Strategy.ChartFindConditionAndAdd
                                     }
                                 }
 
@@ -1851,11 +1851,11 @@ namespace BinanceHand
                     {
                         itemData.showingStickList.Clear();
 
-                        // 우선 그냥 리스트에 있는 양 전부를 쇼리스트에 옮기기
-                        itemData.showingStickList.AddRange(v.list);
-
                         if (v.lastStick != null && itemData.loadingDone)
                         {
+                            // 우선 그냥 리스트에 있는 양 전부를 쇼리스트에 옮기기
+                            itemData.showingStickList.AddRange(v.list);
+
                             itemData.showingStickList.Add(v.lastStick);
                             endTime = itemData.showingStickList[0].Time.AddMinutes(-vc.minutes);
                         }
