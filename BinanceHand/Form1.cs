@@ -98,7 +98,8 @@ namespace BinanceHand
             Load += Form1_Load;
 
             //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.412m, 20);
-            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41031m, 20);
+            //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41031m, 20);
+            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41032m, 20);
 
             trading = Trading.instance;
 
@@ -1229,7 +1230,7 @@ namespace BinanceHand
                                         var startTime = ChartTimeSet.AddMinutes(newStick.Time
                                                 , -(long)newStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % cv2.minutes);
                                         var lastFullTime = ChartTimeSet.AddMinutes(startTime, -cv2.minutes);
-                                        var loadStartTime = ChartTimeSet.AddMinutes(lastFullTime, -cv2.minutes * (Strategy.IndNeedDays - 1));
+                                        var loadStartTime = ChartTimeSet.AddMinutes(lastFullTime, -cv2.minutes * (Strategy.FindNeedDays - 1));
 
                                         var list = new List<TradeStick>();
 
@@ -1273,9 +1274,13 @@ namespace BinanceHand
                                         for (int k = 0; k < v2.list.Count; k++)
                                             Strategy.SetRSIAandDiff(itemData, v2.list, v2.list[k], k - 1);
 
-                                        //Strategy.ChartFindConditionAndAdd
+                                        Strategy.ChartFindConditionAndAdd(itemData: itemData
+                                            , vc: cv2, minLastStick: v.list[v.list.Count - 1], lastStick: v2.list[v2.list.Count - 1]
+                                            , minLastIndex: v.list.Count - 2, lastIndex: v2.list.Count - 2);
                                     }
                                 }
+
+                                trading.UpdateCodeListChartFind(itemData);
 
                                 itemData.loadingDone = true;
 
@@ -1335,10 +1340,14 @@ namespace BinanceHand
                     {
                         lock (itemData.listDicLocker)
                         {
-                            // 보조지표 계산
-                            // 진입 확인
-
                             v.list.Add(v.lastStick);
+
+                            Strategy.SetRSIAandDiff(itemData, v.list, v.list[v.list.Count - 1], v.list.Count - 2);
+
+                            Strategy.ChartFindConditionAndAdd(itemData: itemData
+                                , vc: vc, minLastStick: vm.list[vm.list.Count - 1], lastStick: v.list[v.list.Count - 1]
+                                , minLastIndex: vm.list.Count - 2, lastIndex: v.list.Count - 2);
+
                             v.lastStick = new TradeStick(vc) { Time = newStick.Time };
 
                             if (vc == ChartTimeSet.Minute1)
@@ -1360,6 +1369,8 @@ namespace BinanceHand
                         CandleBaseFunctions.CompareAndUpdateTradeStick(v.lastStick, newStick);
                     }
                 }
+
+                trading.UpdateCodeListChartFind(itemData);
 
                 lock (itemData.listDicLocker)
                     Trading.instance.UpdateChart(itemData);
