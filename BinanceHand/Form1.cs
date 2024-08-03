@@ -99,7 +99,8 @@ namespace BinanceHand
 
             //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.412m, 20);
             //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41031m, 20);
-            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41032m, 20);
+            //Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 8.41032m, 20);
+            Trading.instance = new Trading(this, Settings.ProgramBinanceFutures, 101, 20);
 
             trading = Trading.instance;
 
@@ -1904,6 +1905,7 @@ namespace BinanceHand
                 // 쇼리스트에 있는 걸 차트 추가
                 for (int i = 0; i < itemData.showingStickList.Count; i++)
                     Trading.instance.AddFullChartPoint(chart, itemData.showingStickList[i]);
+                trading.MakeVolumeProfileChart(itemData.showingStickList);
 
                 itemData.currentPriceWhenLoaded = itemData.showingStickList.Last().Price[3];
             }
