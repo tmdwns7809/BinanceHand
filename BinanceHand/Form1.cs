@@ -2266,11 +2266,7 @@ namespace BinanceHand
                     if (!changeOrder.Success && changeOrder.Error.Code != -5027) // -5027 : No need to modify the order.
                     {
                         if (changeOrder.Error.Code != -2013) // order does not exist
-                        {
-
-                        }
-
-                        Error.Show();
+                            Error.Show();
                     }
                 }
             }
