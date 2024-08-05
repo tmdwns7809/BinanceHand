@@ -1275,7 +1275,7 @@ namespace BinanceHand
                                         for (int k = 0; k < v2.list.Count; k++)
                                             Strategy.SetRSIAandDiff(itemData, v2.list, v2.list[k], k - 1);
 
-                                        Strategy.ChartFindConditionAndAdd(itemData: itemData
+                                        Trading.ChartFindConditionAndAddAndAlert(itemData: itemData
                                             , vc: cv2, minLastStick: v.list[v.list.Count - 1], lastStick: v2.list[v2.list.Count - 1]
                                             , minLastIndex: v.list.Count - 2, lastIndex: v2.list.Count - 2);
                                     }
@@ -1345,7 +1345,7 @@ namespace BinanceHand
 
                             Strategy.SetRSIAandDiff(itemData, v.list, v.list[v.list.Count - 1], v.list.Count - 2);
 
-                            Strategy.ChartFindConditionAndAdd(itemData: itemData
+                            Trading.ChartFindConditionAndAddAndAlert(itemData: itemData
                                 , vc: vc, minLastStick: vm.list[vm.list.Count - 1], lastStick: v.list[v.list.Count - 1]
                                 , minLastIndex: vm.list.Count - 2, lastIndex: v.list.Count - 2);
 
