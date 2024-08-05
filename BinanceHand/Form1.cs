@@ -2180,6 +2180,9 @@ namespace BinanceHand
             }
             else
             {
+                if (!itemData.makerOrderData.HoOn)
+                    return;
+
                 socketClientHo.UnsubscribeAsync(itemData.makerOrderData.hoSub).Wait();
 
                 itemData.makerOrderData = new MakerOrderData();
@@ -2267,6 +2270,8 @@ namespace BinanceHand
                     {
                         if (changeOrder.Error.Code != -2013) // order does not exist
                             Error.Show();
+
+                        HoONandOFFForMakerOrder(itemData, false);
                     }
                 }
             }
