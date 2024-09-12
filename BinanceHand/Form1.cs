@@ -39,6 +39,8 @@ using Binance.Net.Objects.Models;
 using static System.Windows.Forms.AxHost;
 using System.Reflection.Emit;
 using TradingLibrary.Base.DB.Binance;
+using IrrKlang;
+using System.Reflection;
 
 namespace BinanceHand
 {
@@ -128,6 +130,8 @@ namespace BinanceHand
             KeyDown += Form1_KeyDown;
 
             BaseFunctions.mainChart.Paint += Chart_Paint;
+
+            StartFundingRateCheck();
         }
         protected override void WndProc(ref Message m)
         {
@@ -332,6 +336,84 @@ namespace BinanceHand
             //socketClient = new BinanceSocketClient(socketOption);
 
             //socketClient.UnsubscribeAllAsync().Wait();
+        }
+        void StartFundingRateCheck()
+        {
+            //var result = client.CoinFuturesApi.Account.GetAccountInfoAsync().Result;
+            //if (!result.Success)
+            //    Error.Show();
+
+            //BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+
+            //foreach (var s in result.Data.Assets)
+            //    if (s.Asset == "EOS")
+            //    {
+
+            //    }
+            //foreach (var s in result.Data.Positions)
+            //    if (s.Quantity != 0m)
+            //    {
+            //        Task.Run(() =>
+            //        {
+            //            CheckAndBuyFundingRate(s);
+
+            //            Thread.Sleep(60*60*1000); //1시간
+            //        });
+            //    }
+
+            //var result2 = client.CoinFuturesApi.Account.GetPositionInformationAsync().Result;
+            //if (!result2.Success)
+            //    Error.Show();
+
+            //BinanceWeightManager.UpdateWeightNow(result2.ResponseHeaders);
+
+            //foreach (var s in result2.Data)
+            //{
+            //    if (s.Quantity != 0m)
+            //    {
+            //    }
+            //}
+        }
+        void CheckAndBuyFundingRate(BinancePositionInfoCoin position)
+        {
+            //if (!position.Symbol.Contains("USD"))
+            //    return;
+
+            //// 자본 있는지 확인
+            //string asset = position.Symbol.Substring(0, position.Symbol.IndexOf("USD"));
+
+            //var result = client.CoinFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
+            //if (!result.Success)
+            //    Error.Show();
+
+            //BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+
+            //BinanceWeightManager.UpdateLimit(result.Data.RateLimits);
+
+            //foreach (var s in result.Data.Symbols)
+            //    if (s.Name.Equals(position.Symbol))
+            //    {
+            //        minSize = fu.LotSizeFilter.MinQuantity;
+            //        hoDiff = fu.PriceFilter.TickSize;
+            //        minNotionalValue = fu.MinNotionalFilter.MinNotional;
+            //        s.
+            //    }
+
+            //result = client.CoinFuturesApi.Account.GetAccountInfoAsync().Result;
+            //if (!result.Success)
+            //    Error.Show();
+
+            //BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+
+            //foreach (var s in result.Data.Assets)
+            //    if (s.Asset == asset)
+            //    {
+            //        s.AvailableBalance
+            //    }
+
+            //// 레버리지 변경
+
+            //// 진입
         }
 
         void Form1_Load(object sender, EventArgs e)
