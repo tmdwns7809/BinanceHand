@@ -77,6 +77,7 @@ namespace BinanceHand
         static BinanceRestClient client;
         static BinanceSocketClient socketClient;
         static BinanceSocketClient socketClientHo;
+        static BinanceSocketClient socketClientHoFunding;
         static BinanceSocketClient socketClientMark;
 
         List<string> symbolList = new List<string>();
@@ -91,6 +92,8 @@ namespace BinanceHand
 
         static Dictionary<string, BinanceItemData>[] positions = new Dictionary<string, BinanceItemData>[] { new Dictionary<string, BinanceItemData>(), new Dictionary<string, BinanceItemData>() };
         static Dictionary<string, BinanceItemData>[] orders = new Dictionary<string, BinanceItemData>[] { new Dictionary<string, BinanceItemData>(), new Dictionary<string, BinanceItemData>() };
+
+        UpdateSubscription coinHoSub = null;
 
         public Form1()
         {
@@ -293,6 +296,10 @@ namespace BinanceHand
             {
                 options.ReconnectInterval = TimeSpan.FromMinutes(1);
             });
+            socketClientHoFunding = new BinanceSocketClient(delegate (BinanceSocketOptions options)
+            {
+                options.ReconnectInterval = TimeSpan.FromMinutes(1);
+            });
             socketClientMark = new BinanceSocketClient(delegate (BinanceSocketOptions options)
             {
                 options.ReconnectInterval = TimeSpan.FromMinutes(1);
@@ -339,81 +346,191 @@ namespace BinanceHand
         }
         void StartFundingRateCheck()
         {
-            //var result = client.CoinFuturesApi.Account.GetAccountInfoAsync().Result;
-            //if (!result.Success)
-            //    Error.Show();
+            var result = client.CoinFuturesApi.Account.StartUserStreamAsync().Result;
+            if (!result.Success)
+                Error.Show();
 
-            //BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
 
-            //foreach (var s in result.Data.Assets)
-            //    if (s.Asset == "EOS")
-            //    {
+            var listenKey = result.Data;
 
-            //    }
-            //foreach (var s in result.Data.Positions)
-            //    if (s.Quantity != 0m)
-            //    {
-            //        Task.Run(() =>
-            //        {
-            //            CheckAndBuyFundingRate(s);
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(29 * 60000);
 
-            //            Thread.Sleep(60*60*1000); //1시간
-            //        });
-            //    }
+                    var result1 = client.CoinFuturesApi.Account.KeepAliveUserStreamAsync(listenKey).Result;
+                    if (!result1.Success)
+                        Error.Show();
 
-            //var result2 = client.CoinFuturesApi.Account.GetPositionInformationAsync().Result;
-            //if (!result2.Success)
-            //    Error.Show();
+                    BinanceWeightManager.UpdateWeightNow(result1.ResponseHeaders);
+                }
+            }, BaseFunctions.tokenSource.Token);
 
-            //BinanceWeightManager.UpdateWeightNow(result2.ResponseHeaders);
+            var result2 =
+                socketClient.CoinFuturesApi.SubscribeToUserDataUpdatesAsync(listenKey,
+                    onLeverageUpdate:default,
+                    onMarginUpdate:default,
+                    onAccountUpdate:data0 =>
+                    {
+                        var data = data0.Data;
+                        if (data.UpdateData.Reason == AccountUpdateReason.FundingFee)
+                        {
+                            // 주문
+                            EnterFundingRate();
+                        }
+                    },
+                    onOrderUpdate:data0 =>
+                    {
+                        var data = data0.Data;
+                        if (data.UpdateData.Status != OrderStatus.Filled)
+                        {
+                            return;
+                        }
 
-            //foreach (var s in result2.Data)
-            //{
-            //    if (s.Quantity != 0m)
-            //    {
-            //    }
-            //}
+                        Log.Add(this, BaseFunctions.loadingListBox, "funding rate enter additional");
+                        Alert.Start("funding rate enter additional", true, true);
+
+                        socketClientHoFunding.UnsubscribeAsync(coinHoSub).Wait();
+                        coinHoSub = null;
+                    },
+                    onListenKeyExpired: default,
+                    onStrategyUpdate: default,
+                    onGridUpdate: default).Result;
+            if (!result2.Success)
+                Error.Show();
+
+            EnterFundingRate();
         }
-        void CheckAndBuyFundingRate(BinancePositionInfoCoin position)
+        void EnterFundingRate()
         {
-            //if (!position.Symbol.Contains("USD"))
-            //    return;
+            if (coinHoSub != null)
+                return;
 
-            //// 자본 있는지 확인
-            //string asset = position.Symbol.Substring(0, position.Symbol.IndexOf("USD"));
+            var resultAccount = client.CoinFuturesApi.Account.GetAccountInfoAsync().Result;
+            if (!resultAccount.Success)
+                Error.Show();
 
-            //var result = client.CoinFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
-            //if (!result.Success)
-            //    Error.Show();
+            BinanceWeightManager.UpdateWeightNow(resultAccount.ResponseHeaders);
 
-            //BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+            string symbol = null;
+            var side = OrderSide.Buy;
+            var hoDiff = 0m;
 
-            //BinanceWeightManager.UpdateLimit(result.Data.RateLimits);
+            foreach (var s in resultAccount.Data.Positions)
+                if (s.Symbol == "EOSUSD_PERP" && s.Quantity != 0m)
+                {
+                    symbol = s.Symbol;
+                    side = s.Quantity > 0 ? OrderSide.Buy : OrderSide.Sell;
+                }
 
-            //foreach (var s in result.Data.Symbols)
-            //    if (s.Name.Equals(position.Symbol))
-            //    {
-            //        minSize = fu.LotSizeFilter.MinQuantity;
-            //        hoDiff = fu.PriceFilter.TickSize;
-            //        minNotionalValue = fu.MinNotionalFilter.MinNotional;
-            //        s.
-            //    }
+            if (symbol == null)
+                return;
 
-            //result = client.CoinFuturesApi.Account.GetAccountInfoAsync().Result;
-            //if (!result.Success)
-            //    Error.Show();
+            var resultExchange = client.CoinFuturesApi.ExchangeData.GetExchangeInfoAsync().Result;
+            if (!resultExchange.Success)
+                Error.Show();
 
-            //BinanceWeightManager.UpdateWeightNow(result.ResponseHeaders);
+            BinanceWeightManager.UpdateWeightNow(resultExchange.ResponseHeaders);
 
-            //foreach (var s in result.Data.Assets)
-            //    if (s.Asset == asset)
-            //    {
-            //        s.AvailableBalance
-            //    }
+            BinanceWeightManager.UpdateLimit(resultExchange.Data.RateLimits);
 
-            //// 레버리지 변경
+            foreach (var s in resultExchange.Data.Symbols)
+                if (s.Name == symbol)
+                {
+                    hoDiff = s.PriceFilter.TickSize;
+                }
 
-            //// 진입
+            // 진입
+            var orderStart = true;
+            var orderPrice = 0m;
+            var orderId = 0L;
+
+            var resultHo = socketClientHoFunding.CoinFuturesApi.SubscribeToPartialOrderBookUpdatesAsync(
+                symbol: symbol
+                , levels: 5
+                , updateInterval: 100
+                , onMessage: data0 =>
+                {
+                    if (coinHoSub == null)
+                        return;
+
+                    var data = data0.Data;
+
+                    var asks = data.Asks.ToList();
+                    var bids = data.Bids.ToList();
+
+                    if (asks[0].Price <= bids[0].Price)
+                        Error.Show();
+
+                    var price = asks[0].Price - hoDiff;
+                    if (side == OrderSide.Sell)
+                    {
+                        price = bids[0].Price + hoDiff;
+                    }
+
+                    if (orderStart) // 첫 주문
+                    {
+                        var result = client.CoinFuturesApi.Trading.PlaceOrderAsync(
+                            symbol: symbol
+                            , side: side
+                            , type: FuturesOrderType.Limit
+                            , quantity: 1
+                            , price: price
+                            , positionSide: PositionSide.Both
+                            , timeInForce: TimeInForce.GoodTillCrossing).Result;
+
+                        if (!result.Success)
+                        {
+                            if (result.Error.Code == -2019)
+                            {
+                                socketClientHoFunding.UnsubscribeAsync(coinHoSub).Wait();
+                                coinHoSub = null;
+
+                                return;
+                            }
+
+                            if (result.Error.Code != -5022)
+                                Error.Show(this, "order fail");
+
+                            return;
+                        }
+
+                        orderStart = false;
+                        orderPrice = price;
+                        orderId = result.Data.Id;
+                    }
+                    else if (orderPrice != price)  // 첫 주문 이후 주문
+                    {
+                        var queryOrder = client.UsdFuturesApi.Trading.GetOrderAsync(
+                            symbol: symbol
+                            , orderId: orderId).Result;
+
+                        if (queryOrder.Data.Status == OrderStatus.Filled)
+                            return;
+
+                        if (!queryOrder.Success)
+                            Error.Show();
+
+                        var changeOrder = client.UsdFuturesApi.Trading.EditOrderAsync(
+                            symbol: symbol
+                            , side: side
+                            , quantity: 1
+                            , price: price
+                            , orderId: orderId).Result;
+
+                        if (!changeOrder.Success && changeOrder.Error.Code != -5027) // -5027 : No need to modify the order.
+                        {
+                            if (changeOrder.Error.Code != -2013) // order does not exist
+                                Error.Show();
+                        }
+                    }
+                }).Result;
+            if (!resultHo.Success)
+                Error.Show();
+
+            coinHoSub = resultHo.Data;
         }
 
         void Form1_Load(object sender, EventArgs e)
