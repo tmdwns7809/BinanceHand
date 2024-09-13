@@ -296,9 +296,11 @@ namespace BinanceHand
             {
                 options.ReconnectInterval = TimeSpan.FromMinutes(1);
             });
+            socketClientHo.SetApiCredentials(new ApiCredentials(TradingLibrary.Base.Keys.future2_API_Key, TradingLibrary.Base.Keys.future2_Secret_Key));
             socketClientHoFunding = new BinanceSocketClient(delegate (BinanceSocketOptions options)
             {
                 options.ReconnectInterval = TimeSpan.FromMinutes(1);
+                options.ApiCredentials = new ApiCredentials(TradingLibrary.Base.Keys.future2_API_Key, TradingLibrary.Base.Keys.future2_Secret_Key);
             });
             socketClientMark = new BinanceSocketClient(delegate (BinanceSocketOptions options)
             {
@@ -443,6 +445,7 @@ namespace BinanceHand
                 }
 
             // 진입
+            var unSubSent = false;
             var orderStart = true;
             var orderPrice = 0m;
             var orderId = 0L;
@@ -453,7 +456,7 @@ namespace BinanceHand
                 , updateInterval: 100
                 , onMessage: data0 =>
                 {
-                    if (coinHoSub == null)
+                    if (coinHoSub == null || unSubSent)
                         return;
 
                     var data = data0.Data;
@@ -485,9 +488,14 @@ namespace BinanceHand
                         {
                             if (result.Error.Code == -2019)
                             {
-                                socketClientHoFunding.UnsubscribeAsync(coinHoSub).Wait();
-                                coinHoSub = null;
-
+                                if (!unSubSent)
+                                {
+                                    BeginInvoke(new Action(() => {
+                                        socketClientHoFunding.UnsubscribeAsync(coinHoSub).Wait();
+                                        coinHoSub = null;
+                                    }));
+                                    unSubSent = true;
+                                }
                                 return;
                             }
 
