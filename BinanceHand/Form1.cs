@@ -382,6 +382,22 @@ namespace BinanceHand
                             // 주문
                             EnterFundingRate();
                         }
+                        Log.Add(this, BaseFunctions.loadingListBox, "funding fee updated wallet balance below :" + DateTime.Now.ToString());
+                        foreach (var b in data.UpdateData.Balances)
+                        {
+                            if (b.Asset != "EOS")
+                                continue;
+
+                            Log.Add(this, BaseFunctions.loadingListBox, b.Asset + ":" + b.WalletBalance);
+                        }
+                        Log.Add(this, BaseFunctions.loadingListBox, "positions below");
+                        foreach (var b in data.UpdateData.Positions)
+                        {
+                            if (b.Quantity == 0)
+                                continue;
+
+                            Log.Add(this, BaseFunctions.loadingListBox, b.Symbol + ":" + b.Quantity);
+                        }
                     },
                     onOrderUpdate:data0 =>
                     {
@@ -496,6 +512,7 @@ namespace BinanceHand
                                     }));
                                     unSubSent = true;
                                 }
+                                Log.Add(this, BaseFunctions.loadingListBox, result.Error.Message + ":" + DateTime.Now.ToString());
                                 return;
                             }
 
