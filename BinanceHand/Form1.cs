@@ -528,7 +528,7 @@ namespace BinanceHand
                     }
                     else if (orderPrice != price)  // 첫 주문 이후 주문
                     {
-                        var queryOrder = client.UsdFuturesApi.Trading.GetOrderAsync(
+                        var queryOrder = client.CoinFuturesApi.Trading.GetOrderAsync(
                             symbol: symbol
                             , orderId: orderId).Result;
 
