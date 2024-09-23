@@ -491,40 +491,7 @@ namespace BinanceHand
 
                     if (orderStart) // 첫 주문
                     {
-                        var result = client.CoinFuturesApi.Trading.PlaceOrderAsync(
-                            symbol: symbol
-                            , side: side
-                            , type: FuturesOrderType.Limit
-                            , quantity: 1
-                            , price: price
-                            , positionSide: PositionSide.Both
-                            , timeInForce: TimeInForce.GoodTillCrossing).Result;
-
-                        if (!result.Success)
-                        {
-                            if (result.Error.Code == -2019)
-                            {
-                                if (!unSubSent)
-                                {
-                                    BeginInvoke(new Action(() => {
-                                        socketClientHoFunding.UnsubscribeAsync(coinHoSub).Wait();
-                                        coinHoSub = null;
-                                    }));
-                                    unSubSent = true;
-                                }
-                                Log.Add(this, BaseFunctions.loadingListBox, result.Error.Message + ":" + DateTime.Now.ToString());
-                                return;
-                            }
-
-                            if (result.Error.Code != -5022)
-                                Error.Show(this, "order fail");
-
-                            return;
-                        }
-
-                        orderStart = false;
-                        orderPrice = price;
-                        orderId = result.Data.Id;
+                        CoinOrder(symbol, side, price, ref unSubSent, ref orderStart, ref orderPrice, ref orderId);
                     }
                     else if (orderPrice != price)  // 첫 주문 이후 주문
                     {
@@ -538,11 +505,8 @@ namespace BinanceHand
                         if (!queryOrder.Success)
                             Error.Show();
 
-                        var changeOrder = client.UsdFuturesApi.Trading.EditOrderAsync(
+                        var changeOrder = client.CoinFuturesApi.Trading.CancelOrderAsync(
                             symbol: symbol
-                            , side: side
-                            , quantity: 1
-                            , price: price
                             , orderId: orderId).Result;
 
                         if (!changeOrder.Success && changeOrder.Error.Code != -5027) // -5027 : No need to modify the order.
@@ -550,12 +514,53 @@ namespace BinanceHand
                             if (changeOrder.Error.Code != -2013) // order does not exist
                                 Error.Show();
                         }
+
+                        CoinOrder(symbol, side, price, ref unSubSent, ref orderStart, ref orderPrice, ref orderId);
                     }
                 }).Result;
             if (!resultHo.Success)
                 Error.Show();
 
             coinHoSub = resultHo.Data;
+        }
+        private void CoinOrder(string symbol, OrderSide side, decimal price
+            , ref bool unSubSent, ref bool orderStart, ref decimal orderPrice, ref long orderId)
+        {
+            var result = client.CoinFuturesApi.Trading.PlaceOrderAsync(
+                symbol: symbol
+                , side: side
+                , type: FuturesOrderType.Limit
+                , quantity: 1
+                , price: price
+                , positionSide: PositionSide.Both
+                , timeInForce: TimeInForce.GoodTillCrossing).Result;
+
+            if (!result.Success)
+            {
+                if (result.Error.Code == -2019)
+                {
+                    if (!unSubSent)
+                    {
+                        BeginInvoke(new Action(() => {
+                            socketClientHoFunding.UnsubscribeAsync(coinHoSub).Wait();
+                            coinHoSub = null;
+                        }));
+                        unSubSent = true;
+                    }
+                    Log.Add(this, BaseFunctions.loadingListBox, result.Error.Message + ":" + DateTime.Now.ToString());
+                    return;
+                }
+
+                if (result.Error.Code != -5022)
+                    Error.Show(this, "order fail");
+
+                return;
+            }
+            Log.Add(this, BaseFunctions.loadingListBox, "coin order send:" + DateTime.Now.ToString());
+
+            orderStart = false;
+            orderPrice = price;
+            orderId = result.Data.Id;
         }
 
         void Form1_Load(object sender, EventArgs e)
