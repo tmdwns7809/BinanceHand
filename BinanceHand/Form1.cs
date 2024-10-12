@@ -499,7 +499,8 @@ namespace BinanceHand
                             symbol: symbol
                             , orderId: orderId).Result;
 
-                        if (queryOrder.Data.Status == OrderStatus.Filled)
+                        if (queryOrder.Data.Status == OrderStatus.Filled
+                            || queryOrder.Data.Status == OrderStatus.Expired)
                             return;
 
                         if (!queryOrder.Success)
