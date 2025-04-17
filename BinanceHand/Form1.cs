@@ -1143,10 +1143,10 @@ namespace BinanceHand
         TradeStick GetStick(IBinanceKline stickReal, ChartValues cv)
         {
             var stick = new TradeStick(cv);
-            stick.Price[0] = stickReal.HighPrice;
-            stick.Price[1] = stickReal.LowPrice;
-            stick.Price[2] = stickReal.OpenPrice;
-            stick.Price[3] = stickReal.ClosePrice;
+            stick.PriceOpen = stickReal.OpenPrice;
+            stick.PriceHigh = stickReal.HighPrice;
+            stick.PriceLow = stickReal.LowPrice;
+            stick.PriceClose = stickReal.ClosePrice;
 
             stick.Ms = stickReal.TakerBuyBaseVolume;
             stick.Md = stickReal.Volume - stickReal.TakerBuyBaseVolume;
@@ -1162,16 +1162,16 @@ namespace BinanceHand
             if (minList[minList.Count - 1].Time >= time)
                 for (int i = minList.Count - 1; i >= 0; i--)
                 {
-                    if (stick.Price[0] == 0)
+                    if (stick.PriceHigh == 0)
                     {
-                        stick.Price[1] = minList[i].Price[1];
-                        stick.Price[3] = minList[i].Price[3];
+                        stick.PriceLow = minList[i].PriceLow;
+                        stick.PriceClose = minList[i].PriceClose;
                     }
-                    if (minList[i].Price[0] > stick.Price[0])
-                        stick.Price[0] = minList[i].Price[0];
-                    if (minList[i].Price[1] < stick.Price[1])
-                        stick.Price[1] = minList[i].Price[1];
-                    stick.Price[2] = minList[i].Price[2];
+                    if (minList[i].PriceHigh > stick.PriceHigh)
+                        stick.PriceHigh = minList[i].PriceHigh;
+                    if (minList[i].PriceLow < stick.PriceLow)
+                        stick.PriceLow = minList[i].PriceLow;
+                    stick.PriceOpen = minList[i].PriceOpen;
 
                     stick.Ms += minList[i].Ms;
                     stick.Md += minList[i].Md;
@@ -1221,8 +1221,8 @@ namespace BinanceHand
         }
         decimal GetCurrentPrice(TradeItemData itemData)
         {
-            return itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : 
-                (itemData.listDic[ChartTimeSet.Minute1].lastStick == default ? default : itemData.listDic[ChartTimeSet.Minute1].lastStick.Price[3]);
+            return itemData.AggOn && !itemData.AggFirst ? itemData.secStick.PriceClose : 
+                (itemData.listDic[ChartTimeSet.Minute1].lastStick == default ? default : itemData.listDic[ChartTimeSet.Minute1].lastStick.PriceClose);
         }
         void OrderBoxSetting(bool autoSize, bool minSize)
         {
@@ -1421,8 +1421,7 @@ namespace BinanceHand
                                 var lastMin = newStick.Time.AddMinutes(-1); // 바이낸스에서 1분 뒤로하면 1분 뒤까지 못가져옴 그래서 1미리 추가
                                 var lastMinForBinance = lastMin.AddMilliseconds(1); // 바이낸스에서 1분 뒤로하면 1분 뒤까지 못가져옴 그래서 1미리 추가
 
-                                FuturesUSD.UpdateDB(itemData.Code
-                                    , lastMinForBinance, client, this, BaseFunctions.loadingListBox);
+                                FuturesUSD.UpdateDB(itemData.Code, lastMinForBinance, client);
 
                                 // 1분봉 직전까지 다운 완료 확인
                                 while (true)
@@ -1591,10 +1590,10 @@ namespace BinanceHand
 
                     lock (itemData.listDicLocker)
                     {
-                        if (v.lastStick.Price[1] == 0)
+                        if (v.lastStick.PriceLow == 0)
                         {
-                            v.lastStick.Price[1] = newStick.Price[1];
-                            v.lastStick.Price[2] = newStick.Price[2];
+                            v.lastStick.PriceLow = newStick.PriceLow;
+                            v.lastStick.PriceOpen = newStick.PriceOpen;
                         }
 
                         CandleBaseFunctions.CompareAndUpdateTradeStick(v.lastStick, newStick);
@@ -1615,7 +1614,7 @@ namespace BinanceHand
 
                 itemData.lastReceiveTime = data0.Timestamp;
 
-                itemData.newPrice = newStick.Price[3];
+                itemData.newPrice = newStick.PriceClose;
             }
         }
 
@@ -1721,17 +1720,17 @@ namespace BinanceHand
                             else if (timeDiff > vc.seconds || timeDiff < 0)
                                 Error.Show();
 
-                            if (v.lastStickForS.Price[1] == 0)
+                            if (v.lastStickForS.PriceLow == 0)
                             {
-                                v.lastStickForS.Price[1] = vm.lastStickForS.Price[1];
-                                v.lastStickForS.Price[2] = vm.lastStickForS.Price[2];
+                                v.lastStickForS.PriceLow = vm.lastStickForS.PriceLow;
+                                v.lastStickForS.PriceOpen = vm.lastStickForS.PriceOpen;
                             }
 
-                            if (vm.lastStickForS.Price[0] > v.lastStickForS.Price[0])
-                                v.lastStickForS.Price[0] = vm.lastStickForS.Price[0];
-                            if (vm.lastStickForS.Price[1] < v.lastStickForS.Price[1])
-                                v.lastStickForS.Price[1] = vm.lastStickForS.Price[1];
-                            v.lastStickForS.Price[3] = vm.lastStickForS.Price[3];
+                            if (vm.lastStickForS.PriceHigh > v.lastStickForS.PriceHigh)
+                                v.lastStickForS.PriceHigh = vm.lastStickForS.PriceHigh;
+                            if (vm.lastStickForS.PriceLow < v.lastStickForS.PriceLow)
+                                v.lastStickForS.PriceLow = vm.lastStickForS.PriceLow;
+                            v.lastStickForS.PriceClose = vm.lastStickForS.PriceClose;
 
                             v.lastStickForS.Ms += vm.lastStickForS.Ms;
                             v.lastStickForS.Md += vm.lastStickForS.Md;
@@ -1767,7 +1766,7 @@ namespace BinanceHand
                             {
                                 positionData.Enter = false;
 
-                                var profitRow = (double)((Position)j == Position.Long ? vm.lastStickForS.Price[3] / positionData.EnterPrice : positionData.EnterPrice / vm.lastStickForS.Price[3]);
+                                var profitRow = (double)((Position)j == Position.Long ? vm.lastStickForS.PriceClose / positionData.EnterPrice : positionData.EnterPrice / vm.lastStickForS.PriceClose);
                                 var resultData = new BackResultData()
                                 {
                                     Code = itemData.Code,
@@ -1834,7 +1833,7 @@ namespace BinanceHand
         bool CompareSticks(TradeStick kline, TradeStick kline2)
         {
             return kline.Time == kline2.Time &&
-                kline.Price[0] == kline2.Price[0] && kline.Price[1] == kline2.Price[1] && kline.Price[2] == kline2.Price[2] && kline.Price[3] == kline2.Price[3] &&
+                kline.PriceHigh == kline2.PriceHigh && kline.PriceLow == kline2.PriceLow && kline.PriceOpen == kline2.PriceOpen && kline.PriceClose == kline2.PriceClose &&
                 kline.Ms == kline2.Ms && kline.Md == kline2.Md;
         }
 
@@ -2137,7 +2136,7 @@ namespace BinanceHand
                     Trading.instance.AddFullChartPoint(chart, itemData.showingStickList[i]);
                 trading.MakeVolumeProfileChart(itemData.showingStickList);
 
-                itemData.currentPriceWhenLoaded = itemData.showingStickList.Last().Price[3];
+                itemData.currentPriceWhenLoaded = itemData.showingStickList.Last().PriceClose;
             }
         }
         void Trading_AggONandOFF(TradeItemData itemData, bool on)
@@ -2203,7 +2202,7 @@ namespace BinanceHand
             var tradeData = new TradeData();
             var minList = itemData.listDic[ChartTimeSet.Minute1];
 
-            tradeData.Send_Close_Price = itemData.AggOn && !itemData.AggFirst ? itemData.secStick.Price[3] : itemData.newPrice;
+            tradeData.Send_Close_Price = itemData.AggOn && !itemData.AggFirst ? itemData.secStick.PriceClose : itemData.newPrice;
             tradeData.Last_Min_Qnt = minList.lastStick.Ms + minList.lastStick.Md;
 
             decimal priceRate = 0.1m;
@@ -2571,7 +2570,7 @@ namespace BinanceHand
             var startX = 0D;
             var startY = axisY.ValueToPixelPosition((double)itemData.RealEnterPrice);
             var endX = priceArea.AxisX.ValueToPixelPosition(priceSeries.Points.Count);
-            var endY = axisY.ValueToPixelPosition((double)itemData.showingStickList.Last().Price[3]);
+            var endY = axisY.ValueToPixelPosition((double)itemData.showingStickList.Last().PriceClose);
 
             for (int i = 0; i < itemData.showingStickList.Count; i++)
             {
