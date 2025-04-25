@@ -650,7 +650,7 @@ namespace BinanceHand
                     {
                         var itemData = BaseFunctions.itemDataDic[code] as TradeItemData;
 
-                        //lock (SticksDBManager.dbLocker)
+                        //lock (dbLocker)
                         {
                             var conn = SticksDBManager.DBDic[ChartTimeSet.Minute1];
                             SticksDBManager.OpenConnection(conn);
@@ -1429,9 +1429,9 @@ namespace BinanceHand
                                     if (vc != ChartTimeSet.Minute1)
                                         Error.Show();
 
-                                    //lock (SticksDBManager.dbLocker)
+                                    //lock (dbLocker)
                                     {
-                                        var conn = SticksDBManager.DBDic[vc];
+                                        var conn = DBDic[vc];
                                         SticksDBManager.OpenConnection(conn);
 
                                         var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
@@ -1464,7 +1464,7 @@ namespace BinanceHand
 
                                         var list = new List<TradeStick>();
 
-                                        //lock (SticksDBManager.dbLocker)
+                                        //lock (dbLocker)
                                         {
                                             var conn = SticksDBManager.DBDic[cv2];
                                             SticksDBManager.OpenConnection(conn);
@@ -2104,7 +2104,7 @@ namespace BinanceHand
 
                     // 남은 양만큼 DB에서 로드해서 쇼리스트에 붙히기
                     var list = new List<TradeStick>();
-                    //lock (SticksDBManager.dbLocker)
+                    //lock (dbLocker)
                     {
                         var conn = SticksDBManager.DBDic[vc];
                         SticksDBManager.OpenConnection(conn);
