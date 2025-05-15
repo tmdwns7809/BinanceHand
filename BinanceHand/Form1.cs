@@ -127,7 +127,6 @@ namespace BinanceHand
             SetClientAndKey();
 
             FuturesUSD.StartThread();
-            SticksDBManager.BaseName = FuturesUSD.BASE_NAME;
             FuturesUSD.SetDB();
 
             KeyDown += Form1_KeyDown;
@@ -652,7 +651,7 @@ namespace BinanceHand
 
                         //lock (dbLocker)
                         {
-                            var conn = SticksDBManager.DBDic[ChartTimeSet.Minute1];
+                            var conn = SticksDBManager.dBDicTime[ChartTimeSet.Minute1];
                             SticksDBManager.OpenConnection(conn);
 
                             new SQLiteCommand("Begin", conn).ExecuteNonQuery();
@@ -1377,10 +1376,10 @@ namespace BinanceHand
                         Trading.instance.KlineRcv = 0;
                         Trading.instance.UpdateFoundInText(default, true);
                         if (Trading.loadingDone)
-                            Strategy.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>[]
+                            Strategy.foundItemList = new SortedList<int, (BaseItemData itemData, List<(TradeStick foundStick, ChartValues chartValues)> foundList)>[]
                             {
-                                new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>(),
-                                new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>()
+                                new SortedList<int, (BaseItemData itemData, List<(TradeStick foundStick, ChartValues chartValues)> foundList)>(),
+                                new SortedList<int, (BaseItemData itemData, List<(TradeStick foundStick, ChartValues chartValues)> foundList)>()
                             };
                     }
 
@@ -1396,7 +1395,7 @@ namespace BinanceHand
                 if (Trading.loadingDone)
                     for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
                     {
-                        itemData.positionData[j].foundList = new List<(DateTime foundTime, ChartValues chartValues)>();
+                        itemData.positionData[j].foundList = new List<(TradeStick foundStick, ChartValues chartValues)>();
                         itemData.positionData[j].found = false;
                     }
 
@@ -1431,7 +1430,7 @@ namespace BinanceHand
 
                                     //lock (dbLocker)
                                     {
-                                        var conn = DBDic[vc];
+                                        var conn = SticksDBManager.dBDicTime[vc];
                                         SticksDBManager.OpenConnection(conn);
 
                                         var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
@@ -1439,7 +1438,7 @@ namespace BinanceHand
 
                                         var list = new List<TradeStick>();
                                         while (reader2.Read())
-                                            list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, vc));
+                                            list.Add(FuturesUSD.GetTradeStickFromSQL(new TradeStick(vc), reader2, vc));
 
                                         SticksDBManager.CloseConnection(conn);
 
@@ -1460,13 +1459,13 @@ namespace BinanceHand
                                         var startTime = ChartTimeSet.AddMinutes(newStick.Time
                                                 , -(long)newStick.Time.Subtract(ChartTimeSet.StandardMinTime).TotalMinutes % cv2.minutes);
                                         var lastFullTime = ChartTimeSet.AddMinutes(startTime, -cv2.minutes);
-                                        var loadStartTime = ChartTimeSet.AddMinutes(lastFullTime, -cv2.minutes * (Strategy.FindNeedDays - 1));
+                                        var loadStartTime = ChartTimeSet.AddMinutes(lastFullTime, -cv2.minutes * (Strategy.FindNeedSticks - 1));
 
                                         var list = new List<TradeStick>();
 
                                         //lock (dbLocker)
                                         {
-                                            var conn = SticksDBManager.DBDic[cv2];
+                                            var conn = SticksDBManager.dBDicTime[cv2];
                                             SticksDBManager.OpenConnection(conn);
 
                                             var reader2 = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
@@ -1474,7 +1473,7 @@ namespace BinanceHand
                                                 "(" + Columns.TIME + "<='" + lastMin.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
 
                                             while (reader2.Read())
-                                                list.Add(FuturesUSD.GetTradeStickFromSQL(reader2, cv2));
+                                                list.Add(FuturesUSD.GetTradeStickFromSQL(new TradeStick(cv2), reader2, cv2));
 
                                             SticksDBManager.CloseConnection(conn);
                                         }
@@ -1672,10 +1671,10 @@ namespace BinanceHand
                 else if (beforeFinal)
                     Final = true;
 
-                Strategy.foundItemList = new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>[]
+                Strategy.foundItemList = new SortedList<int, (BaseItemData itemData, List<(TradeStick foundStick, ChartValues chartValues)> foundList)>[]
                 {
-                    new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>(),
-                    new SortedList<int, (BaseItemData itemData, List<(DateTime foundTime, ChartValues chartValues)> foundList)>()
+                    new SortedList<int, (BaseItemData itemData, List<(TradeStick foundStick, ChartValues chartValues)> foundList)>(),
+                    new SortedList<int, (BaseItemData itemData, List<(TradeStick foundStick, ChartValues chartValues)> foundList)>()
                 };
 
                 foreach (var itemData in BaseFunctions.itemDataDic.Values)
@@ -1687,7 +1686,7 @@ namespace BinanceHand
 
                     for (int i = (int)Position.Long; i <= (int)Position.Short; i++)
                     {
-                        itemData.positionData[i].foundList = new List<(DateTime foundTime, ChartValues chartValues)>();
+                        itemData.positionData[i].foundList = new List<(TradeStick foundStick, ChartValues chartValues)>();
                         itemData.positionData[i].found = false;
                     }
 
@@ -1750,9 +1749,9 @@ namespace BinanceHand
 
                         if (!Strategy.calOnlyFullStick)
                             Strategy.SetRSIAandDiff(itemData, v.list, v.lastStickForS, v.currentIndex - 1);
-
-                        Strategy.ChartFindConditionAndAdd(itemData, vc, vm.lastStickForS, v.lastStickForS, vm.currentIndex - 1, v.currentIndex - 1);
                     }
+
+                    Strategy.ChartFindConditionAndAdd(itemData);
 
                     for (int j = (int)Position.Long; j <= (int)Position.Short; j++)
                     {
@@ -1770,8 +1769,8 @@ namespace BinanceHand
                                 var resultData = new BackResultData()
                                 {
                                     Code = itemData.Code,
-                                    EnterTime = positionData.EnterTime,
-                                    ExitTime = vm.lastStickForS.Time,
+                                    EnterStick = positionData.EnterStick ,
+                                    ExitStick = vm.lastStickForS,
                                     ProfitRate = Math.Round((profitRow - 1) * 100, 2),
                                     LorS = (Position)j
                                 };
@@ -1779,7 +1778,7 @@ namespace BinanceHand
                                 if (itemData.resultDataForMetric[j] != null)
                                 {
                                     if (itemData.resultDataForMetric[j].Code == itemData.Code)
-                                        itemData.resultDataForMetric[j].ExitTime = resultData.ExitTime;
+                                        itemData.resultDataForMetric[j].ExitStick = resultData.ExitStick;
                                     lock (itemData.resultDataForMetric[j].locker)
                                     {
                                         itemData.resultDataForMetric[j].Count++;
@@ -1811,9 +1810,9 @@ namespace BinanceHand
                                     var positionData = foundItem.itemData.positionData[j];
                                         CandleBaseFunctions.CandleEnterSetting(positionData, minV.lastStickForS);
 
-                                    if (Strategy.lastResultDataForCheckTrend[j] == null || Strategy.lastResultDataForCheckTrend[j].ExitTime != default)
+                                    if (Strategy.lastResultDataForCheckTrend[j] == null || Strategy.lastResultDataForCheckTrend[j].ExitStick != default)
                                     {
-                                        var backResultData = new BackResultData() { EnterTime = currentTime, Code = foundItem.itemData.Code };
+                                        var backResultData = new BackResultData() { EnterStick =minV.lastStickForS , Code = foundItem.itemData.Code };
                                         backResultData.beforeResultData = Strategy.lastResultDataForCheckTrend[j];
                                         Strategy.lastResultDataForCheckTrend[j] = backResultData;
                                     }
@@ -2106,7 +2105,7 @@ namespace BinanceHand
                     var list = new List<TradeStick>();
                     //lock (dbLocker)
                     {
-                        var conn = SticksDBManager.DBDic[vc];
+                        var conn = SticksDBManager.dBDicTime[vc];
                         SticksDBManager.OpenConnection(conn);
 
                         var reader = new SQLiteCommand("SELECT * FROM '" + itemData.Code + "' WHERE " +
@@ -2114,7 +2113,7 @@ namespace BinanceHand
                             "(" + Columns.TIME + ">='" + loadStartTime.ToString(Formats.DB_TIME) + "')", conn).ExecuteReader();
 
                         while (reader.Read())
-                            list.Add(FuturesUSD.GetTradeStickFromSQL(reader, vc));
+                            list.Add(FuturesUSD.GetTradeStickFromSQL(new TradeStick(vc), reader, vc));
 
                         SticksDBManager.CloseConnection(conn);
                     }
